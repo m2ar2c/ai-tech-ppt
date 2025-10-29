@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI 技术战略报告 - 概述与目标</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3fg2B3wP7ioHUpcixSeKsgNHYsYAGP82LPg6uqQ1lUsaUXRd2GmY0G3Q9ct2V60LhNF8L1LfY7wO7BkAo6lQg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        nvidia: '#76B900',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        soft: '0 20px 45px rgba(118, 185, 0, 0.18)',
+                    },
+                },
+            },
+        };
+    </script>
+    <style>
+        :root {
+            --accent: #76B900;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: #000000;
+            scroll-snap-type: y mandatory;
+        }
+
+        main {
+            position: relative;
+        }
+
+        .slide {
+            scroll-snap-align: start;
+        }
+
+        .tech-gradient {
+            background: linear-gradient(135deg, rgba(118, 185, 0, 0.7), rgba(118, 185, 0, 0.3));
+        }
+
+        .fade-element {
+            opacity: 0;
+            transform: translateY(28px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+        }
+
+        .fade-element.animate-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .modal {
+            background: rgba(0, 0, 0, 0.75);
+        }
+
+        .modal-card {
+            background: #111;
+            border: 1px solid rgba(118, 185, 0, 0.4);
+            box-shadow: 0 28px 60px rgba(0, 0, 0, 0.6);
+        }
+    </style>
+</head>
+<body class="text-white font-sans overflow-y-scroll">
+    <main class="min-h-screen flex flex-col gap-16 pb-20">
+        <!-- Slide 1: Overview -->
+        <section class="slide h-screen w-full flex items-center justify-center px-4">
+            <div class="w-[92vw] md:w-[80vw] xl:w-[70vw] aspect-[16/9] relative">
+                <div class="absolute inset-0 bg-[#0c0c0c] border border-[#1f1f1f] rounded-3xl p-10 md:p-16 flex flex-col justify-between">
+                    <div class="flex flex-col gap-6">
+                        <div class="flex items-center gap-4 fade-element" data-animate>
+                            <div class="h-14 w-14 rounded-full flex items-center justify-center tech-gradient text-black text-2xl font-bold shadow-soft">
+                                <i class="fa-solid fa-bolt"></i>
+                            </div>
+                            <div>
+                                <p class="uppercase tracking-[0.4em] text-xs text-gray-400">AI Strategy &amp; Insights</p>
+                                <p class="text-sm text-gray-400">2024 · 摘要与导航</p>
+                            </div>
+                        </div>
+                        <div class="fade-element" data-animate>
+                            <h1 class="text-4xl md:text-5xl xl:text-6xl font-extrabold text-nvidia leading-tight">
+                                AI 技术战略报告<br />概述与目标
+                            </h1>
+                            <p class="mt-6 text-lg md:text-xl text-gray-400 max-w-3xl">
+                                在人工智能技术迅猛演进的时代，本报告将 AI 知识普及定位为组织必须掌握的战略能力，帮助管理层与技术团队快速对齐认知，抓住技术变革中的确定性机会。
+                            </p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 fade-element" data-animate>
+                        <div class="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-6 flex flex-col gap-2">
+                            <span class="text-5xl font-bold text-nvidia leading-none">9</span>
+                            <p class="text-sm text-gray-400">大核心主题覆盖算力、算法、部署、知识库与智能体，构建系统化知识图谱。</p>
+                            <span class="text-xs uppercase tracking-widest text-gray-500">Nine Pillars</span>
+                        </div>
+                        <div class="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-6 flex flex-col gap-2">
+                            <span class="text-4xl font-bold text-nvidia leading-none">双受众</span>
+                            <p class="text-sm text-gray-400">同时服务管理层与技术团队，保障战略方向与落地执行形成闭环。</p>
+                            <span class="text-xs uppercase tracking-widest text-gray-500">Two Core Personas</span>
+                        </div>
+                        <div class="bg-[#161616] border border-[#2a2a2a] rounded-2xl p-6 flex flex-col gap-2">
+                            <span class="text-4xl font-bold text-nvidia leading-none">认知升级</span>
+                            <p class="text-sm text-gray-400">聚焦厘清疑惑、补齐盲区，推动组织对 AI 的价值判断与行动确定性。</p>
+                            <span class="text-xs uppercase tracking-widest text-gray-500">Insight Acceleration</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3 fade-element" data-animate>
+                        <button data-modal-target="modal-goal" class="px-6 py-3 rounded-full bg-nvidia text-black font-semibold hover:bg-[#8dd72b] transition">查看报告使命</button>
+                        <span class="text-sm text-gray-500">向下滚动以探索更多章节</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 2: Mission Focus -->
+        <section class="slide h-screen w-full flex items-center justify-center px-4">
+            <div class="w-[92vw] md:w-[80vw] xl:w-[70vw] aspect-[16/9] relative">
+                <div class="absolute inset-0 bg-[#0c0c0c] border border-[#1f1f1f] rounded-3xl p-10 md:p-16 flex flex-col">
+                    <div class="flex items-start justify-between gap-6">
+                        <div class="fade-element" data-animate>
+                            <h2 class="text-4xl md:text-5xl font-bold text-nvidia">使命聚焦</h2>
+                            <p class="mt-4 max-w-2xl text-gray-400 text-base md:text-lg">
+                                报告从战略认知与技术实践双视角切入，回答组织在算力、算法与智能体时代的核心疑问，让决策与实施基于同一个知识底座展开。
+                            </p>
+                        </div>
+                        <button data-modal-target="modal-depth" class="hidden md:inline-flex px-5 py-3 rounded-full border border-nvidia text-nvidia text-sm font-semibold hover:bg-nvidia hover:text-black transition fade-element" data-animate>底层逻辑详解</button>
+                    </div>
+                    <div class="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">算力卡</span>
+                            <p class="text-sm text-gray-400">厘清算力供给模式、GPU 架构与生态壁垒，理解 AI 基石。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">Compute Logic</span>
+                            <button data-modal-target="modal-theme" data-modal-content="detail-compute" class="mt-auto text-xs text-nvidia hover:underline self-start">主题详情</button>
+                        </div>
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">英伟达</span>
+                            <p class="text-sm text-gray-400">洞察 GPU 龙头的产品组合、软件生态与市场主导力。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">NVIDIA Leadership</span>
+                            <button data-modal-target="modal-theme" data-modal-content="detail-nvidia" class="mt-auto text-xs text-nvidia hover:underline self-start">主题详情</button>
+                        </div>
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">ML 底座</span>
+                            <p class="text-sm text-gray-400">回归机器学习原理，理顺从数据到模型的训练逻辑。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">ML Foundation</span>
+                            <button data-modal-target="modal-theme" data-modal-content="detail-ml" class="mt-auto text-xs text-nvidia hover:underline self-start">主题详情</button>
+                        </div>
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">自注意</span>
+                            <p class="text-sm text-gray-400">解读 Transformer 自注意力机制的算力需求与能力突破。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">Self-Attention</span>
+                            <button data-modal-target="modal-theme" data-modal-content="detail-attention" class="mt-auto text-xs text-nvidia hover:underline self-start">主题详情</button>
+                        </div>
+                    </div>
+                    <div class="mt-6 md:mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">部署</span>
+                            <p class="text-sm text-gray-400">覆盖模型上线、推理调优与工程化运维的关键节点。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">Deployment</span>
+                            <button data-modal-target="modal-theme" data-modal-content="detail-deploy" class="mt-auto text-xs text-nvidia hover:underline self-start">主题详情</button>
+                        </div>
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">训练</span>
+                            <p class="text-sm text-gray-400">深入大模型训练范式、算力优化与数据治理策略。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">Training</span>
+                            <button data-modal-target="modal-theme" data-modal-content="detail-train" class="mt-auto text-xs text-nvidia hover:underline self-start">主题详情</button>
+                        </div>
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">蒸馏</span>
+                            <p class="text-sm text-gray-400">阐明知识蒸馏如何实现模型轻量化与成本控制。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">Distillation</span>
+                            <button data-modal-target="modal-theme" data-modal-content="detail-distill" class="mt-auto text-xs text-nvidia hover:underline self-start">主题详情</button>
+                        </div>
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">知识库</span>
+                            <p class="text-sm text-gray-400">构建企业级知识底座，支撑检索增强与问答体验。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">Knowledge Base</span>
+                            <button data-modal-target="modal-theme" data-modal-content="detail-knowledge" class="mt-auto text-xs text-nvidia hover:underline self-start">主题详情</button>
+                        </div>
+                    </div>
+                    <div class="mt-6 md:mt-8 bg-[#161616] border border-[#272727] rounded-2xl p-6 md:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 fade-element" data-animate>
+                        <div>
+                            <h3 class="text-2xl font-semibold text-white">智能体时代的落地指引</h3>
+                            <p class="mt-2 text-sm md:text-base text-gray-400 max-w-2xl">最终章节将智能体开发与行业应用串联，确保组织在全栈技术理解的基础上制定面向未来的执行蓝图。</p>
+                        </div>
+                        <button data-modal-target="modal-theme" data-modal-content="detail-agent" class="px-5 py-3 rounded-full bg-nvidia text-black font-semibold hover:bg-[#8dd72b] transition">智能体详解</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: Audience Value & Chart -->
+        <section class="slide h-screen w-full flex items-center justify-center px-4">
+            <div class="w-[92vw] md:w-[80vw] xl:w-[70vw] aspect-[16/9] relative">
+                <div class="absolute inset-0 bg-[#0c0c0c] border border-[#1f1f1f] rounded-3xl p-10 md:p-16 flex flex-col">
+                    <div class="flex flex-col lg:flex-row gap-10 h-full">
+                        <div class="flex-1 flex flex-col gap-6">
+                            <div class="fade-element" data-animate>
+                                <h2 class="text-4xl md:text-5xl font-bold text-nvidia">价值传递</h2>
+                                <p class="mt-4 text-gray-400 text-base md:text-lg">报告以高密度迷你卡片呈现关键观点，并通过弹出层提供深度内容，实现信息速览与按需钻研的平衡。</p>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 fade-element" data-animate>
+                                <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3">
+                                    <span class="text-3xl font-bold text-nvidia">管理层</span>
+                                    <p class="text-sm text-gray-400">构建 AI 战略视角，评估政策、投资与生态选择的优先级。</p>
+                                    <span class="text-xs uppercase text-gray-500 tracking-widest">Executive Clarity</span>
+                                    <button data-modal-target="modal-value" data-modal-content="value-management" class="mt-auto text-xs text-nvidia hover:underline self-start">阅读详情</button>
+                                </div>
+                                <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3">
+                                    <span class="text-3xl font-bold text-nvidia">技术团队</span>
+                                    <p class="text-sm text-gray-400">掌握模型训练、部署与知识工程的实践路径，提升交付质量。</p>
+                                    <span class="text-xs uppercase text-gray-500 tracking-widest">Engineering Guidance</span>
+                                    <button data-modal-target="modal-value" data-modal-content="value-tech" class="mt-auto text-xs text-nvidia hover:underline self-start">阅读详情</button>
+                                </div>
+                            </div>
+                            <div class="fade-element" data-animate>
+                                <button data-modal-target="modal-goal" class="px-5 py-3 rounded-full border border-nvidia text-nvidia text-sm font-semibold hover:bg-nvidia hover:text-black transition">再次查看报告使命</button>
+                            </div>
+                        </div>
+                        <div class="flex-1 bg-[#161616] border border-[#272727] rounded-2xl p-8 flex flex-col justify-between fade-element" data-animate>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <h3 class="text-2xl font-semibold text-white">重点覆盖度</h3>
+                                    <p class="text-sm text-gray-400 mt-1">九大主题权重均衡，维持战略与执行的协同性。</p>
+                                </div>
+                                <i class="fa-solid fa-chart-pie text-nvidia text-3xl"></i>
+                            </div>
+                            <div class="mt-6 flex-1 flex items-center justify-center">
+                                <canvas id="focusChart" class="max-w-full"></canvas>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-6">注：根据报告对算力、算法、部署、知识体系与智能体的同等关注进行等权建模。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: Call to Action -->
+        <section class="slide h-screen w-full flex items-center justify-center px-4">
+            <div class="w-[92vw] md:w-[80vw] xl:w-[70vw] aspect-[16/9] relative">
+                <div class="absolute inset-0 bg-[#0c0c0c] border border-[#1f1f1f] rounded-3xl p-10 md:p-16 flex flex-col justify-between">
+                    <div class="flex items-start justify-between gap-6 fade-element" data-animate>
+                        <div>
+                            <h2 class="text-4xl md:text-5xl font-bold text-nvidia">行动建议</h2>
+                            <p class="mt-4 text-gray-400 text-base md:text-lg max-w-3xl">
+                                以本概述为导航，逐章深化对算力体系、模型机制与智能体应用的理解，构建贯穿战略与落地的 AI 能力地图。
+                            </p>
+                        </div>
+                        <div class="hidden md:flex items-center gap-3 text-gray-500 text-sm">
+                            <i class="fa-regular fa-circle-dot text-nvidia"></i>
+                            <span>Scroll for Mastery</span>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">同步认知</span>
+                            <p class="text-sm text-gray-400">建立跨部门统一语言，为政策制定、预算分配与项目筛选提供共识。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">Shared Vision</span>
+                        </div>
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">加速落地</span>
+                            <p class="text-sm text-gray-400">沿着报告结构快速识别可实施场景，形成试点—评估—扩展闭环。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">Execution Path</span>
+                        </div>
+                        <div class="bg-[#161616] border border-[#272727] rounded-xl p-6 flex flex-col gap-3 fade-element" data-animate>
+                            <span class="text-3xl font-bold text-nvidia">沉淀资产</span>
+                            <p class="text-sm text-gray-400">将知识库与智能体设计纳入企业方法论，持续更新 AI 能力栈。</p>
+                            <span class="text-xs uppercase text-gray-500 tracking-widest">Knowledge Assets</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center justify-between gap-4 fade-element" data-animate>
+                        <button data-modal-target="modal-depth" class="px-6 py-3 rounded-full bg-nvidia text-black font-semibold hover:bg-[#8dd72b] transition">解锁详细分析</button>
+                        <p class="text-xs text-gray-500">© 2024 AI 技术战略报告 · 概述章节</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal: Report Mission -->
+    <div id="modal-goal" class="modal fixed inset-0 z-50 hidden items-center justify-center px-4">
+        <div class="modal-card rounded-3xl max-w-3xl w-full p-8 relative">
+            <button class="absolute top-5 right-5 text-gray-400 hover:text-white" data-modal-close>
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+            <h3 class="text-2xl font-semibold text-nvidia">报告使命</h3>
+            <div class="mt-4 space-y-4 text-sm md:text-base text-gray-300" data-modal-body>
+                <p>在人工智能技术快速发展的今天，AI 知识普及已成为政府部门和企事业单位面临的重要课题。本报告旨在为管理层和技术团队提供全面、深入的 AI 技术解读，重点解决大家对 AI 技术的疑惑和认知盲区。</p>
+                <p>通过结构化的信息框架与按需展开的细节，本报告帮助读者迅速定位关键议题，并在需要深入时获得充分的背景与案例支持。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Scope Deep Dive -->
+    <div id="modal-depth" class="modal fixed inset-0 z-50 hidden items-center justify-center px-4">
+        <div class="modal-card rounded-3xl max-w-4xl w-full p-8 relative">
+            <button class="absolute top-5 right-5 text-gray-400 hover:text-white" data-modal-close>
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+            <h3 class="text-2xl font-semibold text-nvidia">九大技术主题纵览</h3>
+            <div class="mt-4 text-sm md:text-base text-gray-300 space-y-4" data-modal-body>
+                <p>本报告围绕九大核心技术主题展开深入分析：算力卡底层逻辑、英伟达算力卡龙头地位、机器学习底层逻辑、大模型自注意力机制、大模型部署、大模型训练、知识蒸馏、知识库、智能体开发。每个部分均以底层逻辑、工程实践与管理启示三条主线展开。</p>
+                <ul class="list-disc list-inside space-y-2">
+                    <li>通过算力与算法双向剖析，厘清 AI 投资的优先顺序。</li>
+                    <li>从技术路径与商业壁垒评估英伟达全栈布局的长期影响。</li>
+                    <li>以机器学习与自注意力机制为衔接点，洞察模型能力迭代背后的结构性变化。</li>
+                    <li>结合部署、训练与蒸馏方法，明确成本与性能之间的工程折中。</li>
+                    <li>通过知识库与智能体案例，描绘下一阶段 AI 应用的组织化路径。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Value Detail (dynamic) -->
+    <div id="modal-value" class="modal fixed inset-0 z-50 hidden items-center justify-center px-4">
+        <div class="modal-card rounded-3xl max-w-3xl w-full p-8 relative">
+            <button class="absolute top-5 right-5 text-gray-400 hover:text-white" data-modal-close>
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+            <h3 class="text-2xl font-semibold text-nvidia">角色价值说明</h3>
+            <div class="mt-4 text-sm md:text-base text-gray-300 space-y-4" data-modal-body></div>
+        </div>
+    </div>
+
+    <!-- Modal: Theme Detail (dynamic) -->
+    <div id="modal-theme" class="modal fixed inset-0 z-50 hidden items-center justify-center px-4">
+        <div class="modal-card rounded-3xl max-w-3xl w-full p-8 relative">
+            <button class="absolute top-5 right-5 text-gray-400 hover:text-white" data-modal-close>
+                <i class="fa-solid fa-xmark text-2xl"></i>
+            </button>
+            <h3 class="text-2xl font-semibold text-nvidia">主题深读</h3>
+            <div class="mt-4 text-sm md:text-base text-gray-300 space-y-4" data-modal-body></div>
+        </div>
+    </div>
+
+    <!-- Hidden modal content repository -->
+    <div class="hidden" id="modal-content-repo">
+        <div id="value-management">
+            <p>本报告帮助管理层建立 AI 发展的整体战略框架，澄清算力投资、生态伙伴选择与政策协同的逻辑顺序。通过一份报告即可掌握组织在智能化转型中的资源配置优先级。</p>
+            <p>同时，针对治理结构、风险规避与合规要求设置了观察维度，方便高层在决策时快速定位关键指标与里程碑。</p>
+        </div>
+        <div id="value-tech">
+            <p>技术团队通过各章节可以系统掌握数据准备、模型训练、部署监控到知识库与智能体设计的端到端方法论，减少在项目推进中的试错成本。</p>
+            <p>报告提供的底层逻辑梳理和关键技术清单，能够帮助工程师快速构建可量化的实施路线图，并与管理层保持沟通同步。</p>
+        </div>
+        <div id="detail-compute">
+            <p>算力卡底层逻辑章节从硬件架构、带宽与能效等指标切入，解释为何 GPU 成为 AI 的基础设施，以及不同算力策略对成本与性能的影响。</p>
+            <p>通过梳理供应链与生态合作模式，本章为组织评估算力投资与自建能力提供依据。</p>
+        </div>
+        <div id="detail-nvidia">
+            <p>英伟达算力卡龙头地位分析部分，将硬件产品组合、CUDA 软件生态与行业伙伴关系串联，揭示其竞争护城河。</p>
+            <p>章节同时提示市场风险与替代方案，为长期规划提供多元视角。</p>
+        </div>
+        <div id="detail-ml">
+            <p>机器学习底层逻辑章节回顾数据、特征、算法与评估的完整闭环，帮助读者刷新对传统 ML 与深度学习协同关系的认知。</p>
+            <p>通过对比不同算法范式，明确在业务落地时的技术选型原则。</p>
+        </div>
+        <div id="detail-attention">
+            <p>大模型自注意力机制章节深入解析 Transformer 架构中的算子设计，说明注意力如何带来上下文建模的能力跃升。</p>
+            <p>章节还讨论算力消耗、并行策略与模型优化方法，为后续部署与训练提供理论支撑。</p>
+        </div>
+        <div id="detail-deploy">
+            <p>大模型部署技术体系章节涵盖推理框架、服务化架构与安全控制，展示从实验室到生产环境的关键迁移步骤。</p>
+            <p>同时强调资源弹性与成本治理，使部署决策更加精细化。</p>
+        </div>
+        <div id="detail-train">
+            <p>大模型训练技术体系章节聚焦分布式训练、数据治理与质量监控，帮助组织在算力与时间受限的情况下实现高效训练。</p>
+            <p>章节还给出迭代节奏与评估指标建议，减少训练阶段的风险。</p>
+        </div>
+        <div id="detail-distill">
+            <p>知识蒸馏技术详解章节说明大模型向小模型迁移知识的方式，重点阐述性能与成本之间的平衡策略。</p>
+            <p>该部分为希望在边缘端或低算力场景落地 AI 能力的组织提供可操作思路。</p>
+        </div>
+        <div id="detail-knowledge">
+            <p>知识库技术体系章节聚焦企业如何构建、更新与治理知识资产，使大模型具备领域专属回答能力。</p>
+            <p>同时强调数据安全、权限管理与检索增强的最佳实践。</p>
+        </div>
+        <div id="detail-agent">
+            <p>智能体开发技术章节将多模态感知、规划与行动机制拆解，帮助组织构建具备自主决策能力的业务代理。</p>
+            <p>配合行业案例分析，让读者理解智能体如何与现有系统协同，释放业务价值。</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.2 });
+
+        document.querySelectorAll('[data-animate]').forEach((el) => {
+            el.classList.add('fade-element');
+            observer.observe(el);
+        });
+
+        const body = document.body;
+
+        function openModal(modal, contentId) {
+            if (!modal) return;
+            if (contentId) {
+                const source = document.getElementById(contentId);
+                if (source) {
+                    const target = modal.querySelector('[data-modal-body]');
+                    if (target) {
+                        target.innerHTML = source.innerHTML;
+                    }
+                }
+            }
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            body.classList.add('overflow-hidden');
+        }
+
+        function closeModal(modal) {
+            if (!modal) return;
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            body.classList.remove('overflow-hidden');
+        }
+
+        document.querySelectorAll('[data-modal-target]').forEach((trigger) => {
+            trigger.addEventListener('click', () => {
+                const id = trigger.getAttribute('data-modal-target');
+                const contentId = trigger.getAttribute('data-modal-content');
+                const modal = document.getElementById(id);
+                openModal(modal, contentId);
+            });
+        });
+
+        document.querySelectorAll('.modal').forEach((modal) => {
+            modal.addEventListener('click', (event) => {
+                if (event.target === modal || event.target.closest('[data-modal-close]')) {
+                    closeModal(modal);
+                }
+            });
+        });
+
+        let focusChartInstance = null;
+        const chartCanvas = document.getElementById('focusChart');
+        if (chartCanvas) {
+            const chartObserver = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting && !focusChartInstance) {
+                        focusChartInstance = new Chart(chartCanvas, {
+                            type: 'doughnut',
+                            data: {
+                                labels: ['算力体系', '算法原理', '部署与训练', '知识与智能体'],
+                                datasets: [{
+                                    data: [1, 1, 1, 1],
+                                    backgroundColor: [
+                                        'rgba(118, 185, 0, 0.9)',
+                                        'rgba(118, 185, 0, 0.65)',
+                                        'rgba(118, 185, 0, 0.45)',
+                                        'rgba(118, 185, 0, 0.3)'
+                                    ],
+                                    borderColor: 'rgba(17, 17, 17, 1)',
+                                    borderWidth: 2,
+                                }],
+                            },
+                            options: {
+                                plugins: {
+                                    legend: {
+                                        labels: {
+                                            color: '#d1d5db',
+                                            font: {
+                                                family: 'Inter',
+                                                size: 12,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        });
+                        chartObserver.unobserve(chartCanvas);
+                    }
+                });
+            }, { threshold: 0.4 });
+            chartObserver.observe(chartCanvas);
+        }
+    </script>
+</body>
+</html>
