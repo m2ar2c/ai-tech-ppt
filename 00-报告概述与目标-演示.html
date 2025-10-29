@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI 技术普及战略报告 · 16:9 Scroll-Snap 演示</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1C9QX4TctnWMn13TZye+giMm8e2Lw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              highlight: '#76B900',
+              ink: '#0F172A',
+            },
+            fontFamily: {
+              sans: [
+                'SF Pro Display',
+                'SF Pro Text',
+                'Helvetica Neue',
+                'PingFang SC',
+                'Noto Sans SC',
+                'system-ui',
+                'sans-serif',
+              ],
+            },
+            boxShadow: {
+              depth: '0 28px 46px -28px rgba(15, 23, 42, 0.55)',
+            },
+          },
+        },
+      };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <style>
+      :root {
+        --highlight-rgb: 118, 185, 0;
+      }
+
+      body {
+        background: #ffffff;
+        color: #0f172a;
+        margin: 0;
+      }
+
+      #slides {
+        scroll-snap-type: y mandatory;
+        height: 100vh;
+      }
+
+      .slide {
+        scroll-snap-align: start;
+      }
+
+      .slide-shell {
+        width: min(90vw, 1400px);
+        aspect-ratio: 16 / 9;
+      }
+
+      .bg-tech-gradient {
+        background: linear-gradient(135deg, rgba(var(--highlight-rgb), 0.7), rgba(var(--highlight-rgb), 0.3));
+      }
+
+      .modal {
+        transition: opacity 0.25s ease;
+      }
+
+      .modal[aria-hidden='true'] {
+        opacity: 0;
+        pointer-events: none;
+      }
+
+      .modal[aria-hidden='false'] {
+        opacity: 1;
+      }
+
+      .reveal-base {
+        opacity: 0;
+        transform: translateY(24px);
+        transition: opacity 0.8s ease, transform 0.8s ease;
+      }
+
+      .reveal-active {
+        opacity: 1 !important;
+        transform: translateY(0) !important;
+      }
+
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+
+      ::-webkit-scrollbar-track {
+        background: #f4f4f5;
+      }
+
+      ::-webkit-scrollbar-thumb {
+        background: rgba(var(--highlight-rgb), 0.7);
+        border-radius: 9999px;
+      }
+
+      @media (max-width: 768px) {
+        .slide-shell {
+          width: min(94vw, 1200px);
+          border-radius: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body class="font-sans antialiased">
+    <main id="slides" class="overflow-y-scroll scroll-smooth">
+      <!-- Slide 01 -->
+      <section class="slide h-screen w-full flex items-center justify-center px-4 md:px-10">
+        <div
+          class="slide-shell relative flex flex-col justify-between overflow-hidden rounded-[32px] border border-white/40 bg-white/95 shadow-depth backdrop-blur"
+        >
+          <div class="absolute top-0 left-0 h-40 w-full bg-tech-gradient opacity-70"></div>
+          <div class="relative flex h-full flex-col gap-6 p-8 md:p-12">
+            <div class="flex items-start justify-between">
+              <div class="reveal-base" data-animate-delay="0">
+                <p class="uppercase tracking-[0.6em] text-sm text-white/80">
+                  <span class="inline-flex items-center gap-2"><i class="fa-solid fa-satellite-dish"></i> Insight Deck</span>
+                </p>
+                <h1 class="mt-4 text-4xl md:text-5xl xl:text-6xl font-bold text-white drop-shadow-sm">
+                  AI 技术普及战略报告
+                </h1>
+                <p class="mt-4 text-base md:text-lg text-white/90">
+                  面向政府与企业管理层的 AI 认知蓝图 · AI Literacy for Strategic Leaders
+                </p>
+              </div>
+              <button
+                class="reveal-base hidden md:flex items-center gap-2 rounded-full border border-white/50 bg-white/10 px-5 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/20"
+                data-modal-target="modal-mission"
+              >
+                <i class="fa-regular fa-circle-play text-base"></i>
+                查看战略使命
+              </button>
+            </div>
+            <div class="grid flex-1 grid-cols-1 gap-4 md:grid-cols-3">
+              <div
+                class="reveal-base flex flex-col justify-between rounded-xl border border-highlight/20 bg-[#fafafa] p-6 shadow-lg"
+                data-animate-delay="50"
+              >
+                <div class="flex items-center gap-3">
+                  <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-tech-gradient text-2xl text-white">
+                    <i class="fa-solid fa-lightbulb"></i>
+                  </span>
+                  <h3 class="text-2xl font-bold text-highlight">扫清认知盲区</h3>
+                </div>
+                <p class="mt-4 text-sm text-slate-600">
+                  对 AI 技术的底层逻辑进行条理化梳理，帮助决策者建立统一的认知坐标系。
+                </p>
+                <span class="mt-4 text-xs uppercase tracking-[0.3em] text-slate-400">Clear Blind Spots</span>
+              </div>
+              <div
+                class="reveal-base flex flex-col justify-between rounded-xl border border-highlight/20 bg-[#fafafa] p-6 shadow-lg"
+                data-animate-delay="100"
+              >
+                <div class="flex items-center gap-3">
+                  <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-tech-gradient text-2xl text-white">
+                    <i class="fa-solid fa-diagram-project"></i>
+                  </span>
+                  <h3 class="text-2xl font-bold text-highlight">串联九大主题</h3>
+                </div>
+                <p class="mt-4 text-sm text-slate-600">
+                  将算力、算法、部署、知识体系和智能体等关键板块纳入一体化的学习路径。
+                </p>
+                <span class="mt-4 text-xs uppercase tracking-[0.3em] text-slate-400">Nine Pillars</span>
+              </div>
+              <div
+                class="reveal-base flex flex-col justify-between rounded-xl border border-highlight/20 bg-[#fafafa] p-6 shadow-lg"
+                data-animate-delay="150"
+              >
+                <div class="flex items-center gap-3">
+                  <span class="flex h-12 w-12 items-center justify-center rounded-2xl bg-tech-gradient text-2xl text-white">
+                    <i class="fa-solid fa-compass-drafting"></i>
+                  </span>
+                  <h3 class="text-2xl font-bold text-highlight">指导项目落地</h3>
+                </div>
+                <p class="mt-4 text-sm text-slate-600">
+                  将战略认知与技术实现紧密联动，支撑政策设计、投资决策与项目实施。
+                </p>
+                <span class="mt-4 text-xs uppercase tracking-[0.3em] text-slate-400">Execution First</span>
+              </div>
+            </div>
+            <div class="flex flex-wrap items-center justify-between gap-4">
+              <div class="reveal-base flex flex-wrap items-center gap-3 text-sm text-white/80" data-animate-delay="200">
+                <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur">
+                  <i class="fa-solid fa-user-tie"></i>
+                  管理层策略校准
+                </span>
+                <span class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur">
+                  <i class="fa-solid fa-code"></i>
+                  技术团队深度演练
+                </span>
+              </div>
+              <button
+                class="reveal-base flex items-center gap-2 rounded-full border border-white/50 bg-white/10 px-5 py-2 text-sm font-medium text-white backdrop-blur transition hover:bg-white/20 md:hidden"
+                data-modal-target="modal-mission"
+                data-animate-delay="220"
+              >
+                <i class="fa-regular fa-circle-play text-base"></i>
+                查看战略使命
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 02 -->
+      <section class="slide h-screen w-full flex items-center justify-center px-4 md:px-10">
+        <div
+          class="slide-shell relative flex flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white/95 shadow-depth"
+        >
+          <div class="absolute inset-0 opacity-[0.12] bg-tech-gradient"></div>
+          <div class="relative flex h-full flex-col gap-6 p-8 md:p-12">
+            <header class="flex flex-col gap-3">
+              <span class="reveal-base text-sm font-semibold uppercase tracking-[0.5em] text-highlight" data-animate-delay="0">
+                <i class="fa-solid fa-wave-square mr-2"></i>Context
+              </span>
+              <h2 class="reveal-base text-3xl md:text-4xl font-bold text-ink" data-animate-delay="50">
+                认知挑战与普及窗口
+              </h2>
+              <p class="reveal-base text-base md:text-lg text-slate-600" data-animate-delay="100">
+                人工智能迭代速度远超组织学习节奏，AI 知识普及已是政府机构与企事业单位不可回避的基础工程。本报告以“战略清晰 + 技术透视”为原则，帮助团队在同一张认知地图上行动。
+              </p>
+            </header>
+            <div class="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+              <article
+                class="reveal-base flex h-full flex-col justify-between rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg"
+                data-animate-delay="120"
+              >
+                <div>
+                  <h3 class="text-3xl font-bold text-highlight">认知差</h3>
+                  <p class="mt-2 text-xs uppercase tracking-[0.35em] text-slate-400">Gap Radar</p>
+                </div>
+                <p class="mt-4 text-sm text-slate-600">
+                  管理层、业务端与技术团队对 AI 的理解割裂，导致战略判断与技术能力错位。
+                </p>
+              </article>
+              <article
+                class="reveal-base flex h-full flex-col justify-between rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg"
+                data-animate-delay="150"
+              >
+                <div>
+                  <h3 class="text-3xl font-bold text-highlight">决策压</h3>
+                  <p class="mt-2 text-xs uppercase tracking-[0.35em] text-slate-400">Investment Pulse</p>
+                </div>
+                <p class="mt-4 text-sm text-slate-600">
+                  政策与投资节点愈发密集，必须在短时间内厘清算力、算法与应用价值链条。
+                </p>
+              </article>
+              <article
+                class="reveal-base flex h-full flex-col justify-between rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg"
+                data-animate-delay="180"
+              >
+                <div>
+                  <h3 class="text-3xl font-bold text-highlight">落地难</h3>
+                  <p class="mt-2 text-xs uppercase tracking-[0.35em] text-slate-400">Execution Gap</p>
+                </div>
+                <p class="mt-4 text-sm text-slate-600">
+                  缺少系统视角的部署与训练指南，难以把握资源投入与产出的平衡点。
+                </p>
+              </article>
+              <article
+                class="reveal-base flex h-full flex-col justify-between rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg"
+                data-animate-delay="210"
+              >
+                <div>
+                  <h3 class="text-3xl font-bold text-highlight">人才缺</h3>
+                  <p class="mt-2 text-xs uppercase tracking-[0.35em] text-slate-400">Capability Lift</p>
+                </div>
+                <p class="mt-4 text-sm text-slate-600">
+                  专业技术语言难以在组织内部共享，跨部门协同与培训难度显著提升。
+                </p>
+              </article>
+            </div>
+            <div class="flex items-center justify-between">
+              <button
+                class="reveal-base inline-flex items-center gap-2 rounded-full border border-ink/10 bg-white px-5 py-2 text-sm font-medium text-ink transition hover:border-highlight hover:text-highlight"
+                data-modal-target="modal-landscape"
+                data-animate-delay="230"
+              >
+                <i class="fa-regular fa-eye"></i>
+                阅读背景详情
+              </button>
+              <span class="reveal-base text-xs uppercase tracking-[0.3em] text-slate-400" data-animate-delay="250">
+                Scroll · Snap · Focus
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 03 -->
+      <section class="slide h-screen w-full flex items-center justify-center px-4 md:px-10">
+        <div
+          class="slide-shell relative flex flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white/95 shadow-depth"
+        >
+          <div class="relative flex h-full flex-col gap-6 p-8 md:p-12">
+            <header class="flex flex-col gap-3">
+              <span class="reveal-base text-sm font-semibold uppercase tracking-[0.5em] text-highlight" data-animate-delay="0">
+                <i class="fa-solid fa-layer-group mr-2"></i>Structure
+              </span>
+              <h2 class="reveal-base text-3xl md:text-4xl font-bold text-ink" data-animate-delay="50">
+                九大核心技术主题矩阵
+              </h2>
+              <p class="reveal-base text-base md:text-lg text-slate-600" data-animate-delay="100">
+                以英伟达绿色为核心色调，构建由算力到智能体的完整链路，帮助不同角色在统一框架下识别技术重点与协同机会。
+              </p>
+            </header>
+            <div class="grid flex-1 grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+              <article class="reveal-base flex flex-col rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg" data-animate-delay="120">
+                <h3 class="text-3xl font-bold text-highlight">算力卡</h3>
+                <p class="mt-3 text-xs uppercase tracking-[0.35em] text-slate-400">Compute Core</p>
+                <p class="mt-3 text-sm text-slate-600">解析算力卡的硬件架构、性能指标与调度策略，理解 AI 基础设施的物理极限。</p>
+              </article>
+              <article class="reveal-base flex flex-col rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg" data-animate-delay="140">
+                <h3 class="text-3xl font-bold text-highlight">英伟达</h3>
+                <p class="mt-3 text-xs uppercase tracking-[0.35em] text-slate-400">Leadership</p>
+                <p class="mt-3 text-sm text-slate-600">评估英伟达在全球算力生态中的龙头地位、软件工具链与生态策略。</p>
+              </article>
+              <article class="reveal-base flex flex-col rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg" data-animate-delay="160">
+                <h3 class="text-3xl font-bold text-highlight">机器学习</h3>
+                <p class="mt-3 text-xs uppercase tracking-[0.35em] text-slate-400">ML Fundamentals</p>
+                <p class="mt-3 text-sm text-slate-600">梳理学习范式、模型训练流程与评估方法，奠定算法理解底座。</p>
+              </article>
+              <article class="reveal-base flex flex-col rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg" data-animate-delay="180">
+                <h3 class="text-3xl font-bold text-highlight">自注意力</h3>
+                <p class="mt-3 text-xs uppercase tracking-[0.35em] text-slate-400">Attention</p>
+                <p class="mt-3 text-sm text-slate-600">拆解 Transformer 架构中的自注意力机制与多头设计，理解大模型表达力来源。</p>
+              </article>
+              <article class="reveal-base flex flex-col rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg" data-animate-delay="200">
+                <h3 class="text-3xl font-bold text-highlight">部署</h3>
+                <p class="mt-3 text-xs uppercase tracking-[0.35em] text-slate-400">Deployment</p>
+                <p class="mt-3 text-sm text-slate-600">覆盖推理引擎、服务编排与资源治理，确保模型上线的稳定性与可扩展性。</p>
+              </article>
+              <article class="reveal-base flex flex-col rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg" data-animate-delay="220">
+                <h3 class="text-3xl font-bold text-highlight">训练</h3>
+                <p class="mt-3 text-xs uppercase tracking-[0.35em] text-slate-400">Training Stack</p>
+                <p class="mt-3 text-sm text-slate-600">深入数据管线、分布式训练与优化策略，提升模型性能与效率。</p>
+              </article>
+              <article class="reveal-base flex flex-col rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg" data-animate-delay="240">
+                <h3 class="text-3xl font-bold text-highlight">知识蒸馏</h3>
+                <p class="mt-3 text-xs uppercase tracking-[0.35em] text-slate-400">Distillation</p>
+                <p class="mt-3 text-sm text-slate-600">探索模型压缩与迁移学习方法，服务于轻量化部署与边缘场景。</p>
+              </article>
+              <article class="reveal-base flex flex-col rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg" data-animate-delay="260">
+                <h3 class="text-3xl font-bold text-highlight">知识库</h3>
+                <p class="mt-3 text-xs uppercase tracking-[0.35em] text-slate-400">Knowledge Base</p>
+                <p class="mt-3 text-sm text-slate-600">建立面向行业的结构化知识资产，支撑问答系统与语义检索。</p>
+              </article>
+              <article class="reveal-base flex flex-col rounded-lg border border-highlight/20 bg-[#fafafa] p-5 shadow-lg" data-animate-delay="280">
+                <h3 class="text-3xl font-bold text-highlight">智能体</h3>
+                <p class="mt-3 text-xs uppercase tracking-[0.35em] text-slate-400">Agents</p>
+                <p class="mt-3 text-sm text-slate-600">构建任务驱动的 AI 智能体，实现业务流程的自动协同与决策辅助。</p>
+              </article>
+            </div>
+            <div class="flex items-center justify-between">
+              <button
+                class="reveal-base inline-flex items-center gap-2 rounded-full border border-highlight/30 bg-white px-5 py-2 text-sm font-medium text-highlight transition hover:border-highlight"
+                data-modal-target="modal-topics"
+                data-animate-delay="300"
+              >
+                <i class="fa-solid fa-up-right-from-square"></i>
+                查看九大主题全景
+              </button>
+              <span class="reveal-base text-xs uppercase tracking-[0.3em] text-slate-400" data-animate-delay="320">
+                NVIDIA Green Identity
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 04 -->
+      <section class="slide h-screen w-full flex items-center justify-center px-4 md:px-10">
+        <div
+          class="slide-shell relative flex flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white/95 shadow-depth"
+        >
+          <div class="absolute top-0 left-0 h-2 w-full bg-tech-gradient"></div>
+          <div class="relative flex h-full flex-col gap-8 p-8 md:p-12">
+            <header class="flex flex-col gap-3">
+              <span class="reveal-base text-sm font-semibold uppercase tracking-[0.5em] text-highlight" data-animate-delay="0">
+                <i class="fa-solid fa-people-group mr-2"></i>Impact
+              </span>
+              <h2 class="reveal-base text-3xl md:text-4xl font-bold text-ink" data-animate-delay="50">
+                管理层与技术团队的双重价值兑现
+              </h2>
+              <p class="reveal-base text-base md:text-lg text-slate-600" data-animate-delay="100">
+                报告聚焦战略框架与技术执行两端，将宏观部署与微观实践打通，确保组织上下达成 AI 发展共识。
+              </p>
+            </header>
+            <div class="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-2">
+              <div
+                class="reveal-base flex flex-col gap-4 rounded-2xl border border-highlight/25 bg-[#fafafa] p-6 shadow-lg"
+                data-animate-delay="140"
+              >
+                <div class="flex items-center justify-between">
+                  <h3 class="text-3xl font-bold text-highlight">管理层</h3>
+                  <i class="fa-solid fa-chess-king text-2xl text-highlight"></i>
+                </div>
+                <div class="grid grid-cols-1 gap-3">
+                  <div class="rounded-xl border border-white/40 bg-white/80 px-4 py-3 text-sm text-slate-600">
+                    <span class="text-lg font-semibold text-highlight">战略导航</span>
+                    <p class="mt-1 text-xs uppercase tracking-[0.25em] text-slate-400">Strategic Compass</p>
+                    <p class="mt-2">
+                      以九大主题构建投资优先级清单，明晰算力与数据的资源配置节奏。
+                    </p>
+                  </div>
+                  <div class="rounded-xl border border-white/40 bg-white/80 px-4 py-3 text-sm text-slate-600">
+                    <span class="text-lg font-semibold text-highlight">政策支撑</span>
+                    <p class="mt-1 text-xs uppercase tracking-[0.25em] text-slate-400">Policy Ready</p>
+                    <p class="mt-2">
+                      将技术要素映射为政策抓手，提升监管框架与产业规划的敏捷性。
+                    </p>
+                  </div>
+                  <div class="rounded-xl border border-white/40 bg-white/80 px-4 py-3 text-sm text-slate-600">
+                    <span class="text-lg font-semibold text-highlight">协同语言</span>
+                    <p class="mt-1 text-xs uppercase tracking-[0.25em] text-slate-400">Shared Vocabulary</p>
+                    <p class="mt-2">
+                      在跨部门沟通中形成统一的指标体系，推动从理念到执行的闭环治理。
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div
+                class="reveal-base flex flex-col gap-4 rounded-2xl border border-highlight/25 bg-[#fafafa] p-6 shadow-lg"
+                data-animate-delay="180"
+              >
+                <div class="flex items-center justify-between">
+                  <h3 class="text-3xl font-bold text-highlight">技术团队</h3>
+                  <i class="fa-solid fa-microchip text-2xl text-highlight"></i>
+                </div>
+                <div class="grid grid-cols-1 gap-3">
+                  <div class="rounded-xl border border-white/40 bg-white/80 px-4 py-3 text-sm text-slate-600">
+                    <span class="text-lg font-semibold text-highlight">体系导图</span>
+                    <p class="mt-1 text-xs uppercase tracking-[0.25em] text-slate-400">System Blueprint</p>
+                    <p class="mt-2">
+                      明确训练、部署、知识工程之间的接口定义，加速端到端方案交付。
+                    </p>
+                  </div>
+                  <div class="rounded-xl border border-white/40 bg-white/80 px-4 py-3 text-sm text-slate-600">
+                    <span class="text-lg font-semibold text-highlight">最佳实践</span>
+                    <p class="mt-1 text-xs uppercase tracking-[0.25em] text-slate-400">Best Practice</p>
+                    <p class="mt-2">
+                      汇聚算力优化、模型压缩与知识蒸馏策略，为项目迭代提供可复用模板。
+                    </p>
+                  </div>
+                  <div class="rounded-xl border border-white/40 bg-white/80 px-4 py-3 text-sm text-slate-600">
+                    <span class="text-lg font-semibold text-highlight">落地指南</span>
+                    <p class="mt-1 text-xs uppercase tracking-[0.25em] text-slate-400">Execution Manual</p>
+                    <p class="mt-2">
+                      结合部署与运维要点，帮助团队在复杂环境中保持模型质量与稳定性。
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <button
+                class="reveal-base inline-flex items-center gap-2 rounded-full border border-highlight/30 bg-white px-5 py-2 text-sm font-medium text-highlight transition hover:border-highlight"
+                data-modal-target="modal-value"
+                data-animate-delay="210"
+              >
+                <i class="fa-solid fa-file-lines"></i>
+                阅读价值案例
+              </button>
+              <span class="reveal-base text-xs uppercase tracking-[0.3em] text-slate-400" data-animate-delay="230">
+                Leadership · Engineering
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Slide 05 -->
+      <section class="slide h-screen w-full flex items-center justify-center px-4 md:px-10">
+        <div
+          class="slide-shell relative flex flex-col overflow-hidden rounded-[32px] border border-slate-200 bg-white/95 shadow-depth"
+        >
+          <div class="absolute right-[-20%] top-[-30%] h-[60%] w-[60%] rounded-full bg-tech-gradient blur-3xl opacity-40"></div>
+          <div class="relative flex h-full flex-col gap-8 p-8 md:p-12">
+            <header class="flex flex-col gap-3">
+              <span class="reveal-base text-sm font-semibold uppercase tracking-[0.5em] text-highlight" data-animate-delay="0">
+                <i class="fa-solid fa-chart-pie mr-2"></i>Focus
+              </span>
+              <h2 class="reveal-base text-3xl md:text-4xl font-bold text-ink" data-animate-delay="50">
+                主题关注度雷达 — 资源投入优先级
+              </h2>
+              <p class="reveal-base text-base md:text-lg text-slate-600" data-animate-delay="100">
+                结合本报告对九大主题的深度与紧迫度分析，构建资源投入的优先级模型，帮助团队在不同阶段精准聚焦。
+              </p>
+            </header>
+            <div class="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-[1.1fr_1fr]">
+              <div class="reveal-base flex flex-col justify-between rounded-2xl border border-highlight/25 bg-[#fafafa] p-6 shadow-lg" data-animate-delay="140">
+                <div>
+                  <h3 class="text-2xl font-bold text-highlight">解读指南</h3>
+                  <p class="mt-3 text-sm text-slate-600">
+                    雷达图展示九大模块的投入权重：算力相关占据主导，部署与训练紧随其后，知识工程则为持续深化的长期工程。
+                  </p>
+                </div>
+                <ul class="mt-6 space-y-3 text-sm text-slate-600">
+                  <li class="flex items-start gap-3">
+                    <span class="mt-1 inline-flex h-2 w-8 rounded-full bg-highlight"></span>
+                    <span><strong class="text-highlight">算力 + 英伟达</strong>：支撑所有战略讨论的底座资源。</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="mt-1 inline-flex h-2 w-8 rounded-full bg-highlight/70"></span>
+                    <span><strong class="text-highlight">部署 + 训练 + 自注意力</strong>：确保模型能力与工程可交付性。</span>
+                  </li>
+                  <li class="flex items-start gap-3">
+                    <span class="mt-1 inline-flex h-2 w-8 rounded-full bg-highlight/50"></span>
+                    <span><strong class="text-highlight">知识蒸馏 + 知识库 + 智能体</strong>：拓展业务场景，沉淀长期竞争力。</span>
+                  </li>
+                </ul>
+                <button
+                  class="mt-6 inline-flex items-center gap-2 rounded-full border border-highlight/30 bg-white px-5 py-2 text-sm font-medium text-highlight transition hover:border-highlight"
+                  data-modal-target="modal-roadmap"
+                >
+                  <i class="fa-regular fa-map"></i>
+                  查看实施建议
+                </button>
+              </div>
+              <div class="reveal-base flex items-center justify-center rounded-2xl border border-highlight/25 bg-white/90 p-4 shadow-lg" data-animate-delay="180">
+                <canvas id="topicDistributionChart" class="!w-full !h-full"></canvas>
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="reveal-base text-xs uppercase tracking-[0.3em] text-slate-400" data-animate-delay="210">
+                Data-Informed Narrative
+              </span>
+              <span class="reveal-base text-xs uppercase tracking-[0.3em] text-slate-400" data-animate-delay="230">
+                Scroll to Restart ↺
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modals -->
+    <div id="modal-mission" class="modal fixed inset-0 z-50 hidden items-center justify-center" aria-hidden="true" role="dialog">
+      <div class="absolute inset-0 bg-black/60" data-modal-close></div>
+      <div class="relative mx-4 w-full max-w-3xl rounded-3xl border border-highlight/30 bg-white p-8 shadow-2xl">
+        <div class="flex items-start justify-between">
+          <h3 class="text-2xl font-bold text-highlight">报告使命与对象</h3>
+          <button class="text-slate-400 transition hover:text-highlight" data-modal-close>
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+        <p class="mt-4 text-sm leading-relaxed text-slate-600">
+          在人工智能技术快速发展的今天，AI 知识普及成为政府部门和企事业单位的共同课题。本报告以管理层与技术团队为核心读者，围绕“战略认知 + 技术实践”的双重视角展开，旨在解答普遍存在的疑惑与认知盲区。
+        </p>
+        <p class="mt-4 text-sm leading-relaxed text-slate-600">
+          我们通过结构化的内容设计，帮助决策层建立 AI 战略框架，辅助其制定政策与投资决策；同时为技术团队提供深入的原理解析，指导其规划与实施 AI 项目，确保组织整体在统一节奏中演进。
+        </p>
+      </div>
+    </div>
+
+    <div id="modal-landscape" class="modal fixed inset-0 z-50 hidden items-center justify-center" aria-hidden="true" role="dialog">
+      <div class="absolute inset-0 bg-black/60" data-modal-close></div>
+      <div class="relative mx-4 w-full max-w-3xl rounded-3xl border border-highlight/30 bg-white p-8 shadow-2xl">
+        <div class="flex items-start justify-between">
+          <h3 class="text-2xl font-bold text-highlight">普及背景深描</h3>
+          <button class="text-slate-400 transition hover:text-highlight" data-modal-close>
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+        <ul class="mt-4 space-y-4 text-sm leading-relaxed text-slate-600">
+          <li>
+            <strong class="text-highlight">需求驱动：</strong>产业数字化升级使 AI 能力成为新型基础设施，管理层亟需系统化认知模型以支撑战略部署。
+          </li>
+          <li>
+            <strong class="text-highlight">技术加速：</strong>从算力硬件到大模型训练的迭代速度倍增，传统培训路径难以满足迅速掌握的要求。
+          </li>
+          <li>
+            <strong class="text-highlight">生态联动：</strong>跨部门协同需要共享语言与标准化流程，本报告提供可复用的框架化视角，降低沟通成本。
+          </li>
+          <li>
+            <strong class="text-highlight">价值兑现：</strong>通过案例与方法论的组合，帮助机构抢占 AI 布局先机，匹配政策、资本与人才的综合投入节奏。
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <div id="modal-topics" class="modal fixed inset-0 z-50 hidden items-center justify-center" aria-hidden="true" role="dialog">
+      <div class="absolute inset-0 bg-black/60" data-modal-close></div>
+      <div class="relative mx-4 w-full max-w-4xl rounded-3xl border border-highlight/30 bg-white p-8 shadow-2xl">
+        <div class="flex items-start justify-between">
+          <h3 class="text-2xl font-bold text-highlight">九大主题详细说明</h3>
+          <button class="text-slate-400 transition hover:text-highlight" data-modal-close>
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+        <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div class="rounded-xl border border-highlight/20 bg-[#fafafa] p-4 text-sm text-slate-600">
+            <h4 class="text-lg font-semibold text-highlight">算力卡底层逻辑</h4>
+            <p class="mt-2">全面解释 GPU/TPU 等算力卡的组成、通信方式与并行策略，理解算力红线。</p>
+          </div>
+          <div class="rounded-xl border border-highlight/20 bg-[#fafafa] p-4 text-sm text-slate-600">
+            <h4 class="text-lg font-semibold text-highlight">英伟达龙头地位</h4>
+            <p class="mt-2">剖析 CUDA 生态、软件堆栈与产业联盟，掌握全球算力资源的分配格局。</p>
+          </div>
+          <div class="rounded-xl border border-highlight/20 bg-[#fafafa] p-4 text-sm text-slate-600">
+            <h4 class="text-lg font-semibold text-highlight">机器学习底层逻辑</h4>
+            <p class="mt-2">回顾算法发展路线、损失函数设计与评估指标，夯实模型认知。</p>
+          </div>
+          <div class="rounded-xl border border-highlight/20 bg-[#fafafa] p-4 text-sm text-slate-600">
+            <h4 class="text-lg font-semibold text-highlight">自注意力机制</h4>
+            <p class="mt-2">解析 Transformer 的输入表示、注意力权重与残差结构，洞察大模型的表达能力。</p>
+          </div>
+          <div class="rounded-xl border border-highlight/20 bg-[#fafafa] p-4 text-sm text-slate-600">
+            <h4 class="text-lg font-semibold text-highlight">大模型部署</h4>
+            <p class="mt-2">覆盖推理优化、服务编排、灰度策略等关键环节，实现模型价值交付。</p>
+          </div>
+          <div class="rounded-xl border border-highlight/20 bg-[#fafafa] p-4 text-sm text-slate-600">
+            <h4 class="text-lg font-semibold text-highlight">大模型训练</h4>
+            <p class="mt-2">从数据治理到并行训练，构建高效的训练流水线，提高资源利用率。</p>
+          </div>
+          <div class="rounded-xl border border-highlight/20 bg-[#fafafa] p-4 text-sm text-slate-600">
+            <h4 class="text-lg font-semibold text-highlight">知识蒸馏</h4>
+            <p class="mt-2">讲解教师-学生模型构建、蒸馏损失与适应场景，助力模型轻量化。</p>
+          </div>
+          <div class="rounded-xl border border-highlight/20 bg-[#fafafa] p-4 text-sm text-slate-600">
+            <h4 class="text-lg font-semibold text-highlight">知识库技术体系</h4>
+            <p class="mt-2">从数据采集、向量化到语义检索，搭建面向行业的知识底座。</p>
+          </div>
+          <div class="rounded-xl border border-highlight/20 bg-[#fafafa] p-4 text-sm text-slate-600 md:col-span-2">
+            <h4 class="text-lg font-semibold text-highlight">智能体开发</h4>
+            <p class="mt-2">在多 Agent 协同的理念下，构建自动化流程与决策支持系统，形成 AI 服务闭环。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-value" class="modal fixed inset-0 z-50 hidden items-center justify-center" aria-hidden="true" role="dialog">
+      <div class="absolute inset-0 bg-black/60" data-modal-close></div>
+      <div class="relative mx-4 w-full max-w-3xl rounded-3xl border border-highlight/30 bg-white p-8 shadow-2xl">
+        <div class="flex items-start justify-between">
+          <h3 class="text-2xl font-bold text-highlight">价值路径详解</h3>
+          <button class="text-slate-400 transition hover:text-highlight" data-modal-close>
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+        <div class="mt-4 space-y-4 text-sm leading-relaxed text-slate-600">
+          <p>
+            本报告通过“概念—结构—案例”三段式结构，帮助管理层快速获得战略视角：明确 AI 投入的关键路线、洞察行业生态与供应链动态、打造跨部门的统一话语体系。
+          </p>
+          <p>
+            对技术团队而言，章节设计紧贴实际研发流程。内容涵盖算力资源调度、模型训练优化、部署运维以及知识工程建设，以便工程师将理论与实践及时闭环。
+          </p>
+          <p>
+            最终目标是让决策、研发与运营团队围绕同一套指标体系行动，从而提高 AI 项目的可行性、可控性与长期可持续竞争力。
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-roadmap" class="modal fixed inset-0 z-50 hidden items-center justify-center" aria-hidden="true" role="dialog">
+      <div class="absolute inset-0 bg-black/60" data-modal-close></div>
+      <div class="relative mx-4 w-full max-w-3xl rounded-3xl border border-highlight/30 bg-white p-8 shadow-2xl">
+        <div class="flex items-start justify-between">
+          <h3 class="text-2xl font-bold text-highlight">实施建议</h3>
+          <button class="text-slate-400 transition hover:text-highlight" data-modal-close>
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+        <ol class="mt-4 list-decimal space-y-3 pl-6 text-sm leading-relaxed text-slate-600">
+          <li>
+            <strong class="text-highlight">第 0 阶段：</strong>建立算力与预算画像，完成对算力卡与英伟达生态的技术评估与采购策略设计。
+          </li>
+          <li>
+            <strong class="text-highlight">第 1 阶段：</strong>以机器学习与自注意力机制章节为学习重点，组建核心研发小组并复用最佳实践模板。
+          </li>
+          <li>
+            <strong class="text-highlight">第 2 阶段：</strong>按照部署、训练章节建议构建 MLOps 流水线，实现模型持续交付与质量监控。
+          </li>
+          <li>
+            <strong class="text-highlight">第 3 阶段：</strong>通过知识蒸馏与知识库建设沉淀组织资产，为智能体场景搭建提供支撑。
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <script>
+      const animated = document.querySelectorAll('.reveal-base');
+      animated.forEach((el) => {
+        const delay = el.dataset.animateDelay || 0;
+        el.style.transitionDelay = `${delay}ms`;
+      });
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('reveal-active');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        {
+          threshold: 0.25,
+        }
+      );
+
+      animated.forEach((el) => observer.observe(el));
+
+      const body = document.body;
+
+      function openModal(modal) {
+        if (!modal) return;
+        modal.classList.remove('hidden');
+        modal.setAttribute('aria-hidden', 'false');
+        body.classList.add('overflow-hidden');
+      }
+
+      function closeModal(modal) {
+        if (!modal) return;
+        modal.setAttribute('aria-hidden', 'true');
+        body.classList.remove('overflow-hidden');
+        setTimeout(() => {
+          modal.classList.add('hidden');
+        }, 200);
+      }
+
+      document.querySelectorAll('[data-modal-target]').forEach((trigger) => {
+        const targetId = trigger.getAttribute('data-modal-target');
+        const modal = document.getElementById(targetId);
+        if (!modal) return;
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+        trigger.addEventListener('click', () => openModal(modal));
+      });
+
+      document.querySelectorAll('[data-modal-close]').forEach((closer) => {
+        closer.addEventListener('click', () => {
+          const modal = closer.closest('.modal');
+          closeModal(modal);
+        });
+      });
+
+      document.querySelectorAll('.modal').forEach((modal) => {
+        modal.addEventListener('click', (event) => {
+          if (event.target.hasAttribute('data-modal-close')) {
+            closeModal(modal);
+          }
+        });
+      });
+
+      const chartColors = {
+        background: 'rgba(118, 185, 0, 0.25)',
+        border: 'rgba(118, 185, 0, 0.75)',
+        point: '#76B900',
+      };
+
+      document.addEventListener('DOMContentLoaded', () => {
+        const ctx = document.getElementById('topicDistributionChart');
+        if (!ctx) return;
+        const labels = [
+          '算力卡',
+          '英伟达',
+          '机器学习',
+          '自注意力',
+          '部署',
+          '训练',
+          '知识蒸馏',
+          '知识库',
+          '智能体',
+        ];
+        const data = [95, 90, 88, 85, 80, 82, 70, 68, 72];
+        new Chart(ctx, {
+          type: 'radar',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: '重点权重指数',
+                data,
+                fill: true,
+                backgroundColor: chartColors.background,
+                borderColor: chartColors.border,
+                pointBackgroundColor: chartColors.point,
+                pointBorderColor: '#ffffff',
+                pointHoverBackgroundColor: '#ffffff',
+                pointHoverBorderColor: chartColors.point,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              r: {
+                beginAtZero: true,
+                suggestedMax: 100,
+                grid: {
+                  color: 'rgba(118, 185, 0, 0.15)',
+                },
+                angleLines: {
+                  color: 'rgba(118, 185, 0, 0.25)',
+                },
+                pointLabels: {
+                  color: '#1f2937',
+                  font: {
+                    size: 12,
+                    family: 'Noto Sans SC, system-ui, sans-serif',
+                  },
+                },
+                ticks: {
+                  display: false,
+                },
+              },
+            },
+            plugins: {
+              legend: {
+                display: false,
+              },
+              tooltip: {
+                backgroundColor: 'rgba(17, 24, 39, 0.9)',
+                titleFont: {
+                  family: 'Noto Sans SC, system-ui, sans-serif',
+                  size: 14,
+                },
+                bodyFont: {
+                  family: 'Noto Sans SC, system-ui, sans-serif',
+                  size: 13,
+                },
+                padding: 12,
+              },
+            },
+          },
+        });
+      });
+    </script>
+  </body>
+</html>
