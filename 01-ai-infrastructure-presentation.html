@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 技术发展背景与算力基础设施 - 演示文稿</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Scroll Snap Container */
+        .slides-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        
+        /* Individual Slide - 16:9 Aspect Ratio */
+        .slide {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        /* 16:9 Content Container */
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            overflow: hidden;
+        }
+        
+        /* Brand Color - NVIDIA Green */
+        :root {
+            --brand-color: #76B900;
+            --brand-gradient-start: rgba(118, 185, 0, 0.8);
+            --brand-gradient-end: rgba(118, 185, 0, 0.2);
+        }
+        
+        .text-brand {
+            color: var(--brand-color);
+        }
+        
+        .bg-brand {
+            background-color: var(--brand-color);
+        }
+        
+        .bg-brand-gradient {
+            background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
+        }
+        
+        .border-brand {
+            border-color: var(--brand-color);
+        }
+        
+        /* Modal/Overlay Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            max-height: 85vh;
+            width: 90%;
+            overflow-y: auto;
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+            transform: scale(1.1);
+        }
+        
+        /* Animation Classes */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Mini Card Stagger Animation */
+        .mini-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .mini-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .mini-card:nth-child(1) { transition-delay: 0.1s; }
+        .mini-card:nth-child(2) { transition-delay: 0.2s; }
+        .mini-card:nth-child(3) { transition-delay: 0.3s; }
+        .mini-card:nth-child(4) { transition-delay: 0.4s; }
+        .mini-card:nth-child(5) { transition-delay: 0.5s; }
+        .mini-card:nth-child(6) { transition-delay: 0.6s; }
+        .mini-card:nth-child(7) { transition-delay: 0.7s; }
+        .mini-card:nth-child(8) { transition-delay: 0.8s; }
+        .mini-card:nth-child(9) { transition-delay: 0.9s; }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Button Styles */
+        .detail-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(118, 185, 0, 0.3);
+        }
+        
+        .detail-button:hover {
+            background: #628a00;
+            box-shadow: 0 4px 12px rgba(118, 185, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .detail-button i {
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .modal-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            
+            .slide-content {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Slides Container -->
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <section class="slide">
+            <div class="slide-content bg-brand-gradient">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up">
+                        <i class="fas fa-microchip text-6xl text-white mb-6"></i>
+                    </div>
+                    <h1 class="text-7xl font-bold text-white mb-4 fade-in-up">AI 技术发展背景</h1>
+                    <p class="text-2xl text-white/90 mb-8 fade-in-up">与算力基础设施</p>
+                    <div class="w-24 h-1 bg-white/50 rounded-full mb-8 fade-in-up"></div>
+                    <p class="text-xl text-white/80 fade-in-up">AI Technology Development Background & Computing Infrastructure</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: AI Development Journey -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-chart-line text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">AI 技术发展历程</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Technology Evolution</p>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div class="grid grid-cols-3 gap-5 mb-6">
+                            <!-- Deep Learning -->
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-brain text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-3xl font-bold text-brand mb-2">深度学习</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Deep Learning</p>
+                                    <p class="text-sm text-gray-600 leading-relaxed">AI 核心技术，通过多层神经网络实现强大的模式识别能力</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Transformer -->
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-robot text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-3xl font-bold text-brand mb-2">2017</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Breakthrough Year</p>
+                                    <p class="text-sm text-gray-600 leading-relaxed">Transformer 架构提出，彻底改变了 AI 模型训练和推理方式</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Large Language Models -->
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-comments text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-3xl font-bold text-brand mb-2">大语言模型</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Large Language Models</p>
+                                    <p class="text-sm text-gray-600 leading-relaxed">GPT-4、Claude 等模型展现惊人的语言理解和生成能力</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100 fade-in-up">
+                            <div class="flex items-start gap-4">
+                                <div class="bg-brand/10 rounded-lg p-3 mt-1">
+                                    <i class="fas fa-lightbulb text-brand text-2xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-2xl font-bold text-gray-900 mb-3">核心转变</h4>
+                                    <p class="text-lg text-gray-700 leading-relaxed">人工智能技术实现了从<span class="font-bold text-brand">实验室研究</span>到<span class="font-bold text-brand">产业应用</span>的重要转变，在自然语言处理、计算机视觉、智能决策等领域取得突破性进展</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-5 text-center fade-in-up">
+                            <button class="detail-button" onclick="openModal('modal-ai-applications')">
+                                <i class="fas fa-info-circle"></i>
+                                <span>查看应用领域详情</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 3: Global AI Chip Market -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-globe text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">全球 AI 芯片市场</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Global AI Chip Market</p>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="grid grid-cols-2 gap-6 h-full">
+                            <!-- Left: Key Numbers -->
+                            <div class="flex flex-col justify-center gap-5">
+                                <!-- Market Size -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/30 shadow-md mini-card">
+                                    <div class="text-center">
+                                        <div class="text-6xl font-bold text-brand mb-3">2700亿</div>
+                                        <p class="text-lg text-gray-600 mb-2">美元</p>
+                                        <p class="text-xs text-gray-500">2024 Global AI Chip Market Size</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- NVIDIA Market Share -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/30 shadow-md mini-card">
+                                    <div class="text-center">
+                                        <div class="text-6xl font-bold text-brand mb-3">92-97%</div>
+                                        <p class="text-lg text-gray-600 mb-2">英伟达全球市场份额</p>
+                                        <p class="text-xs text-gray-500">NVIDIA Global Market Share</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Data Center GPU -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/30 shadow-md mini-card">
+                                    <div class="text-center">
+                                        <div class="text-6xl font-bold text-brand mb-3">98%</div>
+                                        <p class="text-lg text-gray-600 mb-2">数据中心 GPU 市场份额</p>
+                                        <p class="text-xs text-gray-500">Data Center GPU Market Share</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right: Chart -->
+                            <div class="flex flex-col justify-center">
+                                <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                                    <h4 class="text-2xl font-bold text-gray-900 mb-4 text-center">英伟达市场主导地位</h4>
+                                    <div class="chart-container" style="height: 320px;">
+                                        <canvas id="globalMarketChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 4: NVIDIA 2023 Performance -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-trophy text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">英伟达 2023 业绩表现</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">NVIDIA 2023 Performance</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-2 gap-6">
+                                <!-- Shipment Volume -->
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border-2 border-brand/30 shadow-md mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-20 h-20 bg-brand/20 rounded-2xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-boxes text-brand text-4xl"></i>
+                                        </div>
+                                        <div class="text-7xl font-bold text-brand mb-4">376万</div>
+                                        <p class="text-2xl font-bold text-gray-800 mb-2">出货量</p>
+                                        <p class="text-sm text-gray-600">Shipment Volume (Units)</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Revenue -->
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border-2 border-brand/30 shadow-md mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-20 h-20 bg-brand/20 rounded-2xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-dollar-sign text-brand text-4xl"></i>
+                                        </div>
+                                        <div class="text-7xl font-bold text-brand mb-4">362亿</div>
+                                        <p class="text-2xl font-bold text-gray-800 mb-2">美元营收</p>
+                                        <p class="text-sm text-gray-600">Revenue (USD)</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 bg-white rounded-xl p-6 border border-gray-200 shadow-sm fade-in-up">
+                                <div class="flex items-center gap-4">
+                                    <div class="bg-brand/10 rounded-lg p-3">
+                                        <i class="fas fa-chart-bar text-brand text-2xl"></i>
+                                    </div>
+                                    <p class="text-xl text-gray-700 leading-relaxed">英伟达凭借强大的 GPU 技术和完整的生态系统，在 2023 年数据中心市场实现了显著增长，巩固了其在 AI 算力领域的绝对领导地位</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 5: China Market Analysis -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-map-marked-alt text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">中国市场格局分析</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">China Market Landscape</p>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="grid grid-cols-2 gap-6">
+                            <!-- Left: 2024 Market Share -->
+                            <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                                <h4 class="text-2xl font-bold text-gray-900 mb-4 text-center">2024 年市场份额</h4>
+                                <div class="chart-container" style="height: 300px;">
+                                    <canvas id="chinaMarket2024Chart"></canvas>
+                                </div>
+                                <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                        <span class="text-gray-700">英伟达 83.2%</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                        <span class="text-gray-700">华为 14.6%</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-blue-500"></div>
+                                        <span class="text-gray-700">海光 1.4%</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                        <span class="text-gray-700">寒武纪 0.8%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right: Key Changes -->
+                            <div class="flex flex-col justify-between gap-4">
+                                <!-- 2024 Market -->
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="text-center">
+                                        <div class="text-5xl font-bold text-brand mb-2">83.2%</div>
+                                        <p class="text-lg font-bold text-gray-800 mb-1">2024 年英伟达份额</p>
+                                        <p class="text-xs text-gray-600">NVIDIA Share in 2024</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- 2025 Q3 Change -->
+                                <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-5 border-2 border-orange-300 shadow-sm mini-card">
+                                    <div class="text-center">
+                                        <div class="text-5xl font-bold text-orange-600 mb-2">&lt;5%</div>
+                                        <p class="text-lg font-bold text-gray-800 mb-1">2025 Q3 市场份额</p>
+                                        <p class="text-xs text-gray-600">Market Share in 2025 Q3</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- High-end Market -->
+                                <div class="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-5 border-2 border-red-300 shadow-sm mini-card">
+                                    <div class="text-center">
+                                        <div class="text-5xl font-bold text-red-600 mb-2">0%</div>
+                                        <p class="text-lg font-bold text-gray-800 mb-1">高端市场份额</p>
+                                        <p class="text-xs text-gray-600">High-end Market Share</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-5 text-center fade-in-up">
+                            <button class="detail-button" onclick="openModal('modal-geopolitical')">
+                                <i class="fas fa-globe-americas"></i>
+                                <span>地缘政治影响详解</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 6: Computing Infrastructure Foundation -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-8 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-server text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">算力基础设施的重要性</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Importance of Computing Infrastructure</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center justify-center">
+                        <div class="w-full max-w-5xl">
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border-2 border-brand/30 shadow-lg mb-8 fade-in-up">
+                                <div class="text-center mb-8">
+                                    <i class="fas fa-bolt text-brand text-5xl mb-4"></i>
+                                    <h3 class="text-4xl font-bold text-gray-900 mb-4">AI 技术成功的关键支撑</h3>
+                                    <p class="text-xl text-gray-700 leading-relaxed">强大的算力基础设施是 AI 模型训练和推理的核心保障</p>
+                                </div>
+                                
+                                <div class="grid grid-cols-3 gap-5">
+                                    <!-- Training -->
+                                    <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                        <div class="text-center">
+                                            <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                                <i class="fas fa-graduation-cap text-brand text-2xl"></i>
+                                            </div>
+                                            <h4 class="text-2xl font-bold text-brand mb-2">模型训练</h4>
+                                            <p class="text-sm text-gray-600">需要海量算力支持大规模参数学习</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Inference -->
+                                    <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                        <div class="text-center">
+                                            <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                                <i class="fas fa-running text-brand text-2xl"></i>
+                                            </div>
+                                            <h4 class="text-2xl font-bold text-brand mb-2">快速推理</h4>
+                                            <p class="text-sm text-gray-600">高性能 GPU 确保实时响应能力</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Ecosystem -->
+                                    <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                        <div class="text-center">
+                                            <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                                <i class="fas fa-project-diagram text-brand text-2xl"></i>
+                                            </div>
+                                            <h4 class="text-2xl font-bold text-brand mb-2">生态系统</h4>
+                                            <p class="text-sm text-gray-600">完整的软硬件协同优化体系</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm fade-in-up">
+                                <p class="text-lg text-gray-700 text-center leading-relaxed">
+                                    <span class="font-bold text-brand">英伟达</span>作为 AI 算力基础设施的核心供应商，通过持续的技术创新和生态建设，为全球 AI 技术发展提供了坚实的硬件支撑
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+    
+    <!-- Modal: AI Applications Detail -->
+    <div id="modal-ai-applications" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-ai-applications')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">AI 技术应用领域详解</h3>
+            
+            <div class="space-y-6">
+                <div class="border-l-4 border-brand pl-6">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3"><i class="fas fa-language text-brand mr-2"></i>自然语言处理 (NLP)</h4>
+                    <p class="text-gray-700 leading-relaxed mb-3">通过大语言模型实现高质量的文本理解、生成、翻译和对话。GPT-4、Claude 等模型已经在内容创作、智能客服、代码辅助等场景中广泛应用。</p>
+                    <ul class="list-disc list-inside text-gray-600 space-y-1 ml-4">
+                        <li>智能对话系统和虚拟助手</li>
+                        <li>多语言实时翻译</li>
+                        <li>自动化内容生成与摘要</li>
+                        <li>代码理解与生成</li>
+                    </ul>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3"><i class="fas fa-eye text-brand mr-2"></i>计算机视觉 (CV)</h4>
+                    <p class="text-gray-700 leading-relaxed mb-3">利用深度学习实现图像识别、目标检测、图像分割等功能，在安防监控、自动驾驶、医疗影像分析等领域发挥重要作用。</p>
+                    <ul class="list-disc list-inside text-gray-600 space-y-1 ml-4">
+                        <li>人脸识别与生物特征识别</li>
+                        <li>自动驾驶视觉感知</li>
+                        <li>医疗影像辅助诊断</li>
+                        <li>工业质量检测</li>
+                    </ul>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3"><i class="fas fa-brain text-brand mr-2"></i>智能决策系统</h4>
+                    <p class="text-gray-700 leading-relaxed mb-3">基于强化学习和大数据分析，AI 系统能够在复杂环境中进行智能决策，优化业务流程，提升运营效率。</p>
+                    <ul class="list-disc list-inside text-gray-600 space-y-1 ml-4">
+                        <li>智能推荐系统</li>
+                        <li>金融风险评估与量化交易</li>
+                        <li>供应链优化</li>
+                        <li>智能运维与预测性维护</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Geopolitical Impact -->
+    <div id="modal-geopolitical" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-geopolitical')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">地缘政治对中国 AI 芯片市场的影响</h3>
+            
+            <div class="space-y-6">
+                <div class="bg-amber-50 border-l-4 border-amber-500 p-6 rounded-r-lg">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-exclamation-triangle text-amber-500"></i>
+                        出口管制影响
+                    </h4>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        美国政府对高端 AI 芯片实施出口限制，导致英伟达高性能 GPU（如 A100、H100 等）无法直接出口到中国市场。这一政策直接影响了英伟达在中国市场的份额和产品结构。
+                    </p>
+                    <div class="bg-white rounded-lg p-4">
+                        <h5 class="font-bold text-gray-900 mb-2">关键数据变化：</h5>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start gap-2">
+                                <span class="text-brand font-bold">•</span>
+                                <span><strong>2024 年初：</strong>英伟达在中国市场占据 83.2% 的份额</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-orange-500 font-bold">•</span>
+                                <span><strong>2025 年 Q3：</strong>市场份额急剧下降至不足 5%</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-red-500 font-bold">•</span>
+                                <span><strong>高端市场：</strong>份额降至 0%，完全退出高性能 AI 芯片市场</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-6 rounded-r-lg">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-rocket text-blue-500"></i>
+                        国产替代加速
+                    </h4>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        受限制影响，中国本土 AI 芯片企业迎来发展机遇，华为、海光信息、寒武纪等厂商加速研发和市场布局。
+                    </p>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-white rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-red-500 mb-2">14.6%</div>
+                            <p class="text-sm text-gray-600">华为</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-blue-500 mb-2">1.4%</div>
+                            <p class="text-sm text-gray-600">海光信息</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 text-center">
+                            <div class="text-3xl font-bold text-yellow-500 mb-2">0.8%</div>
+                            <p class="text-sm text-gray-600">寒武纪</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-green-50 border-l-4 border-green-500 p-6 rounded-r-lg">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-industry text-green-500"></i>
+                        产业链重构
+                    </h4>
+                    <p class="text-gray-700 leading-relaxed">
+                        中国 AI 产业正在经历算力基础设施的重构过程，从依赖进口高端芯片向建立自主可控的产业链转变。这既是挑战也是机遇，将推动中国在 AI 芯片设计、制造和生态建设方面加大投入，培育本土创新能力。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal Functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // Close modal when clicking on background
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.classList.remove('modal-open');
+                }
+            });
+        });
+        
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -10% 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all animated elements
+        document.querySelectorAll('.fade-in-up, .mini-card').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // Initialize Charts
+        window.addEventListener('load', () => {
+            // Global Market Chart
+            const globalMarketCtx = document.getElementById('globalMarketChart');
+            if (globalMarketCtx) {
+                new Chart(globalMarketCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['英伟达', '其他厂商'],
+                        datasets: [{
+                            data: [95, 5],
+                            backgroundColor: [
+                                'rgba(118, 185, 0, 0.8)',
+                                'rgba(203, 213, 225, 0.8)'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    font: {
+                                        size: 14,
+                                        family: '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif'
+                                    },
+                                    padding: 15
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+            
+            // China Market 2024 Chart
+            const chinaMarket2024Ctx = document.getElementById('chinaMarket2024Chart');
+            if (chinaMarket2024Ctx) {
+                new Chart(chinaMarket2024Ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['英伟达', '华为', '海光信息', '寒武纪'],
+                        datasets: [{
+                            data: [83.2, 14.6, 1.4, 0.8],
+                            backgroundColor: [
+                                'rgba(34, 197, 94, 0.8)',
+                                'rgba(239, 68, 68, 0.8)',
+                                'rgba(59, 130, 246, 0.8)',
+                                'rgba(234, 179, 8, 0.8)'
+                            ],
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.label + ': ' + context.parsed + '%';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Scroll behavior enhancement
+        const slidesContainer = document.querySelector('.slides-container');
+        let isScrolling;
+        
+        slidesContainer.addEventListener('scroll', () => {
+            window.clearTimeout(isScrolling);
+            isScrolling = setTimeout(() => {
+                // Trigger animations when scroll stops
+                const slides = document.querySelectorAll('.slide');
+                slides.forEach(slide => {
+                    const rect = slide.getBoundingClientRect();
+                    if (rect.top >= 0 && rect.top < window.innerHeight / 2) {
+                        slide.querySelectorAll('.fade-in-up, .mini-card').forEach(el => {
+                            el.classList.add('visible');
+                        });
+                    }
+                });
+            }, 100);
+        });
+    </script>
+    
+</body>
+</html>
