@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI技术综合报告 - 演示文稿</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+SC:wght@400;500;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #F5F5F7;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        
+        /* Scroll Snap Container */
+        .slides-container {
+            scroll-snap-type: y mandatory;
+            overflow-y: scroll;
+            height: 100vh;
+            scroll-behavior: smooth;
+        }
+        
+        /* Individual Slide - 16:9 Aspect Ratio */
+        .slide {
+            scroll-snap-align: start;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        /* Brand Color - Professional Tech Blue */
+        :root {
+            --brand-color: #007AFF;
+            --brand-color-rgb: 0, 122, 255;
+        }
+        
+        .text-brand {
+            color: var(--brand-color);
+        }
+        
+        .bg-brand {
+            background-color: var(--brand-color);
+        }
+        
+        .border-brand {
+            border-color: var(--brand-color);
+        }
+        
+        /* Gradient Background */
+        .gradient-bg {
+            background: linear-gradient(135deg, 
+                rgba(var(--brand-color-rgb), 0.15) 0%, 
+                rgba(var(--brand-color-rgb), 0.05) 100%);
+        }
+        
+        /* Mini Card Styles */
+        .mini-card {
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 1.5rem;
+            border: 1px solid #E5E5E7;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .mini-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+            position: relative;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #F5F5F7;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        
+        .modal-close:hover {
+            background: #E5E5E7;
+            transform: rotate(90deg);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.8s ease;
+        }
+        
+        .fade-in-up.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Button Styles */
+        .btn-detail {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--brand-color);
+            color: white;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: auto;
+        }
+        
+        .btn-detail:hover {
+            background: rgba(var(--brand-color-rgb), 0.85);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(var(--brand-color-rgb), 0.3);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .slide-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide-content {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                margin: 1rem;
+                max-height: 90vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <section class="slide">
+            <div class="slide-content gradient-bg">
+                <div class="flex flex-col items-center justify-center h-full text-center">
+                    <div class="mb-8">
+                        <i class="fas fa-brain text-brand" style="font-size: 5rem;"></i>
+                    </div>
+                    <h1 class="text-6xl md:text-7xl font-black text-gray-900 mb-4">
+                        AI技术综合报告
+                    </h1>
+                    <p class="text-2xl text-gray-600 mb-6">
+                        Comprehensive AI Technology Report
+                    </p>
+                    <div class="w-24 h-1 bg-brand rounded-full mb-8"></div>
+                    <p class="text-xl text-gray-700 max-w-3xl leading-relaxed">
+                        为管理层和技术团队提供全面、深入的AI技术解读
+                    </p>
+                    <p class="text-sm text-gray-500 mt-4">
+                        报告概述与目标
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 2: Report Overview -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="mb-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <i class="fas fa-file-alt text-brand text-3xl"></i>
+                        <h2 class="text-5xl font-bold text-gray-900">报告概述与目标</h2>
+                    </div>
+                    <p class="text-lg text-gray-500">Report Overview & Objectives</p>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto">
+                    <div class="gradient-bg rounded-xl p-6 mb-6">
+                        <div class="flex items-start gap-4">
+                            <div class="flex-shrink-0">
+                                <div class="w-16 h-16 bg-brand rounded-2xl flex items-center justify-center">
+                                    <i class="fas fa-lightbulb text-white text-2xl"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-3">核心使命</h3>
+                                <p class="text-lg text-gray-700 leading-relaxed">
+                                    在人工智能技术快速发展的今天，<span class="font-bold text-brand">AI 知识普及</span>已成为政府部门和企事业单位面临的重要课题。本报告旨在为管理层和技术团队提供一份全面、深入的 AI 技术解读，重点解决大家对 AI 技术的疑惑和认知盲区。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Key Topics Grid -->
+                    <div class="mb-6">
+                        <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                            <i class="fas fa-puzzle-piece text-brand"></i>
+                            九大核心技术主题
+                        </h3>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                            <div class="mini-card">
+                                <div class="text-4xl font-black text-brand mb-2">01</div>
+                                <h4 class="text-base font-bold text-gray-900 mb-1">算力卡底层逻辑</h4>
+                                <p class="text-xs text-gray-600">Computing Card Fundamentals</p>
+                            </div>
+                            
+                            <div class="mini-card">
+                                <div class="text-4xl font-black text-brand mb-2">02</div>
+                                <h4 class="text-base font-bold text-gray-900 mb-1">英伟达龙头地位</h4>
+                                <p class="text-xs text-gray-600">NVIDIA Leadership</p>
+                            </div>
+                            
+                            <div class="mini-card">
+                                <div class="text-4xl font-black text-brand mb-2">03</div>
+                                <h4 class="text-base font-bold text-gray-900 mb-1">机器学习底层逻辑</h4>
+                                <p class="text-xs text-gray-600">ML Fundamentals</p>
+                            </div>
+                            
+                            <div class="mini-card">
+                                <div class="text-4xl font-black text-brand mb-2">04</div>
+                                <h4 class="text-base font-bold text-gray-900 mb-1">自注意力机制</h4>
+                                <p class="text-xs text-gray-600">Self-Attention</p>
+                            </div>
+                            
+                            <div class="mini-card">
+                                <div class="text-4xl font-black text-brand mb-2">05</div>
+                                <h4 class="text-base font-bold text-gray-900 mb-1">大模型部署</h4>
+                                <p class="text-xs text-gray-600">Model Deployment</p>
+                            </div>
+                            
+                            <div class="mini-card">
+                                <div class="text-4xl font-black text-brand mb-2">06</div>
+                                <h4 class="text-base font-bold text-gray-900 mb-1">大模型训练</h4>
+                                <p class="text-xs text-gray-600">Model Training</p>
+                            </div>
+                            
+                            <div class="mini-card">
+                                <div class="text-4xl font-black text-brand mb-2">07</div>
+                                <h4 class="text-base font-bold text-gray-900 mb-1">知识蒸馏</h4>
+                                <p class="text-xs text-gray-600">Knowledge Distillation</p>
+                            </div>
+                            
+                            <div class="mini-card">
+                                <div class="text-4xl font-black text-brand mb-2">08</div>
+                                <h4 class="text-base font-bold text-gray-900 mb-1">知识库体系</h4>
+                                <p class="text-xs text-gray-600">Knowledge Base</p>
+                            </div>
+                            
+                            <div class="mini-card">
+                                <div class="text-4xl font-black text-brand mb-2">09</div>
+                                <h4 class="text-base font-bold text-gray-900 mb-1">智能体开发</h4>
+                                <p class="text-xs text-gray-600">Agent Development</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 3: Core Value Propositions -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="mb-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <i class="fas fa-gem text-brand text-3xl"></i>
+                        <h2 class="text-5xl font-bold text-gray-900">核心价值</h2>
+                    </div>
+                    <p class="text-lg text-gray-500">Core Value Propositions</p>
+                </div>
+                
+                <div class="flex-1 flex items-center">
+                    <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Management Value -->
+                        <div class="bg-white border-2 border-gray-200 rounded-2xl p-8 hover:border-brand transition-all duration-300">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-users-cog text-white text-3xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-3xl font-black text-gray-900">管理层</h3>
+                                    <p class="text-sm text-gray-500">Management Level</p>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-check-circle text-brand text-xl mt-1"></i>
+                                    <p class="text-lg text-gray-700 leading-relaxed">
+                                        提供<span class="font-bold text-brand">AI技术战略认知框架</span>
+                                    </p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-check-circle text-brand text-xl mt-1"></i>
+                                    <p class="text-lg text-gray-700 leading-relaxed">
+                                        帮助制定相关<span class="font-bold">政策和投资决策</span>
+                                    </p>
+                                </div>
+                                <button class="btn-detail mt-4" onclick="openModal('modal-management')">
+                                    <i class="fas fa-info-circle"></i>
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Technical Team Value -->
+                        <div class="bg-white border-2 border-gray-200 rounded-2xl p-8 hover:border-brand transition-all duration-300">
+                            <div class="flex items-center gap-4 mb-6">
+                                <div class="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+                                    <i class="fas fa-code text-white text-3xl"></i>
+                                </div>
+                                <div>
+                                    <h3 class="text-3xl font-black text-gray-900">技术团队</h3>
+                                    <p class="text-sm text-gray-500">Technical Team</p>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-check-circle text-brand text-xl mt-1"></i>
+                                    <p class="text-lg text-gray-700 leading-relaxed">
+                                        提供<span class="font-bold text-brand">深入的技术原理分析</span>
+                                    </p>
+                                </div>
+                                <div class="flex items-start gap-3">
+                                    <i class="fas fa-check-circle text-brand text-xl mt-1"></i>
+                                    <p class="text-lg text-gray-700 leading-relaxed">
+                                        指导<span class="font-bold">AI项目规划和实施</span>
+                                    </p>
+                                </div>
+                                <button class="btn-detail mt-4" onclick="openModal('modal-technical')">
+                                    <i class="fas fa-info-circle"></i>
+                                    查看详情
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Report Methodology -->
+                <div class="mt-6 gradient-bg rounded-xl p-6">
+                    <div class="flex items-center gap-4">
+                        <i class="fas fa-microscope text-brand text-2xl"></i>
+                        <p class="text-lg text-gray-700">
+                            <span class="font-bold">方法论：</span>通过大量的<span class="font-bold text-brand">底层逻辑解释</span>和<span class="font-bold text-brand">实际应用案例</span>，帮助受众全面理解 AI 技术的原理、价值和应用前景
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 4: Report Structure & Journey -->
+        <section class="slide">
+            <div class="slide-content gradient-bg">
+                <div class="mb-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <i class="fas fa-route text-brand text-3xl"></i>
+                        <h2 class="text-5xl font-bold text-gray-900">技术学习路径</h2>
+                    </div>
+                    <p class="text-lg text-gray-500">AI Technology Learning Journey</p>
+                </div>
+                
+                <div class="flex-1 flex items-center justify-center">
+                    <div class="w-full max-w-5xl">
+                        <canvas id="journeyChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="mt-4 grid grid-cols-3 gap-4">
+                    <div class="bg-white rounded-lg p-4 text-center">
+                        <div class="text-4xl font-black text-brand mb-1">3</div>
+                        <div class="text-sm font-semibold text-gray-700">基础层</div>
+                        <div class="text-xs text-gray-500">Foundation</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 text-center">
+                        <div class="text-4xl font-black text-brand mb-1">3</div>
+                        <div class="text-sm font-semibold text-gray-700">技术层</div>
+                        <div class="text-xs text-gray-500">Technology</div>
+                    </div>
+                    <div class="bg-white rounded-lg p-4 text-center">
+                        <div class="text-4xl font-black text-brand mb-1">3</div>
+                        <div class="text-sm font-semibold text-gray-700">应用层</div>
+                        <div class="text-xs text-gray-500">Application</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 5: Target Audience -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="mb-6">
+                    <div class="flex items-center gap-3 mb-3">
+                        <i class="fas fa-user-friends text-brand text-3xl"></i>
+                        <h2 class="text-5xl font-bold text-gray-900">目标受众</h2>
+                    </div>
+                    <p class="text-lg text-gray-500">Target Audience</p>
+                </div>
+                
+                <div class="flex-1 overflow-y-auto">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        <div class="mini-card">
+                            <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-landmark text-red-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">政府部门</h3>
+                            <p class="text-xs text-gray-500 mb-3">Government Agencies</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                理解AI技术政策制定方向，推动数字化转型
+                            </p>
+                        </div>
+                        
+                        <div class="mini-card">
+                            <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-building text-blue-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">企业高管</h3>
+                            <p class="text-xs text-gray-500 mb-3">C-Level Executives</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                制定AI战略，把握技术投资机会
+                            </p>
+                        </div>
+                        
+                        <div class="mini-card">
+                            <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-user-tie text-green-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">项目经理</h3>
+                            <p class="text-xs text-gray-500 mb-3">Project Managers</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                规划AI项目实施路径和资源配置
+                            </p>
+                        </div>
+                        
+                        <div class="mini-card">
+                            <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-laptop-code text-purple-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">技术开发者</h3>
+                            <p class="text-xs text-gray-500 mb-3">Developers</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                深入理解AI技术原理和实现方法
+                            </p>
+                        </div>
+                        
+                        <div class="mini-card">
+                            <div class="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-graduation-cap text-orange-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">技术研究者</h3>
+                            <p class="text-xs text-gray-500 mb-3">Researchers</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                探索AI前沿技术和应用场景
+                            </p>
+                        </div>
+                        
+                        <div class="mini-card">
+                            <div class="w-14 h-14 bg-pink-100 rounded-xl flex items-center justify-center mb-4">
+                                <i class="fas fa-chalkboard-teacher text-pink-600 text-2xl"></i>
+                            </div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-2">培训讲师</h3>
+                            <p class="text-xs text-gray-500 mb-3">Trainers</p>
+                            <p class="text-sm text-gray-600 leading-relaxed">
+                                获取系统化的AI知识培训素材
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Slide 6: Call to Action -->
+        <section class="slide">
+            <div class="slide-content gradient-bg">
+                <div class="flex flex-col items-center justify-center h-full text-center">
+                    <div class="mb-6">
+                        <i class="fas fa-rocket text-brand" style="font-size: 4rem;"></i>
+                    </div>
+                    <h1 class="text-6xl font-black text-gray-900 mb-4">
+                        开启AI技术探索之旅
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8 max-w-2xl">
+                        从底层逻辑到实际应用，全方位理解人工智能技术
+                    </p>
+                    <div class="flex gap-4 mb-8">
+                        <div class="bg-white rounded-xl px-6 py-4 shadow-lg">
+                            <div class="text-4xl font-black text-brand mb-1">12</div>
+                            <div class="text-sm text-gray-600">章节内容</div>
+                        </div>
+                        <div class="bg-white rounded-xl px-6 py-4 shadow-lg">
+                            <div class="text-4xl font-black text-brand mb-1">9</div>
+                            <div class="text-sm text-gray-600">核心主题</div>
+                        </div>
+                        <div class="bg-white rounded-xl px-6 py-4 shadow-lg">
+                            <div class="text-4xl font-black text-brand mb-1">100%</div>
+                            <div class="text-sm text-gray-600">技术覆盖</div>
+                        </div>
+                    </div>
+                    <div class="text-gray-500 text-sm">
+                        向下滚动继续阅读完整报告 <i class="fas fa-arrow-down ml-2"></i>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Modals -->
+    
+    <!-- Management Detail Modal -->
+    <div id="modal-management" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-management')">
+                <i class="fas fa-times text-gray-600"></i>
+            </button>
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">管理层价值详解</h3>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-r from-blue-50 to-transparent p-6 rounded-xl border-l-4 border-brand">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-chart-line text-brand"></i>
+                        战略决策支持
+                    </h4>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-brand mt-1"></i>
+                            <span>全面了解AI技术发展趋势和竞争格局</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-brand mt-1"></i>
+                            <span>识别组织数字化转型的关键技术路径</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-brand mt-1"></i>
+                            <span>评估AI技术投资的风险与收益</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-gradient-to-r from-purple-50 to-transparent p-6 rounded-xl border-l-4 border-purple-600">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-purple-600"></i>
+                        政策制定指导
+                    </h4>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-purple-600 mt-1"></i>
+                            <span>制定符合技术发展规律的AI政策</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-purple-600 mt-1"></i>
+                            <span>建立合理的AI技术评估体系</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-purple-600 mt-1"></i>
+                            <span>推动跨部门AI协同创新</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-transparent p-6 rounded-xl border-l-4 border-green-600">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-coins text-green-600"></i>
+                        投资决策优化
+                    </h4>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-green-600 mt-1"></i>
+                            <span>识别值得投资的AI技术领域</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-green-600 mt-1"></i>
+                            <span>优化AI基础设施投资配置</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-green-600 mt-1"></i>
+                            <span>评估技术供应商的能力和价值</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Technical Team Detail Modal -->
+    <div id="modal-technical" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-technical')">
+                <i class="fas fa-times text-gray-600"></i>
+            </button>
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">技术团队价值详解</h3>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-r from-blue-50 to-transparent p-6 rounded-xl border-l-4 border-brand">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-cogs text-brand"></i>
+                        深入技术理解
+                    </h4>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-brand mt-1"></i>
+                            <span>掌握AI算力、模型训练、部署的底层原理</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-brand mt-1"></i>
+                            <span>理解大模型技术架构和关键算法</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-brand mt-1"></i>
+                            <span>学习知识库、智能体等应用技术体系</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-gradient-to-r from-purple-50 to-transparent p-6 rounded-xl border-l-4 border-purple-600">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-project-diagram text-purple-600"></i>
+                        项目规划指导
+                    </h4>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-purple-600 mt-1"></i>
+                            <span>制定合理的AI项目技术选型方案</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-purple-600 mt-1"></i>
+                            <span>规划算力资源和基础设施需求</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-purple-600 mt-1"></i>
+                            <span>设计高效的模型训练和部署流程</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-gradient-to-r from-orange-50 to-transparent p-6 rounded-xl border-l-4 border-orange-600">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-rocket text-orange-600"></i>
+                        实施最佳实践
+                    </h4>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-orange-600 mt-1"></i>
+                            <span>通过实际案例学习AI应用开发方法</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-orange-600 mt-1"></i>
+                            <span>掌握模型优化和性能调优技巧</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-chevron-right text-orange-600 mt-1"></i>
+                            <span>建立完整的AI开发运维体系</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Modal Control Functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
+            }
+        });
+        
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.3,
+            rootMargin: '0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('active');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all fade-in-up elements
+        document.querySelectorAll('.fade-in-up').forEach(el => {
+            observer.observe(el);
+        });
+        
+        // Chart.js - Journey Visualization
+        window.addEventListener('load', function() {
+            const ctx = document.getElementById('journeyChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [
+                            '算力基础',
+                            '英伟达',
+                            '机器学习',
+                            '自注意力',
+                            '模型部署',
+                            '模型训练',
+                            '知识蒸馏',
+                            '知识库',
+                            '智能体'
+                        ],
+                        datasets: [{
+                            label: '技术复杂度',
+                            data: [3, 4, 5, 7, 6, 7, 6, 5, 8],
+                            backgroundColor: 'rgba(0, 122, 255, 0.7)',
+                            borderColor: 'rgba(0, 122, 255, 1)',
+                            borderWidth: 2,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                cornerRadius: 8
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 10,
+                                ticks: {
+                                    font: {
+                                        size: 12
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 11,
+                                        weight: '600'
+                                    },
+                                    color: '#1D1D1F'
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Smooth scroll snap enhancement
+        const slidesContainer = document.querySelector('.slides-container');
+        let isScrolling = false;
+        let scrollTimeout;
+        
+        slidesContainer.addEventListener('scroll', function() {
+            clearTimeout(scrollTimeout);
+            isScrolling = true;
+            
+            scrollTimeout = setTimeout(function() {
+                isScrolling = false;
+            }, 150);
+        });
+        
+        // Add stagger animation to mini-cards
+        document.querySelectorAll('.slide').forEach(slide => {
+            const cards = slide.querySelectorAll('.mini-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
+</body>
+</html>
