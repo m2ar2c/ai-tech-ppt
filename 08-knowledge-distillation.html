@@ -1,0 +1,1204 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识蒸馏技术详解 - 演示文稿</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <!-- MathJax for LaTeX rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Scroll Snap Container */
+        .slides-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        
+        /* Individual Slide - 16:9 Aspect Ratio */
+        .slide {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        /* 16:9 Content Container */
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            overflow: hidden;
+        }
+        
+        /* Brand Color - Tech Blue */
+        :root {
+            --brand-color: #00AEEF;
+            --brand-gradient-start: rgba(0, 174, 239, 0.8);
+            --brand-gradient-end: rgba(0, 174, 239, 0.2);
+        }
+        
+        .text-brand {
+            color: var(--brand-color);
+        }
+        
+        .bg-brand {
+            background-color: var(--brand-color);
+        }
+        
+        .bg-brand-gradient {
+            background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
+        }
+        
+        .border-brand {
+            border-color: var(--brand-color);
+        }
+        
+        /* Modal/Overlay Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            max-height: 85vh;
+            width: 90%;
+            overflow-y: auto;
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+            transform: scale(1.1);
+        }
+        
+        /* Animation Classes */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Mini Card Stagger Animation */
+        .mini-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .mini-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .mini-card:nth-child(1) { transition-delay: 0.1s; }
+        .mini-card:nth-child(2) { transition-delay: 0.2s; }
+        .mini-card:nth-child(3) { transition-delay: 0.3s; }
+        .mini-card:nth-child(4) { transition-delay: 0.4s; }
+        .mini-card:nth-child(5) { transition-delay: 0.5s; }
+        .mini-card:nth-child(6) { transition-delay: 0.6s; }
+        .mini-card:nth-child(7) { transition-delay: 0.7s; }
+        .mini-card:nth-child(8) { transition-delay: 0.8s; }
+        .mini-card:nth-child(9) { transition-delay: 0.9s; }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Button Styles */
+        .detail-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 174, 239, 0.3);
+        }
+        
+        .detail-button:hover {
+            background: #008ec4;
+            box-shadow: 0 4px 12px rgba(0, 174, 239, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .detail-button i {
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .modal-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            
+            .slide-content {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+        
+        /* Process Flow Arrow */
+        .flow-arrow {
+            position: relative;
+        }
+        
+        .flow-arrow::after {
+            content: '→';
+            position: absolute;
+            right: -2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: var(--brand-color);
+            font-weight: bold;
+        }
+        
+        .flow-arrow:last-child::after {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Slides Container -->
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <section class="slide">
+            <div class="slide-content bg-brand-gradient">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up">
+                        <i class="fas fa-compress-arrows-alt text-6xl text-white mb-6"></i>
+                    </div>
+                    <h1 class="text-7xl font-bold text-white mb-4 fade-in-up">知识蒸馏技术详解</h1>
+                    <p class="text-2xl text-white/90 mb-8 fade-in-up">Knowledge Distillation Technology</p>
+                    <div class="w-24 h-1 bg-white/50 rounded-full mb-8 fade-in-up"></div>
+                    <h2 class="text-3xl font-bold text-white mb-3 fade-in-up">模型压缩与优化核心技术</h2>
+                    <p class="text-xl text-white/80 fade-in-up">Model Compression & Optimization Core Technology</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: Basic Principle -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-lightbulb text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">基本原理</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Basic Principle</p>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-100 mb-6 fade-in-up">
+                            <p class="text-2xl text-gray-800 leading-relaxed text-center">
+                                让<span class="text-brand font-bold text-3xl">小模型（学生）</span>学习<span class="text-brand font-bold text-3xl">大模型（老师）</span>的知识<br/>
+                                在保持性能的同时<span class="font-bold text-gray-900">显著减少参数量和计算复杂度</span>
+                            </p>
+                        </div>
+                        
+                        <!-- Process Flow -->
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/30 shadow-sm mini-card flow-arrow">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <span class="text-3xl font-bold text-brand">01</span>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">大模型推理</h3>
+                                    <p class="text-sm text-gray-600">老师模型生成软标签</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/30 shadow-sm mini-card flow-arrow">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <span class="text-3xl font-bold text-brand">02</span>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">联合训练</h3>
+                                    <p class="text-sm text-gray-600">软标签+硬标签训练学生</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/30 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <span class="text-3xl font-bold text-brand">03</span>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">知识迁移</h3>
+                                    <p class="text-sm text-gray-600">小模型学习知识表示</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Key Insight -->
+                        <div class="bg-yellow-50 rounded-xl p-5 border-l-4 border-yellow-400 fade-in-up">
+                            <div class="flex items-start gap-4">
+                                <i class="fas fa-star text-yellow-500 text-2xl mt-1"></i>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 mb-2 text-lg">核心创新（Hinton 2015）</h4>
+                                    <p class="text-gray-700 text-sm leading-relaxed">
+                                        软标签不仅告诉你哪个类别是正确的，还包含了不同类别之间的相似度信息，提供了更丰富的知识表示
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 3: Technical Implementation Overview -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-code text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">技术实现</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Technical Implementation</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-2 gap-6 mb-6">
+                                <!-- Loss Function Components -->
+                                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4 mb-4">
+                                        <div class="w-14 h-14 bg-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-function text-white text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-1">软标签损失</h3>
+                                            <p class="text-xs text-gray-500 mb-3">Soft Label Loss</p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-white/70 rounded-lg p-4 mb-3">
+                                        <p class="text-sm text-gray-700 font-mono">L<sub>soft</sub> = CE(p<sub>teacher</sub>, p<sub>student</sub>)</p>
+                                    </div>
+                                    <p class="text-sm text-gray-600 leading-relaxed">老师与学生模型的软输出交叉熵</p>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4 mb-4">
+                                        <div class="w-14 h-14 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-bullseye text-white text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-1">硬标签损失</h3>
+                                            <p class="text-xs text-gray-500 mb-3">Hard Label Loss</p>
+                                        </div>
+                                    </div>
+                                    <div class="bg-white/70 rounded-lg p-4 mb-3">
+                                        <p class="text-sm text-gray-700 font-mono">L<sub>hard</sub> = CE(y<sub>true</sub>, p<sub>student</sub>)</p>
+                                    </div>
+                                    <p class="text-sm text-gray-600 leading-relaxed">真实标签与学生模型输出的交叉熵</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Total Loss -->
+                            <div class="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-2xl p-6 shadow-lg mb-6 fade-in-up">
+                                <div class="text-center">
+                                    <p class="text-white/80 text-sm mb-2">总损失函数 Total Loss</p>
+                                    <p class="text-white text-3xl font-bold">L = α × L<sub>soft</sub> + (1-α) × L<sub>hard</sub></p>
+                                    <p class="text-white/90 text-sm mt-3">平衡系数 α 通常在 0.5-0.9 之间</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Temperature Parameter -->
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="bg-orange-50 rounded-xl p-5 border-l-4 border-orange-400 mini-card">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <i class="fas fa-temperature-high text-orange-500 text-3xl"></i>
+                                        <div>
+                                            <h4 class="text-xl font-bold text-gray-900">温度参数</h4>
+                                            <p class="text-xs text-gray-500">Temperature Parameter</p>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-700 leading-relaxed">较高的温度（如 T=10）使概率分布更平滑，突出类别间细微差别</p>
+                                </div>
+                                
+                                <div class="flex items-center justify-center">
+                                    <button class="detail-button" onclick="openModal('modal-formula-detail')">
+                                        <i class="fas fa-calculator"></i>
+                                        <span>查看完整数学公式</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 4: Variants - Part 1 -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-project-diagram text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">蒸馏变体与改进</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Distillation Variants & Improvements</p>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto">
+                        <div class="grid grid-cols-2 gap-5">
+                            <!-- Self-Distillation -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-sync-alt text-brand text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-1">自蒸馏</h3>
+                                        <p class="text-xs text-gray-500">Self-Distillation</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check-circle text-brand text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">不同训练阶段的快照作为老师</p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check-circle text-brand text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">集成模型的平均作为老师</p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check-circle text-brand text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">中间层输出作为监督信号</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Multi-Teacher Distillation -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-purple-200 shadow-sm mini-card">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-users text-purple-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-1">多教师蒸馏</h3>
+                                        <p class="text-xs text-gray-500">Multi-Teacher Distillation</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-star text-purple-500 text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">提高学生模型泛化能力</p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-star text-purple-500 text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">避免单一老师模型偏差</p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-star text-purple-500 text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">融合不同架构模型优势</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Feature-based Distillation -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-green-200 shadow-sm mini-card">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-layer-group text-green-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-1">特征蒸馏</h3>
+                                        <p class="text-xs text-gray-500">Feature-based Distillation</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-layer-group text-green-500 text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">蒸馏隐藏层的激活值</p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-layer-group text-green-500 text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">蒸馏注意力权重分布</p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-layer-group text-green-500 text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">蒸馏特征图统计信息</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Relation Distillation -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-orange-200 shadow-sm mini-card">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-network-wired text-orange-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-1">关系蒸馏</h3>
+                                        <p class="text-xs text-gray-500">Relation Distillation</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-2">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-link text-orange-500 text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">蒸馏样本间的相似性</p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-link text-orange-500 text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">蒸馏类别间的层次关系</p>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-link text-orange-500 text-sm mt-1"></i>
+                                        <p class="text-sm text-gray-700">保持数据结构的拓扑关系</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Latest Research -->
+                        <div class="mt-5 bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-5 border border-cyan-200 fade-in-up">
+                            <div class="flex items-start gap-3">
+                                <i class="fas fa-rocket text-brand text-2xl mt-1"></i>
+                                <div class="flex-1">
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">最新研究方向</h4>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="bg-white/60 rounded-lg p-3">
+                                            <p class="text-sm font-semibold text-gray-900 mb-1">动态蒸馏</p>
+                                            <p class="text-xs text-gray-600">根据输入难度动态调整模型复杂度（2B ↔ 7B）</p>
+                                        </div>
+                                        <div class="bg-white/60 rounded-lg p-3">
+                                            <p class="text-sm font-semibold text-gray-900 mb-1">垂直领域融合</p>
+                                            <p class="text-xs text-gray-600">融合多个垂直领域大模型知识（医疗 + 法律）</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 5: Applications in Large Models -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-rocket text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">大模型应用</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Applications in Large Models</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-3 gap-5 mb-6">
+                                <!-- Model Compression -->
+                                <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-6 border-2 border-red-200 shadow-sm mini-card">
+                                    <div class="text-center mb-4">
+                                        <div class="w-16 h-16 bg-red-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                            <i class="fas fa-compress text-white text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-1">模型压缩</h3>
+                                        <p class="text-xs text-gray-500">Model Compression</p>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <div class="bg-white/80 rounded-lg p-3 text-center">
+                                            <p class="text-4xl font-bold text-red-600 mb-1">175B→7B</p>
+                                            <p class="text-xs text-gray-600">参数规模压缩</p>
+                                        </div>
+                                        <div class="bg-white/80 rounded-lg p-3 text-center">
+                                            <p class="text-4xl font-bold text-red-600 mb-1">90%+</p>
+                                            <p class="text-xs text-gray-600">性能保持率</p>
+                                        </div>
+                                        <div class="bg-white/80 rounded-lg p-3 text-center">
+                                            <p class="text-4xl font-bold text-red-600 mb-1">95%+</p>
+                                            <p class="text-xs text-gray-600">参数减少率</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Cross-task Transfer -->
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200 shadow-sm mini-card">
+                                    <div class="text-center mb-4">
+                                        <div class="w-16 h-16 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                            <i class="fas fa-exchange-alt text-white text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-1">跨任务迁移</h3>
+                                        <p class="text-xs text-gray-500">Cross-task Transfer</p>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div class="bg-white/80 rounded-lg p-3">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <i class="fas fa-database text-brand"></i>
+                                                <p class="text-sm font-semibold text-gray-900">预训练老师</p>
+                                            </div>
+                                            <p class="text-xs text-gray-600">大规模无监督数据训练</p>
+                                        </div>
+                                        <div class="bg-white/80 rounded-lg p-3">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <i class="fas fa-user-graduate text-brand"></i>
+                                                <p class="text-sm font-semibold text-gray-900">特定任务学生</p>
+                                            </div>
+                                            <p class="text-xs text-gray-600">针对性任务模型训练</p>
+                                        </div>
+                                        <div class="bg-white/80 rounded-lg p-3">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <i class="fas fa-cog text-brand"></i>
+                                                <p class="text-sm font-semibold text-gray-900">训练范式</p>
+                                            </div>
+                                            <p class="text-xs text-gray-600">预训练 - 蒸馏 - 微调</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Multilingual Distillation -->
+                                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200 shadow-sm mini-card">
+                                    <div class="text-center mb-4">
+                                        <div class="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                                            <i class="fas fa-language text-white text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-1">多语言蒸馏</h3>
+                                        <p class="text-xs text-gray-500">Multilingual Distillation</p>
+                                    </div>
+                                    <div class="space-y-2">
+                                        <div class="bg-white/80 rounded-lg p-3">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <i class="fas fa-globe text-purple-500"></i>
+                                                <p class="text-sm font-semibold text-gray-900">多语言老师</p>
+                                            </div>
+                                            <p class="text-xs text-gray-600">支持多种语言的大模型</p>
+                                        </div>
+                                        <div class="bg-white/80 rounded-lg p-3">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <i class="fas fa-flag text-purple-500"></i>
+                                                <p class="text-sm font-semibold text-gray-900">单语言学生</p>
+                                            </div>
+                                            <p class="text-xs text-gray-600">特定语言的小型模型</p>
+                                        </div>
+                                        <div class="bg-white/80 rounded-lg p-3">
+                                            <div class="flex items-center gap-2 mb-1">
+                                                <i class="fas fa-check-double text-purple-500"></i>
+                                                <p class="text-sm font-semibold text-gray-900">能力保持</p>
+                                            </div>
+                                            <p class="text-xs text-gray-600">跨语言理解能力迁移</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Performance Chart -->
+                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                                <div class="text-center mb-3">
+                                    <h4 class="text-lg font-bold text-gray-900">核心收益对比</h4>
+                                    <p class="text-xs text-gray-500">Core Benefits Comparison</p>
+                                </div>
+                                <div class="chart-container" style="max-width: 800px; height: 180px;">
+                                    <canvas id="compressionChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 6: Advantages and Limitations -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-balance-scale text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">优势与局限</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Advantages & Limitations</p>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="grid grid-cols-2 gap-6 h-full">
+                            <!-- Advantages -->
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border-2 border-green-200 shadow-sm">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-14 h-14 bg-green-500 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-thumbs-up text-white text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900">优势</h3>
+                                        <p class="text-sm text-gray-600">Advantages</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="bg-white/70 rounded-lg p-4 mini-card">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-green-600 font-bold text-lg">01</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">显著压缩效果</h4>
+                                                <p class="text-sm text-gray-600">模型大小减少 5-10 倍，性能保持优秀</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white/70 rounded-lg p-4 mini-card">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-green-600 font-bold text-lg">02</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">推理速度提升</h4>
+                                                <p class="text-sm text-gray-600">模型变小后推理速度显著加快</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white/70 rounded-lg p-4 mini-card">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-green-600 font-bold text-lg">03</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">部署成本降低</h4>
+                                                <p class="text-sm text-gray-600">减少对硬件资源的需求</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white/70 rounded-lg p-4 mini-card">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-green-600 font-bold text-lg">04</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">架构通用性</h4>
+                                                <p class="text-sm text-gray-600">适用于 CNN、Transformer 等各种架构</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white/70 rounded-lg p-4 mini-card">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-green-600 font-bold text-lg">05</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">实现简单</h4>
+                                                <p class="text-sm text-gray-600">不需要复杂的训练技巧，易于应用</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Limitations -->
+                            <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-2xl p-6 border-2 border-red-200 shadow-sm">
+                                <div class="flex items-center gap-3 mb-6">
+                                    <div class="w-14 h-14 bg-red-500 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-exclamation-triangle text-white text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900">局限</h3>
+                                        <p class="text-sm text-gray-600">Limitations</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="bg-white/70 rounded-lg p-4 mini-card">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-red-600 font-bold text-lg">01</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">依赖老师模型</h4>
+                                                <p class="text-sm text-gray-600">需要先训练一个性能良好的大模型</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white/70 rounded-lg p-4 mini-card">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-red-600 font-bold text-lg">02</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">性能轻微损失</h4>
+                                                <p class="text-sm text-gray-600">虽然保持大部分性能，但通常有下降</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white/70 rounded-lg p-4 mini-card">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-red-600 font-bold text-lg">03</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">知识传递不完全</h4>
+                                                <p class="text-sm text-gray-600">学生模型可能无法完全学习老师知识</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white/70 rounded-lg p-4 mini-card">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <span class="text-red-600 font-bold text-lg">04</span>
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">前期计算成本高</h4>
+                                                <p class="text-sm text-gray-600">训练老师模型需要大量资源</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 7: Summary -->
+        <section class="slide">
+            <div class="slide-content bg-gradient-to-br from-gray-50 to-blue-50">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up mb-8">
+                        <i class="fas fa-lightbulb text-brand text-6xl mb-6"></i>
+                    </div>
+                    <h2 class="text-5xl font-bold text-gray-900 mb-6 fade-in-up">技术总结</h2>
+                    <p class="text-xl text-gray-600 mb-12 max-w-3xl fade-in-up">
+                        知识蒸馏是模型压缩和部署的重要技术，特别适合资源受限的边缘设备应用场景，在保持模型性能的同时显著降低计算和存储成本
+                    </p>
+                    
+                    <div class="grid grid-cols-4 gap-6 max-w-6xl mb-12">
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">5-10×</div>
+                            <p class="text-sm text-gray-600 font-semibold">模型压缩比例</p>
+                            <p class="text-xs text-gray-500 mt-1">Model Compression</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">90%+</div>
+                            <p class="text-sm text-gray-600 font-semibold">性能保持率</p>
+                            <p class="text-xs text-gray-500 mt-1">Performance Retention</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">多种</div>
+                            <p class="text-sm text-gray-600 font-semibold">蒸馏变体</p>
+                            <p class="text-xs text-gray-500 mt-1">Distillation Variants</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">广泛</div>
+                            <p class="text-sm text-gray-600 font-semibold">应用场景</p>
+                            <p class="text-xs text-gray-500 mt-1">Application Scenarios</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl p-8 shadow-lg max-w-4xl fade-in-up">
+                        <div class="flex items-center justify-center gap-8">
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-graduation-cap text-brand text-3xl"></i>
+                                <div class="text-left">
+                                    <p class="text-sm text-gray-500">提出者</p>
+                                    <p class="text-lg font-bold text-gray-900">Hinton et al.</p>
+                                </div>
+                            </div>
+                            <div class="w-px h-12 bg-gray-300"></div>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-calendar text-brand text-3xl"></i>
+                                <div class="text-left">
+                                    <p class="text-sm text-gray-500">提出时间</p>
+                                    <p class="text-lg font-bold text-gray-900">2015</p>
+                                </div>
+                            </div>
+                            <div class="w-px h-12 bg-gray-300"></div>
+                            <div class="flex items-center gap-3">
+                                <i class="fas fa-chart-line text-brand text-3xl"></i>
+                                <div class="text-left">
+                                    <p class="text-sm text-gray-500">应用状态</p>
+                                    <p class="text-lg font-bold text-gray-900">广泛应用</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 fade-in-up">
+                        <p class="text-2xl font-bold text-gray-800">知识蒸馏：让AI模型更小更快</p>
+                        <p class="text-lg text-gray-500 mt-2">Knowledge Distillation: Making AI Models Smaller and Faster</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+    
+    <!-- Modal: Formula Detail -->
+    <div id="modal-formula-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-formula-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">数学公式详解</h2>
+            <p class="text-sm text-gray-500 mb-8">Detailed Mathematical Formulas</p>
+            
+            <div class="space-y-8">
+                <!-- Soft Label Loss -->
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">软标签损失（Soft Label Loss）</h3>
+                    <div class="bg-gray-50 rounded-lg p-6 mb-4">
+                        <p class="text-center text-xl font-mono">
+                            \( L_{soft} = CE(p_{soft}^{teacher}, p_{soft}^{student}) \)
+                        </p>
+                    </div>
+                    <p class="text-gray-700 leading-relaxed">
+                        其中，\(CE\) 是交叉熵损失函数，\(p_{soft}^{teacher}\) 是老师模型的软输出（经过温度调节的 softmax），\(p_{soft}^{student}\) 是学生模型的软输出。
+                        软标签包含了老师模型对不同类别的概率分布，提供了比硬标签更丰富的信息。
+                    </p>
+                </div>
+                
+                <!-- Hard Label Loss -->
+                <div class="border-l-4 border-green-500 pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">硬标签损失（Hard Label Loss）</h3>
+                    <div class="bg-gray-50 rounded-lg p-6 mb-4">
+                        <p class="text-center text-xl font-mono">
+                            \( L_{hard} = CE(y_{true}, p_{hard}^{student}) \)
+                        </p>
+                    </div>
+                    <p class="text-gray-700 leading-relaxed">
+                        其中，\(y_{true}\) 是真实标签（one-hot 编码），\(p_{hard}^{student}\) 是学生模型的硬输出（通常经过 argmax 得到最大概率的类别）。
+                        硬标签损失确保学生模型能够正确预测真实标签。
+                    </p>
+                </div>
+                
+                <!-- Total Loss -->
+                <div class="border-l-4 border-purple-500 pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">总损失函数（Total Loss）</h3>
+                    <div class="bg-gray-50 rounded-lg p-6 mb-4">
+                        <p class="text-center text-xl font-mono">
+                            \( L = \alpha \times L_{soft} + (1-\alpha) \times L_{hard} \)
+                        </p>
+                    </div>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        总损失是软标签损失和硬标签损失的加权组合。其中，\(\alpha\) 是平衡系数，用于控制两种损失的相对重要性。
+                    </p>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <p class="text-sm text-gray-700">
+                            <strong>典型值：</strong>\(\alpha\) 通常在 0.5 到 0.9 之间。较高的 \(\alpha\) 值意味着更加重视老师模型的软标签，而较低的值则更加重视真实的硬标签。
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Temperature Parameter -->
+                <div class="border-l-4 border-orange-500 pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">温度参数（Temperature Parameter）</h3>
+                    <div class="bg-gray-50 rounded-lg p-6 mb-4">
+                        <p class="text-center text-xl font-mono">
+                            \( p_i = \frac{\exp(z_i/T)}{\sum_j \exp(z_j/T)} \)
+                        </p>
+                    </div>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        温度参数 \(T\) 控制 softmax 输出的平滑程度。其中，\(z_i\) 是模型的 logits 输出，\(p_i\) 是经过温度调节后的概率。
+                    </p>
+                    <div class="bg-yellow-50 rounded-lg p-4 mb-3">
+                        <p class="text-sm text-gray-700 mb-2">
+                            <strong>温度效果：</strong>
+                        </p>
+                        <ul class="text-sm text-gray-700 space-y-1 ml-4">
+                            <li>• <strong>T = 1</strong>：标准 softmax，用于最终推理</li>
+                            <li>• <strong>T > 1</strong>（如 T=10）：概率分布更平滑，类别间差异更明显，适合蒸馏训练</li>
+                            <li>• <strong>T < 1</strong>：概率分布更尖锐，最大概率更加突出</li>
+                        </ul>
+                    </div>
+                    <p class="text-sm text-gray-600 italic">
+                        💡 在蒸馏过程中，老师和学生模型都使用较高的温度（如 T=10）计算软标签损失，但在最终推理时恢复为标准温度（T=1）。
+                    </p>
+                </div>
+                
+                <!-- Example -->
+                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                    <h4 class="text-lg font-bold text-gray-900 mb-3">
+                        <i class="fas fa-info-circle text-brand mr-2"></i>
+                        为什么使用温度参数？
+                    </h4>
+                    <p class="text-sm text-gray-700 leading-relaxed">
+                        较高的温度使得概率分布更加平滑，即使是低概率的类别也会有相对明显的概率值。这让学生模型能够学习到老师模型对于"相似但不正确"类别的判断，
+                        例如在图像分类中，老师模型可能给"猫"类别 0.9 的概率，"狗"类别 0.08 的概率，"兔子"类别 0.02 的概率。
+                        这种类别间的相似度信息对于学生模型的学习非常有价值。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal Control Functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        });
+        
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Find all animated elements within the visible slide
+                    const animatedElements = entry.target.querySelectorAll('.fade-in-up, .mini-card');
+                    animatedElements.forEach(el => {
+                        el.classList.add('visible');
+                    });
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all slides
+        document.querySelectorAll('.slide').forEach(slide => {
+            observer.observe(slide);
+        });
+        
+        // Initialize Chart.js - Compression Chart
+        window.addEventListener('load', function() {
+            const ctx = document.getElementById('compressionChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['部署成本', '推理延迟', '存储需求', '计算资源'],
+                        datasets: [{
+                            label: '大模型',
+                            data: [100, 100, 100, 100],
+                            backgroundColor: 'rgba(239, 68, 68, 0.6)',
+                            borderColor: 'rgba(239, 68, 68, 1)',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }, {
+                            label: '蒸馏后小模型',
+                            data: [15, 20, 10, 12],
+                            backgroundColor: 'rgba(0, 174, 239, 0.6)',
+                            borderColor: 'rgba(0, 174, 239, 1)',
+                            borderWidth: 2,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    font: {
+                                        size: 12,
+                                        family: '-apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif'
+                                    },
+                                    padding: 15,
+                                    usePointStyle: true
+                                }
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleFont: {
+                                    size: 14
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                callbacks: {
+                                    label: function(context) {
+                                        return context.dataset.label + ': ' + context.parsed.y + '%';
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 120,
+                                ticks: {
+                                    callback: function(value) {
+                                        return value + '%';
+                                    },
+                                    font: {
+                                        size: 11
+                                    }
+                                },
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                }
+                            },
+                            x: {
+                                ticks: {
+                                    font: {
+                                        size: 11
+                                    }
+                                },
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Smooth scroll behavior
+        document.addEventListener('DOMContentLoaded', function() {
+            // Trigger animation for first slide immediately
+            const firstSlide = document.querySelector('.slide');
+            if (firstSlide) {
+                const firstSlideElements = firstSlide.querySelectorAll('.fade-in-up, .mini-card');
+                setTimeout(() => {
+                    firstSlideElements.forEach(el => {
+                        el.classList.add('visible');
+                    });
+                }, 100);
+            }
+        });
+    </script>
+</body>
+</html>
