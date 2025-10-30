@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI 应用案例分析 - 演示文稿</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Scroll Snap Container */
+        .slides-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        
+        /* Individual Slide - 16:9 Aspect Ratio */
+        .slide {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        /* 16:9 Content Container */
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            overflow: hidden;
+        }
+        
+        /* Brand Color - Tech Blue */
+        :root {
+            --brand-color: #00AEEF;
+            --brand-gradient-start: rgba(0, 174, 239, 0.8);
+            --brand-gradient-end: rgba(0, 174, 239, 0.2);
+        }
+        
+        .text-brand {
+            color: var(--brand-color);
+        }
+        
+        .bg-brand {
+            background-color: var(--brand-color);
+        }
+        
+        .bg-brand-gradient {
+            background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
+        }
+        
+        .border-brand {
+            border-color: var(--brand-color);
+        }
+        
+        /* Modal/Overlay Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            max-height: 85vh;
+            width: 90%;
+            overflow-y: auto;
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+            transform: scale(1.1);
+        }
+        
+        /* Animation Classes */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Mini Card Stagger Animation */
+        .mini-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .mini-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .mini-card:nth-child(1) { transition-delay: 0.1s; }
+        .mini-card:nth-child(2) { transition-delay: 0.2s; }
+        .mini-card:nth-child(3) { transition-delay: 0.3s; }
+        .mini-card:nth-child(4) { transition-delay: 0.4s; }
+        .mini-card:nth-child(5) { transition-delay: 0.5s; }
+        .mini-card:nth-child(6) { transition-delay: 0.6s; }
+        .mini-card:nth-child(7) { transition-delay: 0.7s; }
+        .mini-card:nth-child(8) { transition-delay: 0.8s; }
+        .mini-card:nth-child(9) { transition-delay: 0.9s; }
+        .mini-card:nth-child(10) { transition-delay: 1.0s; }
+        .mini-card:nth-child(11) { transition-delay: 1.1s; }
+        .mini-card:nth-child(12) { transition-delay: 1.2s; }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Button Styles */
+        .detail-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 174, 239, 0.3);
+        }
+        
+        .detail-button:hover {
+            background: #008ec4;
+            box-shadow: 0 4px 12px rgba(0, 174, 239, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .detail-button i {
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .modal-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            
+            .slide-content {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Slides Container -->
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <section class="slide">
+            <div class="slide-content bg-brand-gradient">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up">
+                        <i class="fas fa-lightbulb text-6xl text-white mb-6"></i>
+                    </div>
+                    <h1 class="text-7xl font-bold text-white mb-4 fade-in-up">AI 应用案例分析</h1>
+                    <p class="text-2xl text-white/90 mb-8 fade-in-up">AI Application Case Studies</p>
+                    <div class="w-24 h-1 bg-white/50 rounded-full mb-8 fade-in-up"></div>
+                    <h2 class="text-3xl font-bold text-white mb-3 fade-in-up">政府数字化转型实践</h2>
+                    <p class="text-xl text-white/80 fade-in-up">Government Digital Transformation Practices</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: Smart Government Services Platform -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-building text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">智慧政务服务平台</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Smart Government Services Platform</p>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto">
+                        <div class="grid grid-cols-3 gap-4 pb-4">
+                            <!-- AI Customer Service - 24/7 -->
+                            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="text-6xl font-bold text-brand mb-2">24/7</div>
+                                    <p class="text-xs text-gray-500 mb-3">Round-the-clock</p>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">在线咨询</h3>
+                                    <p class="text-sm text-gray-600">智能客服全天候回答市民咨询</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Intent Understanding -->
+                            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-brain text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">意图理解</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Intent Analysis</p>
+                                    <p class="text-sm text-gray-600">智能理解问题意图，精准解答</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Workload Reduction -->
+                            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-chart-line text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">减负增效</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Workload Relief</p>
+                                    <p class="text-sm text-gray-600">处理常见问题，减轻人工压力</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Multi-language -->
+                            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-language text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">多语支持</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Multilingual</p>
+                                    <p class="text-sm text-gray-600">满足不同人群的语言需求</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Auto Recognition -->
+                            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-file-alt text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">材料识别</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Document Recognition</p>
+                                    <p class="text-sm text-gray-600">自动识别分类申请材料</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Smart Review -->
+                            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-check-double text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">智能审核</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Smart Review</p>
+                                    <p class="text-sm text-gray-600">智能审核申请条件</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Result Prediction -->
+                            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-crystal-ball text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">结果预测</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Outcome Prediction</p>
+                                    <p class="text-sm text-gray-600">预测审批结果，优化流程</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Real-time Translation -->
+                            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-globe text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">实时翻译</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Real-time Translation</p>
+                                    <p class="text-sm text-gray-600">涉外政务的语言转换服务</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Professional Terms -->
+                            <div class="bg-white rounded-lg p-5 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-book text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-lg font-bold text-gray-900 mb-2">术语准确</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Terminology Accuracy</p>
+                                    <p class="text-sm text-gray-600">准确翻译专业术语</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center fade-in-up">
+                        <button class="detail-button" onclick="openModal('modal-gov-services-detail')">
+                            <i class="fas fa-info-circle"></i>
+                            <span>查看政务服务系统详情</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 3: Smart City Management -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-city text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">智慧城市管理系统</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Smart City Management System</p>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto">
+                        <div class="grid grid-cols-4 gap-4 pb-4">
+                            <!-- Traffic Flow Monitoring -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-traffic-light text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">流量监测</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Traffic Flow</p>
+                                    <p class="text-xs text-gray-600">实时监测预测</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Signal Control -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-stopwatch text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">信号优化</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Signal Control</p>
+                                    <p class="text-xs text-gray-600">智能控制通行</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Accident Detection -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-car-crash text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">事故检测</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Accident Alert</p>
+                                    <p class="text-xs text-gray-600">自动检测报警</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Parking Management -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-brand/10 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-parking text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">停车管理</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Parking</p>
+                                    <p class="text-xs text-gray-600">停车位智能化</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Behavior Recognition -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-video text-green-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">行为识别</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Behavior</p>
+                                    <p class="text-xs text-gray-600">异常行为识别</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Crowd Monitoring -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-users text-green-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">人群监测</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Crowd</p>
+                                    <p class="text-xs text-gray-600">聚集监测预警</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Smart Patrol -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-route text-green-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">智能巡更</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Patrol</p>
+                                    <p class="text-xs text-gray-600">巡更系统</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Crime Prevention -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-shield-alt text-green-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">犯罪预防</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Prevention</p>
+                                    <p class="text-xs text-gray-600">预测和预防</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Air Quality -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-wind text-purple-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">空气质量</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Air Quality</p>
+                                    <p class="text-xs text-gray-600">监测和预警</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Noise Monitoring -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-volume-up text-purple-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">噪声监测</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Noise</p>
+                                    <p class="text-xs text-gray-600">噪声污染</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Water Quality -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-tint text-purple-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">水质监测</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Water</p>
+                                    <p class="text-xs text-gray-600">水资源质量</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Waste Sorting -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-2">
+                                        <i class="fas fa-recycle text-purple-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-base font-bold text-gray-900 mb-1">垃圾分类</h3>
+                                    <p class="text-xs text-gray-500 mb-1">Waste</p>
+                                    <p class="text-xs text-gray-600">智能分类系统</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-2 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-3 border border-blue-100 text-center">
+                        <p class="text-sm text-gray-700">
+                            <span class="font-bold text-brand">智慧交通</span> · 
+                            <span class="font-bold text-green-600">公共安全</span> · 
+                            <span class="font-bold text-purple-600">环境治理</span> 全方位覆盖
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 4: Digital Government Decision Support -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-chart-pie text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">数字政府决策支持</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Digital Government Decision Support</p>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="grid grid-cols-3 gap-6 h-full">
+                            <!-- Data Analysis & Prediction -->
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200 shadow-sm mini-card">
+                                <div class="flex flex-col h-full">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-14 h-14 bg-brand rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-database text-white text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-900">数据分析</h3>
+                                            <p class="text-xs text-gray-600">Data Analysis</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 space-y-3">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-chart-line text-brand text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">经济运行数据智能分析</p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-chart-line text-brand text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">社会发展趋势预测</p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-chart-line text-brand text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">政策效果评估</p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-chart-line text-brand text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">风险预警应对策略</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Smart Policy Making -->
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200 shadow-sm mini-card">
+                                <div class="flex flex-col h-full">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-14 h-14 bg-green-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-file-contract text-white text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-900">政策制定</h3>
+                                            <p class="text-xs text-gray-600">Policy Making</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 space-y-3">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-file-alt text-green-600 text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">政策文本智能分析</p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-file-alt text-green-600 text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">政策影响模拟评估</p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-file-alt text-green-600 text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">多部门政策协调优化</p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-file-alt text-green-600 text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">公众意见智能分析</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Emergency Management -->
+                            <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-6 border-2 border-red-200 shadow-sm mini-card">
+                                <div class="flex flex-col h-full">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-14 h-14 bg-red-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-exclamation-triangle text-white text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-900">应急管理</h3>
+                                            <p class="text-xs text-gray-600">Emergency</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 space-y-3">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-bell text-red-600 text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">突发事件智能识别分级</p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-bell text-red-600 text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">应急资源智能调配</p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-bell text-red-600 text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">应急预案自动生成</p>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-bell text-red-600 text-sm mt-1"></i>
+                                            <p class="text-sm text-gray-700">灾后损失评估恢复</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center fade-in-up">
+                        <button class="detail-button" onclick="openModal('modal-decision-support-detail')">
+                            <i class="fas fa-info-circle"></i>
+                            <span>深入了解决策支持系统</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 5: Livelihood Services -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-heart text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">民生服务智能化</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Intelligent Livelihood Services</p>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="grid grid-cols-3 gap-6 mb-6">
+                            <!-- Smart Healthcare -->
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200 shadow-sm mini-card">
+                                <div class="flex flex-col h-full">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-14 h-14 bg-blue-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-hospital text-white text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-900">智慧医疗</h3>
+                                            <p class="text-xs text-gray-600">Healthcare</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 space-y-2">
+                                        <div class="bg-white rounded-lg p-2 border border-blue-100">
+                                            <p class="text-sm text-gray-700 font-semibold">智能导诊系统</p>
+                                            <p class="text-xs text-gray-600">快速找到合适科室</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-2 border border-blue-100">
+                                            <p class="text-sm text-gray-700 font-semibold">医学影像诊断</p>
+                                            <p class="text-xs text-gray-600">AI辅助诊断</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-2 border border-blue-100">
+                                            <p class="text-sm text-gray-700 font-semibold">远程医疗平台</p>
+                                            <p class="text-xs text-gray-600">突破地域限制</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-2 border border-blue-100">
+                                            <p class="text-sm text-gray-700 font-semibold">健康管理方案</p>
+                                            <p class="text-xs text-gray-600">个性化健康指导</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Smart Education -->
+                            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200 shadow-sm mini-card">
+                                <div class="flex flex-col h-full">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-graduation-cap text-white text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-900">智慧教育</h3>
+                                            <p class="text-xs text-gray-600">Education</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 space-y-2">
+                                        <div class="bg-white rounded-lg p-2 border border-purple-100">
+                                            <p class="text-sm text-gray-700 font-semibold">学习路径推荐</p>
+                                            <p class="text-xs text-gray-600">个性化学习方案</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-2 border border-purple-100">
+                                            <p class="text-sm text-gray-700 font-semibold">智能批改系统</p>
+                                            <p class="text-xs text-gray-600">自动批改作业</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-2 border border-purple-100">
+                                            <p class="text-sm text-gray-700 font-semibold">在线答疑辅导</p>
+                                            <p class="text-xs text-gray-600">实时解答问题</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-2 border border-purple-100">
+                                            <p class="text-sm text-gray-700 font-semibold">资源智能匹配</p>
+                                            <p class="text-xs text-gray-600">教育资源优化</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Social Security -->
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200 shadow-sm mini-card">
+                                <div class="flex flex-col h-full">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-14 h-14 bg-green-600 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-shield-alt text-white text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-2xl font-bold text-gray-900">社会保障</h3>
+                                            <p class="text-xs text-gray-600">Social Security</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1 space-y-2">
+                                        <div class="bg-white rounded-lg p-2 border border-green-100">
+                                            <p class="text-sm text-gray-700 font-semibold">资格认证系统</p>
+                                            <p class="text-xs text-gray-600">智能资格审核</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-2 border border-green-100">
+                                            <p class="text-sm text-gray-700 font-semibold">政策智能解读</p>
+                                            <p class="text-xs text-gray-600">社保政策解释</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-2 border border-green-100">
+                                            <p class="text-sm text-gray-700 font-semibold">困难群体识别</p>
+                                            <p class="text-xs text-gray-600">精准识别帮扶</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-2 border border-green-100">
+                                            <p class="text-sm text-gray-700 font-semibold">基金风险预警</p>
+                                            <p class="text-xs text-gray-600">社保基金监控</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 border border-gray-200 text-center">
+                            <p class="text-lg text-gray-800">
+                                <span class="font-bold text-brand">AI技术</span>显著提升了<span class="font-bold text-gray-900">民生服务质量和效率</span>，让群众享受更便捷的智能化服务
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 6: Case Summary & Insights -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-lightbulb text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">案例总结与启示</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Case Summary & Insights</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-2 gap-6 mb-6">
+                                <!-- Feature 1: Efficiency -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="text-6xl font-bold text-brand">01</div>
+                                        <div class="flex-1">
+                                            <h3 class="text-3xl font-bold text-gray-900 mb-3">提高效率</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Efficiency Enhancement</p>
+                                            <p class="text-sm text-gray-600 leading-relaxed">AI 技术显著缩短了办事流程，提高了政府服务效率</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Feature 2: Convenience -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="text-6xl font-bold text-brand">02</div>
+                                        <div class="flex-1">
+                                            <h3 class="text-3xl font-bold text-gray-900 mb-3">便民利民</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Citizen-Friendly</p>
+                                            <p class="text-sm text-gray-600 leading-relaxed">通过智能化手段，让群众办事更方便、更快捷</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Feature 3: Precision -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="text-6xl font-bold text-brand">03</div>
+                                        <div class="flex-1">
+                                            <h3 class="text-3xl font-bold text-gray-900 mb-3">精准服务</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Precision Service</p>
+                                            <p class="text-sm text-gray-600 leading-relaxed">基于大数据和 AI 分析，提供个性化、精准化服务</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Feature 4: Scientific Decision -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="text-6xl font-bold text-brand">04</div>
+                                        <div class="flex-1">
+                                            <h3 class="text-3xl font-bold text-gray-900 mb-3">科学决策</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Scientific Decision</p>
+                                            <p class="text-sm text-gray-600 leading-relaxed">AI 技术为政府决策提供了数据支撑和智能分析</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Feature 5: Innovation -->
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-brand shadow-sm mini-card col-span-2">
+                                    <div class="flex items-center gap-6">
+                                        <div class="text-7xl font-bold text-brand">05</div>
+                                        <div class="flex-1">
+                                            <h3 class="text-4xl font-bold text-gray-900 mb-3">创新应用</h3>
+                                            <p class="text-xs text-gray-500 mb-3">Innovation Application</p>
+                                            <p class="text-base text-gray-700 leading-relaxed">在传统政务服务基础上，创造了许多新的服务模式，推动政府数字化转型</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-brand/10 to-brand/5 rounded-xl p-5 border-2 border-brand">
+                                <p class="text-xl text-center text-gray-800 font-semibold">
+                                    这些成功案例表明，<span class="text-brand font-bold">AI 技术在政府数字化转型中</span>具有广阔应用前景，<br/>
+                                    能够<span class="text-brand font-bold">有效提升治理能力现代化水平</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 7: Application Domains Overview -->
+        <section class="slide">
+            <div class="slide-content bg-gradient-to-br from-gray-50 to-blue-50">
+                <div class="h-full flex flex-col items-center justify-center">
+                    <div class="fade-in-up mb-8">
+                        <i class="fas fa-rocket text-brand text-6xl mb-6"></i>
+                    </div>
+                    <h2 class="text-5xl font-bold text-gray-900 mb-6 fade-in-up">AI 应用全景图</h2>
+                    <p class="text-xl text-gray-600 mb-12 max-w-3xl text-center fade-in-up">
+                        从政务服务到城市管理，从决策支持到民生服务，AI 技术正在全方位推动政府数字化转型
+                    </p>
+                    
+                    <div class="grid grid-cols-5 gap-6 max-w-6xl">
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card text-center">
+                            <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-building text-brand text-3xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">政务服务</h3>
+                            <p class="text-xs text-gray-500">Government</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card text-center">
+                            <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-city text-brand text-3xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">城市管理</h3>
+                            <p class="text-xs text-gray-500">City Management</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card text-center">
+                            <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-chart-pie text-brand text-3xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">决策支持</h3>
+                            <p class="text-xs text-gray-500">Decision Support</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card text-center">
+                            <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-heart text-brand text-3xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">民生服务</h3>
+                            <p class="text-xs text-gray-500">Livelihood</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card text-center">
+                            <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                <i class="fas fa-cogs text-brand text-3xl"></i>
+                            </div>
+                            <h3 class="text-lg font-bold text-gray-900 mb-1">智能治理</h3>
+                            <p class="text-xs text-gray-500">Smart Governance</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-12 fade-in-up">
+                        <p class="text-2xl font-bold text-gray-800">探索 AI 驱动的智能化未来</p>
+                        <p class="text-lg text-gray-500 mt-2">Exploring the AI-Driven Intelligent Future</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+    
+    <!-- Modal 1: Government Services Detail -->
+    <div id="modal-gov-services-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-gov-services-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">智慧政务服务平台详解</h2>
+            <p class="text-sm text-gray-500 mb-8">Detailed Explanation of Smart Government Services Platform</p>
+            
+            <div class="space-y-6">
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">智能客服系统</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        基于大模型的智能客服系统是智慧政务服务的核心组件。该系统采用先进的自然语言处理技术，能够准确理解市民咨询的复杂意图，并从知识库中检索相关政策法规，为市民提供准确、及时的回答。
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-900 mb-2">核心能力：</h4>
+                        <ul class="space-y-1 text-sm text-gray-700">
+                            <li>• <span class="font-semibold">24小时在线服务</span>：不受时间限制，随时响应市民咨询</li>
+                            <li>• <span class="font-semibold">多轮对话能力</span>：支持复杂问题的连续追问与深入解答</li>
+                            <li>• <span class="font-semibold">情感识别</span>：识别用户情绪，提供更人性化的服务体验</li>
+                            <li>• <span class="font-semibold">知识更新</span>：实时同步最新政策，确保信息准确性</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">智能审批系统</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        通过 AI 技术实现审批流程的自动化和智能化，大幅缩短办理时间。系统采用OCR技术自动识别申请材料，使用规则引擎和机器学习模型智能审核申请条件，预测审批结果，并通过流程挖掘技术持续优化审批流程。
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-900 mb-2">关键技术：</h4>
+                        <ul class="space-y-1 text-sm text-gray-700">
+                            <li>• <span class="font-semibold">OCR文字识别</span>：自动提取证件、材料中的关键信息</li>
+                            <li>• <span class="font-semibold">规则引擎</span>：将审批规则数字化、自动化</li>
+                            <li>• <span class="font-semibold">风险预警</span>：识别潜在问题，提前预警</li>
+                            <li>• <span class="font-semibold">流程优化</span>：基于历史数据分析，持续优化审批流程</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">智能翻译服务</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        在涉外政务服务中，AI翻译系统发挥着关键作用。系统采用神经机器翻译技术，结合政务领域专业术语库，确保翻译的准确性和专业性。支持多种语言互译，提供语音和文字两种翻译模式。
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-900 mb-2">特色功能：</h4>
+                        <ul class="space-y-1 text-sm text-gray-700">
+                            <li>• <span class="font-semibold">专业术语库</span>：政务、法律、行政等专业领域术语精准翻译</li>
+                            <li>• <span class="font-semibold">实时语音翻译</span>：支持现场交流的即时翻译</li>
+                            <li>• <span class="font-semibold">文档翻译</span>：批量翻译政务文件，保持格式完整</li>
+                            <li>• <span class="font-semibold">人工复核</span>：重要文件支持人工复核，确保准确性</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 2: Decision Support Detail -->
+    <div id="modal-decision-support-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-decision-support-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">数字政府决策支持系统详解</h2>
+            <p class="text-sm text-gray-500 mb-8">Detailed Explanation of Digital Government Decision Support System</p>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">数据分析与预测</h3>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        AI决策支持系统通过整合多源数据，运用大数据分析、时间序列预测、因果推断等技术，为政府决策提供全面、准确的数据支撑。
+                    </p>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-chart-line text-brand"></i>
+                                经济运行分析
+                            </h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                实时监测GDP、就业率、物价指数等经济指标，运用机器学习算法预测经济走势，为宏观调控提供依据。系统能够识别经济运行中的异常波动，提前预警潜在风险。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-users text-brand"></i>
+                                社会发展趋势
+                            </h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                通过分析人口结构、教育水平、就业状况等社会指标，预测社会发展趋势。结合文本挖掘技术分析社交媒体、新闻报道，及时掌握社会舆情动态。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-balance-scale text-brand"></i>
+                                政策效果评估
+                            </h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                运用因果推断、反事实分析等方法，科学评估政策实施的实际效果。通过对比分析，识别政策的有效成分，为政策优化提供依据。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">智能政策制定</h3>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        AI系统辅助政府进行政策制定，通过政策文本分析、影响模拟、多目标优化等技术，提升政策制定的科学性和有效性。
+                    </p>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">政策文本智能分析</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                运用自然语言处理技术，自动提取政策文本中的关键要素、政策目标、实施路径等信息。通过语义相似度分析，识别相关政策之间的关联关系，发现政策冲突或重复。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">政策影响模拟评估</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                构建政策模拟模型，预测政策实施后对经济、社会、环境等多方面的影响。通过情景分析，评估不同政策方案的优劣，为决策提供参考。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">公众意见智能分析</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                运用情感分析、主题建模等技术，自动分析公众意见征集中的海量反馈信息，提取核心关切点，为政策优化提供民意基础。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-6 border border-red-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">应急管理系统</h3>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        AI应急管理系统通过实时监测、智能预警、资源调配优化等功能，提升政府应对突发事件的能力。
+                    </p>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">突发事件智能识别</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                整合多源信息（传感器数据、社交媒体、新闻报道等），运用异常检测、事件抽取等技术，快速识别突发事件。根据事件性质、影响范围等自动分级，触发相应应急响应流程。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">应急资源智能调配</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                运用优化算法，根据事件需求、资源分布、交通状况等因素，制定最优资源调配方案。实时监控资源调配进度，动态调整方案。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">应急预案自动生成</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                基于历史案例库和知识图谱，根据当前事件特征，自动生成针对性的应急预案。预案包括应对措施、资源需求、组织协调等内容，为快速响应提供指导。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // Modal Control Functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // Close modal when clicking on background
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        });
+        
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
+            }
+        });
+        
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Get all animated elements within the visible slide
+                    const animatedElements = entry.target.querySelectorAll('.fade-in-up, .mini-card');
+                    animatedElements.forEach(el => {
+                        el.classList.add('visible');
+                    });
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all slides
+        document.querySelectorAll('.slide').forEach(slide => {
+            observer.observe(slide);
+        });
+        
+        // Initial animation for first slide
+        window.addEventListener('load', () => {
+            const firstSlide = document.querySelector('.slide');
+            if (firstSlide) {
+                const animatedElements = firstSlide.querySelectorAll('.fade-in-up, .mini-card');
+                animatedElements.forEach(el => {
+                    el.classList.add('visible');
+                });
+            }
+        });
+    </script>
+</body>
+</html>
