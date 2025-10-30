@@ -245,6 +245,12 @@
             }
         }
         
+        @media (max-width: 640px) {
+            .slide-content {
+                padding: 1rem;
+            }
+        }
+        
         /* Prevent body scroll when modal is open */
         body.modal-open {
             overflow: hidden;
@@ -632,102 +638,102 @@
         <section class="slide">
             <div class="slide-content">
                 <div class="h-full flex flex-col">
-                    <div class="mb-6 fade-in-up">
+                    <div class="mb-4 fade-in-up">
                         <div class="flex items-center gap-3 mb-2">
-                            <i class="fas fa-sitemap text-brand text-4xl"></i>
-                            <h2 class="text-5xl font-bold text-gray-900">AI技术栈全景</h2>
+                            <i class="fas fa-sitemap text-brand text-3xl"></i>
+                            <h2 class="text-4xl font-bold text-gray-900">AI技术栈全景</h2>
                         </div>
-                        <p class="text-xl text-gray-500 ml-16">AI Technology Stack Overview</p>
+                        <p class="text-lg text-gray-500 ml-14">AI Technology Stack Overview</p>
                     </div>
                     
-                    <div class="flex-1 flex items-center">
+                    <div class="flex-1 flex items-center overflow-y-auto">
                         <div class="w-full">
-                            <div class="space-y-4">
+                            <div class="space-y-3">
                                 <!-- Layer 1: Infrastructure -->
-                                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-5 border-l-4 border-red-400 shadow-sm mini-card">
-                                    <div class="flex items-center gap-4">
-                                        <div class="text-4xl font-bold text-red-500">L1</div>
+                                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-4 border-l-4 border-red-400 shadow-sm mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-3xl font-bold text-red-500">L1</div>
                                         <div class="flex-1">
-                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">基础设施层</h3>
+                                            <h3 class="text-xl font-bold text-gray-900 mb-1">基础设施层</h3>
                                             <p class="text-sm text-gray-600">算力卡底层逻辑 · 英伟达生态</p>
                                         </div>
                                         <div class="text-red-400">
-                                            <i class="fas fa-server text-3xl"></i>
+                                            <i class="fas fa-server text-2xl"></i>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Layer 2: Core Algorithms -->
-                                <div class="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-5 border-l-4 border-yellow-400 shadow-sm mini-card">
-                                    <div class="flex items-center gap-4">
-                                        <div class="text-4xl font-bold text-yellow-600">L2</div>
+                                <div class="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-4 border-l-4 border-yellow-400 shadow-sm mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-3xl font-bold text-yellow-600">L2</div>
                                         <div class="flex-1">
-                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">核心算法层</h3>
+                                            <h3 class="text-xl font-bold text-gray-900 mb-1">核心算法层</h3>
                                             <p class="text-sm text-gray-600">机器学习 · 自注意力机制</p>
                                         </div>
                                         <div class="text-yellow-500">
-                                            <i class="fas fa-brain text-3xl"></i>
+                                            <i class="fas fa-brain text-2xl"></i>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Layer 3: Model Engineering -->
-                                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-5 border-l-4 border-green-400 shadow-sm mini-card">
-                                    <div class="flex items-center gap-4">
-                                        <div class="text-4xl font-bold text-green-600">L3</div>
+                                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border-l-4 border-green-400 shadow-sm mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-3xl font-bold text-green-600">L3</div>
                                         <div class="flex-1">
-                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">模型工程层</h3>
+                                            <h3 class="text-xl font-bold text-gray-900 mb-1">模型工程层</h3>
                                             <p class="text-sm text-gray-600">模型训练 · 模型部署 · 知识蒸馏</p>
                                         </div>
                                         <div class="text-green-500">
-                                            <i class="fas fa-cogs text-3xl"></i>
+                                            <i class="fas fa-cogs text-2xl"></i>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Layer 4: Knowledge Management -->
-                                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-5 border-l-4 border-blue-400 shadow-sm mini-card">
-                                    <div class="flex items-center gap-4">
-                                        <div class="text-4xl font-bold text-brand">L4</div>
+                                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-4 border-l-4 border-blue-400 shadow-sm mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-3xl font-bold text-brand">L4</div>
                                         <div class="flex-1">
-                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">知识管理层</h3>
+                                            <h3 class="text-xl font-bold text-gray-900 mb-1">知识管理层</h3>
                                             <p class="text-sm text-gray-600">知识库构建 · 向量检索 · RAG技术</p>
                                         </div>
                                         <div class="text-brand">
-                                            <i class="fas fa-database text-3xl"></i>
+                                            <i class="fas fa-database text-2xl"></i>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Layer 5: Application -->
-                                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-5 border-l-4 border-purple-400 shadow-sm mini-card">
-                                    <div class="flex items-center gap-4">
-                                        <div class="text-4xl font-bold text-purple-600">L5</div>
+                                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border-l-4 border-purple-400 shadow-sm mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-3xl font-bold text-purple-600">L5</div>
                                         <div class="flex-1">
-                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">应用实现层</h3>
+                                            <h3 class="text-xl font-bold text-gray-900 mb-1">应用实现层</h3>
                                             <p class="text-sm text-gray-600">智能体开发 · 实际应用案例</p>
                                         </div>
                                         <div class="text-purple-500">
-                                            <i class="fas fa-rocket text-3xl"></i>
+                                            <i class="fas fa-rocket text-2xl"></i>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="mt-6 bg-gray-50 rounded-xl p-5 border border-gray-200">
-                                <div class="flex items-center justify-center gap-8 text-center">
+                            <div class="mt-4 bg-gray-50 rounded-xl p-4 border border-gray-200">
+                                <div class="flex items-center justify-center gap-6 text-center">
                                     <div>
-                                        <div class="text-4xl font-bold text-brand mb-1">9</div>
+                                        <div class="text-3xl font-bold text-brand mb-1">9</div>
                                         <p class="text-sm text-gray-600">核心主题</p>
                                     </div>
-                                    <div class="w-px h-12 bg-gray-300"></div>
+                                    <div class="w-px h-10 bg-gray-300"></div>
                                     <div>
-                                        <div class="text-4xl font-bold text-brand mb-1">5</div>
+                                        <div class="text-3xl font-bold text-brand mb-1">5</div>
                                         <p class="text-sm text-gray-600">技术层级</p>
                                     </div>
-                                    <div class="w-px h-12 bg-gray-300"></div>
+                                    <div class="w-px h-10 bg-gray-300"></div>
                                     <div>
-                                        <div class="text-4xl font-bold text-brand mb-1">全栈</div>
+                                        <div class="text-3xl font-bold text-brand mb-1">全栈</div>
                                         <p class="text-sm text-gray-600">覆盖范围</p>
                                     </div>
                                 </div>
