@@ -1,0 +1,1589 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识库技术体系 - 演示文稿</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Scroll Snap Container */
+        .slides-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        
+        /* Individual Slide - 16:9 Aspect Ratio */
+        .slide {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        /* 16:9 Content Container */
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            overflow: hidden;
+        }
+        
+        /* Brand Color - Tech Blue */
+        :root {
+            --brand-color: #00AEEF;
+            --brand-gradient-start: rgba(0, 174, 239, 0.8);
+            --brand-gradient-end: rgba(0, 174, 239, 0.2);
+        }
+        
+        .text-brand {
+            color: var(--brand-color);
+        }
+        
+        .bg-brand {
+            background-color: var(--brand-color);
+        }
+        
+        .bg-brand-gradient {
+            background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
+        }
+        
+        .border-brand {
+            border-color: var(--brand-color);
+        }
+        
+        /* Modal/Overlay Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            max-height: 85vh;
+            width: 90%;
+            overflow-y: auto;
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+            transform: scale(1.1);
+        }
+        
+        /* Animation Classes */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Mini Card Stagger Animation */
+        .mini-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .mini-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .mini-card:nth-child(1) { transition-delay: 0.1s; }
+        .mini-card:nth-child(2) { transition-delay: 0.2s; }
+        .mini-card:nth-child(3) { transition-delay: 0.3s; }
+        .mini-card:nth-child(4) { transition-delay: 0.4s; }
+        .mini-card:nth-child(5) { transition-delay: 0.5s; }
+        .mini-card:nth-child(6) { transition-delay: 0.6s; }
+        .mini-card:nth-child(7) { transition-delay: 0.7s; }
+        .mini-card:nth-child(8) { transition-delay: 0.8s; }
+        .mini-card:nth-child(9) { transition-delay: 0.9s; }
+        .mini-card:nth-child(10) { transition-delay: 1.0s; }
+        .mini-card:nth-child(11) { transition-delay: 1.1s; }
+        .mini-card:nth-child(12) { transition-delay: 1.2s; }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Button Styles */
+        .detail-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 174, 239, 0.3);
+        }
+        
+        .detail-button:hover {
+            background: #008ec4;
+            box-shadow: 0 4px 12px rgba(0, 174, 239, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .detail-button i {
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .modal-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            
+            .slide-content {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Slides Container -->
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <section class="slide">
+            <div class="slide-content bg-brand-gradient">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up">
+                        <i class="fas fa-database text-7xl text-white mb-8"></i>
+                    </div>
+                    <h1 class="text-7xl font-bold text-white mb-4 fade-in-up">知识库技术体系</h1>
+                    <p class="text-2xl text-white/90 mb-8 fade-in-up">Knowledge Base Technology System</p>
+                    <div class="w-32 h-1 bg-white/50 rounded-full mb-8 fade-in-up"></div>
+                    <p class="text-xl text-white/80 fade-in-up">AI系统的知识存储与管理核心</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: Knowledge Base Concept -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-book text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">知识库基本概念</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Fundamental Concepts</p>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 border border-blue-100 mb-6 fade-in-up">
+                            <p class="text-2xl text-gray-800 leading-relaxed text-center">
+                                知识库是<span class="text-brand font-bold">结构化数据库</span>，用于存储和组织<span class="font-bold text-gray-900">领域知识</span><br/>
+                                包含原始数据、处理后的信息、推理规则和逻辑关系
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="text-5xl font-bold text-brand mb-3">
+                                        <i class="fas fa-cube"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">数据存储</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Data Storage</p>
+                                    <p class="text-sm text-gray-600">结构化知识管理</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="text-5xl font-bold text-brand mb-3">
+                                        <i class="fas fa-sitemap"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">关系组织</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Relationship Organization</p>
+                                    <p class="text-sm text-gray-600">逻辑关联建立</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="text-5xl font-bold text-brand mb-3">
+                                        <i class="fas fa-brain"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">推理规则</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Reasoning Rules</p>
+                                    <p class="text-sm text-gray-600">智能推理能力</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 3: Knowledge Base Types -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-layer-group text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">知识库类型</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Types of Knowledge Bases</p>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto pb-4">
+                        <div class="grid grid-cols-2 gap-5">
+                            <!-- Type 1: Factual Knowledge Base -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-clipboard-list text-brand text-3xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900 mb-1">事实型</h3>
+                                        <p class="text-sm text-gray-500">Factual Knowledge Base</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-700 mb-3 font-medium">存储客观事实和具体信息</p>
+                                <div class="space-y-2 text-xs text-gray-600">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-brand"></i>
+                                        <span>Wikidata - 结构化世界知识</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-brand"></i>
+                                        <span>DBpedia - Wikipedia结构化数据</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Type 2: Ontology Knowledge Base -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-project-diagram text-brand text-3xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900 mb-1">本体型</h3>
+                                        <p class="text-sm text-gray-500">Ontology Knowledge Base</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-700 mb-3 font-medium">定义概念、类别及关系</p>
+                                <div class="space-y-2 text-xs text-gray-600">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-brand"></i>
+                                        <span>WordNet - 英语词汇语义网络</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-brand"></i>
+                                        <span>YAGO - 整合Wikipedia和WordNet</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Type 3: Rule-based Knowledge Base -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-cogs text-brand text-3xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900 mb-1">规则型</h3>
+                                        <p class="text-sm text-gray-500">Rule-based Knowledge Base</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-700 mb-3 font-medium">存储推理规则和逻辑关系</p>
+                                <div class="space-y-2 text-xs text-gray-600">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-brand"></i>
+                                        <span>专家系统规则库</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-brand"></i>
+                                        <span>基于逻辑的知识库</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Type 4: Common Sense Knowledge Base -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex items-start gap-4 mb-4">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <i class="fas fa-users text-brand text-3xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900 mb-1">常识型</h3>
+                                        <p class="text-sm text-gray-500">Common Sense KB</p>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-700 mb-3 font-medium">存储人类常识和日常知识</p>
+                                <div class="space-y-2 text-xs text-gray-600">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-brand"></i>
+                                        <span>ConceptNet - 众包常识知识库</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-check-circle text-brand"></i>
+                                        <span>微软常识知识图谱</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center fade-in-up">
+                        <button class="detail-button" onclick="openModal('modal-kb-examples')">
+                            <i class="fas fa-info-circle"></i>
+                            <span>查看知识库实例详情</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 4: Knowledge Representation Methods -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-code-branch text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">知识表示方法</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Knowledge Representation Methods</p>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div class="bg-gradient-to-br from-purple-50 to-blue-50 rounded-2xl p-6 border border-purple-100 mb-6 fade-in-up">
+                            <p class="text-xl text-gray-800 leading-relaxed text-center">
+                                将知识转化为<span class="text-brand font-bold">计算机可处理形式</span>的过程
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-4 gap-4">
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-link text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">三元组</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Triple</p>
+                                    <p class="text-sm text-gray-600">主语-谓语-宾语结构</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-th text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">框架</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Frame</p>
+                                    <p class="text-sm text-gray-600">对象属性和关系</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-equals text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">逻辑</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Logic</p>
+                                    <p class="text-sm text-gray-600">谓词逻辑表示</p>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-vector-square text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">向量</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Vector</p>
+                                    <p class="text-sm text-gray-600">低维向量嵌入</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 5: Knowledge Graph -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-share-alt text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">知识图谱</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Knowledge Graph</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full grid grid-cols-2 gap-6">
+                            <div class="space-y-5">
+                                <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-100 fade-in-up">
+                                    <p class="text-lg text-gray-800 leading-relaxed">
+                                        基于<span class="text-brand font-bold">图的数据结构</span><br/>
+                                        由<span class="font-bold">节点(实体)</span>和<span class="font-bold">边(关系)</span>组成
+                                    </p>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                        <div class="flex items-start gap-4">
+                                            <div class="text-4xl font-bold text-brand">
+                                                <i class="fas fa-circle-notch"></i>
+                                            </div>
+                                            <div>
+                                                <h3 class="text-xl font-bold text-gray-900 mb-1">实体</h3>
+                                                <p class="text-xs text-gray-500 mb-2">Entity</p>
+                                                <p class="text-sm text-gray-600">现实世界对象：人、地点、组织</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                        <div class="flex items-start gap-4">
+                                            <div class="text-4xl font-bold text-brand">
+                                                <i class="fas fa-arrows-alt-h"></i>
+                                            </div>
+                                            <div>
+                                                <h3 class="text-xl font-bold text-gray-900 mb-1">关系</h3>
+                                                <p class="text-xs text-gray-500 mb-2">Relationship</p>
+                                                <p class="text-sm text-gray-600">实体间语义关联：出生于、父亲</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                        <div class="flex items-start gap-4">
+                                            <div class="text-4xl font-bold text-brand">
+                                                <i class="fas fa-tags"></i>
+                                            </div>
+                                            <div>
+                                                <h3 class="text-xl font-bold text-gray-900 mb-1">属性</h3>
+                                                <p class="text-xs text-gray-500 mb-2">Attribute</p>
+                                                <p class="text-sm text-gray-600">实体和关系的特征描述</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm fade-in-up">
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-tasks text-brand"></i>
+                                        构建流程
+                                    </h3>
+                                    <div class="space-y-4">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-8 h-8 bg-brand text-white rounded-lg flex items-center justify-center flex-shrink-0 font-bold">
+                                                1
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">信息抽取</h4>
+                                                <p class="text-xs text-gray-600">从文本提取实体、关系和属性</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-8 h-8 bg-brand text-white rounded-lg flex items-center justify-center flex-shrink-0 font-bold">
+                                                2
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">知识融合</h4>
+                                                <p class="text-xs text-gray-600">整合多源知识，解决冲突冗余</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-8 h-8 bg-brand text-white rounded-lg flex items-center justify-center flex-shrink-0 font-bold">
+                                                3
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">知识加工</h4>
+                                                <p class="text-xs text-gray-600">规范化和标准化处理</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-8 h-8 bg-brand text-white rounded-lg flex items-center justify-center flex-shrink-0 font-bold">
+                                                4
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">知识更新</h4>
+                                                <p class="text-xs text-gray-600">保持时效性和准确性</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 6: RAG - Retrieval Augmented Generation -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-search-plus text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">检索增强生成</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Retrieval Augmented Generation (RAG)</p>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl p-6 border border-green-100 mb-6 fade-in-up">
+                            <p class="text-2xl text-gray-800 leading-relaxed text-center">
+                                将<span class="text-brand font-bold">外部知识库</span>与<span class="font-bold">语言模型</span>结合的关键技术
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="space-y-4">
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm fade-in-up">
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <i class="fas fa-cog text-brand"></i>
+                                        工作流程
+                                    </h3>
+                                    <div class="space-y-3">
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-brand text-white rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-lg">
+                                                1
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">检索知识</h4>
+                                                <p class="text-sm text-gray-600">从知识库检索相关信息</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-brand text-white rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-lg">
+                                                2
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">上下文注入</h4>
+                                                <p class="text-sm text-gray-600">将信息作为上下文提供</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-start gap-3">
+                                            <div class="w-10 h-10 bg-brand text-white rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-lg">
+                                                3
+                                            </div>
+                                            <div>
+                                                <h4 class="font-bold text-gray-900 mb-1">生成回答</h4>
+                                                <p class="text-sm text-gray-600">基于检索信息生成答案</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="text-5xl font-bold text-brand mb-3">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">准确性</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Accuracy</p>
+                                        <p class="text-sm text-gray-600">提高回答准确性和时效性</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="text-5xl font-bold text-brand mb-3">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">减少幻觉</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Hallucination</p>
+                                        <p class="text-sm text-gray-600">降低模型幻觉问题</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="text-5xl font-bold text-brand mb-3">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">最新知识</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Latest Knowledge</p>
+                                        <p class="text-sm text-gray-600">处理最新的知识信息</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="text-5xl font-bold text-brand mb-3">
+                                            <i class="fas fa-weight"></i>
+                                        </div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">降低负担</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Less Burden</p>
+                                        <p class="text-sm text-gray-600">减轻模型记忆负担</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center fade-in-up">
+                        <button class="detail-button" onclick="openModal('modal-rag-detail')">
+                            <i class="fas fa-book-open"></i>
+                            <span>了解RAG技术详解</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 7: Knowledge Injection & Hybrid Architecture -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-puzzle-piece text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">其他结合方式</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Alternative Integration Approaches</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full grid grid-cols-2 gap-8">
+                            <!-- Knowledge Injection -->
+                            <div class="bg-white rounded-2xl p-8 border-2 border-purple-200 shadow-sm fade-in-up">
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-syringe text-purple-600 text-3xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900">知识注入</h3>
+                                        <p class="text-sm text-gray-500">Knowledge Injection</p>
+                                    </div>
+                                </div>
+                                <p class="text-base text-gray-700 mb-5 font-medium">将知识直接编码到模型参数中</p>
+                                <div class="space-y-3">
+                                    <div class="flex items-start gap-3">
+                                        <i class="fas fa-arrow-right text-purple-600 mt-1"></i>
+                                        <p class="text-sm text-gray-700">通过提示工程将知识提供给模型</p>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i class="fas fa-arrow-right text-purple-600 mt-1"></i>
+                                        <p class="text-sm text-gray-700">使用知识蒸馏方法学习知识库知识</p>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i class="fas fa-arrow-right text-purple-600 mt-1"></i>
+                                        <p class="text-sm text-gray-700">预训练阶段加入知识相关任务</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Hybrid Architecture -->
+                            <div class="bg-white rounded-2xl p-8 border-2 border-green-200 shadow-sm fade-in-up">
+                                <div class="flex items-center gap-4 mb-6">
+                                    <div class="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-network-wired text-green-600 text-3xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900">混合架构</h3>
+                                        <p class="text-sm text-gray-500">Hybrid Architecture</p>
+                                    </div>
+                                </div>
+                                <p class="text-base text-gray-700 mb-5 font-medium">同时使用知识库和语言模型</p>
+                                <div class="space-y-3">
+                                    <div class="flex items-start gap-3">
+                                        <i class="fas fa-arrow-right text-green-600 mt-1"></i>
+                                        <p class="text-sm text-gray-700">简单问题直接由知识库回答</p>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i class="fas fa-arrow-right text-green-600 mt-1"></i>
+                                        <p class="text-sm text-gray-700">复杂问题由语言模型处理</p>
+                                    </div>
+                                    <div class="flex items-start gap-3">
+                                        <i class="fas fa-arrow-right text-green-600 mt-1"></i>
+                                        <p class="text-sm text-gray-700">使用规则引擎决定使用方式</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 8: Application Scenarios -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-th-large text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">应用场景</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Application Scenarios</p>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto pb-4">
+                        <div class="grid grid-cols-5 gap-4">
+                            <!-- Scenario 1: Q&A System -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-question-circle text-blue-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">问答系统</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Q&A System</p>
+                                    <div class="text-xs text-gray-600 space-y-1 text-left w-full">
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-blue-600 text-xs mt-0.5"></i>
+                                            <span>事实性回答</span>
+                                        </div>
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-blue-600 text-xs mt-0.5"></i>
+                                            <span>多轮对话</span>
+                                        </div>
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-blue-600 text-xs mt-0.5"></i>
+                                            <span>推理问题</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Scenario 2: Intelligent Customer Service -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-green-100 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-headset text-green-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">智能客服</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Customer Service</p>
+                                    <div class="text-xs text-gray-600 space-y-1 text-left w-full">
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-green-600 text-xs mt-0.5"></i>
+                                            <span>快速响应</span>
+                                        </div>
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-green-600 text-xs mt-0.5"></i>
+                                            <span>个性化服务</span>
+                                        </div>
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-green-600 text-xs mt-0.5"></i>
+                                            <span>常见问题</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Scenario 3: Recommendation System -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-purple-100 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-star text-purple-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">推荐系统</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Recommendation</p>
+                                    <div class="text-xs text-gray-600 space-y-1 text-left w-full">
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-purple-600 text-xs mt-0.5"></i>
+                                            <span>知识推荐</span>
+                                        </div>
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-purple-600 text-xs mt-0.5"></i>
+                                            <span>兴趣理解</span>
+                                        </div>
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-purple-600 text-xs mt-0.5"></i>
+                                            <span>可解释性</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Scenario 4: Semantic Search -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-orange-100 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-search text-orange-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">语义搜索</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Semantic Search</p>
+                                    <div class="text-xs text-gray-600 space-y-1 text-left w-full">
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-orange-600 text-xs mt-0.5"></i>
+                                            <span>语义理解</span>
+                                        </div>
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-orange-600 text-xs mt-0.5"></i>
+                                            <span>高相关度</span>
+                                        </div>
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-orange-600 text-xs mt-0.5"></i>
+                                            <span>复杂查询</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Scenario 5: Decision Support -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-chart-pie text-red-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">决策支持</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Decision Support</p>
+                                    <div class="text-xs text-gray-600 space-y-1 text-left w-full">
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-red-600 text-xs mt-0.5"></i>
+                                            <span>领域知识</span>
+                                        </div>
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-red-600 text-xs mt-0.5"></i>
+                                            <span>推理分析</span>
+                                        </div>
+                                        <div class="flex items-start gap-1">
+                                            <i class="fas fa-check text-red-600 text-xs mt-0.5"></i>
+                                            <span>辅助决策</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-8 grid grid-cols-1 gap-4">
+                            <div class="bg-gradient-to-r from-blue-50 via-purple-50 to-pink-50 rounded-2xl p-6 border border-blue-100 fade-in-up">
+                                <div class="flex items-center justify-center gap-8">
+                                    <div class="text-center">
+                                        <div class="text-4xl font-bold text-brand mb-2">5+</div>
+                                        <p class="text-sm text-gray-600">核心应用场景</p>
+                                    </div>
+                                    <div class="w-px h-12 bg-gray-300"></div>
+                                    <div class="text-center">
+                                        <div class="text-4xl font-bold text-brand mb-2">多领域</div>
+                                        <p class="text-sm text-gray-600">广泛行业覆盖</p>
+                                    </div>
+                                    <div class="w-px h-12 bg-gray-300"></div>
+                                    <div class="text-center">
+                                        <div class="text-4xl font-bold text-brand mb-2">高价值</div>
+                                        <p class="text-sm text-gray-600">提升业务效能</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 9: Development Trends -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-rocket text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">发展趋势</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Development Trends</p>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto pb-4">
+                        <div class="grid grid-cols-5 gap-4 mb-6">
+                            <!-- Trend 1: Multimodal -->
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-images text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">多模态</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Multimodal</p>
+                                    <p class="text-xs text-gray-600">整合图像、音频、视频信息</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Trend 2: Dynamic -->
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-sync-alt text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">动态化</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Dynamic</p>
+                                    <p class="text-xs text-gray-600">实时更新流式数据处理</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Trend 3: Large Scale -->
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-expand-arrows-alt text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">大规模</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Large Scale</p>
+                                    <p class="text-xs text-gray-600">万亿级实体关系处理</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Trend 4: Neuro-Symbolic -->
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-project-diagram text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">神经符号</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Neuro-Symbolic</p>
+                                    <p class="text-xs text-gray-600">结合神经网络与符号系统</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Trend 5: Privacy Protection -->
+                            <div class="bg-white rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-shield-alt text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">隐私保护</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Privacy</p>
+                                    <p class="text-xs text-gray-600">联邦学习安全计算</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-6">
+                            <!-- Multimodal Detail -->
+                            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100 fade-in-up">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <i class="fas fa-images text-purple-600"></i>
+                                    多模态知识库
+                                </h3>
+                                <p class="text-sm text-gray-700 mb-3">整合图像、音频、视频等多模态信息</p>
+                                <div class="space-y-2 text-xs text-gray-600">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-arrow-right text-purple-600"></i>
+                                        <span>Visual Genome - 图像场景图</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-arrow-right text-purple-600"></i>
+                                        <span>音频知识图谱 - 音乐和声音知识</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Neuro-Symbolic Detail -->
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-100 fade-in-up">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <i class="fas fa-brain text-blue-600"></i>
+                                    神经符号混合
+                                </h3>
+                                <p class="text-sm text-gray-700 mb-3">结合神经网络学习与符号系统推理</p>
+                                <div class="space-y-2 text-xs text-gray-600">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-arrow-right text-blue-600"></i>
+                                        <span>神经网络进行知识抽取</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-arrow-right text-blue-600"></i>
+                                        <span>符号系统进行逻辑推理</span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-arrow-right text-blue-600"></i>
+                                        <span>结合优势解决复杂问题</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 text-center fade-in-up">
+                        <button class="detail-button" onclick="openModal('modal-trends-detail')">
+                            <i class="fas fa-chart-line"></i>
+                            <span>查看详细发展趋势</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 10: Conclusion -->
+        <section class="slide">
+            <div class="slide-content bg-brand-gradient">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up mb-8">
+                        <i class="fas fa-lightbulb text-6xl text-white"></i>
+                    </div>
+                    <h2 class="text-5xl font-bold text-white mb-6 fade-in-up">核心价值</h2>
+                    <p class="text-xl text-white/80 mb-12 fade-in-up">Core Value</p>
+                    
+                    <div class="w-full max-w-4xl">
+                        <div class="bg-white/95 rounded-2xl p-8 mb-8 fade-in-up">
+                            <p class="text-3xl text-gray-900 leading-relaxed">
+                                知识库技术为<span class="text-brand font-bold">人工智能系统</span><br/>
+                                提供了<span class="font-bold">坚实的知识基础</span>
+                            </p>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-6">
+                            <div class="bg-white/90 rounded-xl p-6 fade-in-up">
+                                <div class="text-5xl font-bold text-brand mb-3">
+                                    <i class="fas fa-brain"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900 mb-2">智能理解</h3>
+                                <p class="text-sm text-gray-600">更好地理解复杂世界</p>
+                            </div>
+                            
+                            <div class="bg-white/90 rounded-xl p-6 fade-in-up">
+                                <div class="text-5xl font-bold text-brand mb-3">
+                                    <i class="fas fa-cogs"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900 mb-2">高效处理</h3>
+                                <p class="text-sm text-gray-600">处理复杂现实问题</p>
+                            </div>
+                            
+                            <div class="bg-white/90 rounded-xl p-6 fade-in-up">
+                                <div class="text-5xl font-bold text-brand mb-3">
+                                    <i class="fas fa-rocket"></i>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900 mb-2">持续发展</h3>
+                                <p class="text-sm text-gray-600">推动AI技术演进</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+    
+    <!-- Modal 1: Knowledge Base Examples Detail -->
+    <div id="modal-kb-examples" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-kb-examples')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <i class="fas fa-database text-brand"></i>
+                知识库实例详情
+            </h2>
+            
+            <div class="space-y-6">
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">事实型知识库</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">Wikidata</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                Wikidata 是一个自由、协作、多语言的辅助数据库，用于支持维基百科、维基共享资源及其他维基媒体计划和任何人的网站。它存储着结构化的世界知识，包含数百万个实体和它们之间的关系，支持跨语言的知识访问和查询。
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">DBpedia</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                DBpedia 是一个从维基百科提取结构化内容的项目。它将维基百科的信息转换为结构化的RDF数据，使得这些知识可以被机器理解和查询。DBpedia 包含数以百万计的实体，覆盖人物、地点、组织、作品等多个领域。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">本体知识库</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">WordNet</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                WordNet 是一个英语词汇数据库，它将英语单词组织成同义词集合（synsets），并记录词汇之间的语义关系。WordNet 不仅包含词汇的定义，还包含上位词、下位词、同义词、反义词等丰富的语义关系，是自然语言处理研究的重要资源。
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">YAGO</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                YAGO (Yet Another Great Ontology) 是一个大型语义知识库，整合了Wikipedia、WordNet和GeoNames的信息。YAGO 包含超过1千万个实体（如人、组织、城市等）和1亿多个关于这些实体的事实，具有很高的准确性和时间与空间的标注。
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">SUMO</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                SUMO (Suggested Upper Merged Ontology) 是建议的上层合并本体，旨在为知识表示和推理提供一个通用的顶层框架。SUMO 定义了抽象的概念和关系，可以作为领域本体的基础，促进不同知识库之间的互操作性。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">常识知识库</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">ConceptNet</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                ConceptNet 是一个开源的常识知识图谱，通过众包的方式收集人类的常识知识。它包含日常概念之间的关系，如"咖啡是热的"、"鸟会飞"等。ConceptNet 支持多语言，可以帮助AI系统更好地理解人类的常识推理。
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">Commonsense Knowledge Graph</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                微软开发的常识知识图谱专注于捕获和组织人类的常识知识，用于提升AI系统的推理能力。这类知识库对于让机器理解日常情境、进行常识推理至关重要，是构建更智能的AI系统的基础。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 2: RAG Technology Detail -->
+    <div id="modal-rag-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-rag-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <i class="fas fa-search-plus text-brand"></i>
+                RAG技术详解
+            </h2>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-100">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">什么是RAG？</h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        检索增强生成（Retrieval Augmented Generation，RAG）是一种将信息检索与生成式语言模型相结合的技术。它在生成回答之前，先从外部知识库中检索相关信息，然后将这些信息作为上下文输入到语言模型中，帮助模型生成更准确、更有依据的回答。
+                    </p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">RAG的核心优势</h3>
+                    <div class="space-y-4">
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-check-circle text-green-600"></i>
+                                提高准确性和时效性
+                            </h4>
+                            <p class="text-sm text-gray-700 leading-relaxed ml-7">
+                                通过检索外部知识库，RAG可以访问最新的、准确的信息，而不依赖于模型训练时的数据。这使得系统能够回答关于最新事件、动态信息的问题，大大提高了回答的准确性和时效性。
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-shield-alt text-blue-600"></i>
+                                减少幻觉问题
+                            </h4>
+                            <p class="text-sm text-gray-700 leading-relaxed ml-7">
+                                语言模型有时会生成听起来合理但实际上不准确的内容，这被称为"幻觉"（hallucination）。RAG通过提供真实的检索内容作为依据，显著降低了模型产生幻觉的可能性，使生成的内容更可靠。
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-clock text-purple-600"></i>
+                                处理最新知识
+                            </h4>
+                            <p class="text-sm text-gray-700 leading-relaxed ml-7">
+                                传统的语言模型只能访问训练时的知识，对于训练后发生的事件无法回答。RAG通过实时检索最新的知识库内容，使模型能够处理和回答关于最新信息的问题，保持知识的时效性。
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-weight text-orange-600"></i>
+                                降低模型记忆负担
+                            </h4>
+                            <p class="text-sm text-gray-700 leading-relaxed ml-7">
+                                将所有知识都编码到模型参数中需要庞大的模型规模和计算资源。RAG将知识存储在外部知识库中，模型只需要学会如何检索和利用这些信息，大大降低了模型的规模和训练成本。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-xl p-6">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">RAG的工作流程</h3>
+                    <div class="space-y-3">
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 bg-brand text-white rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xl">
+                                1
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-1">查询理解与检索</h4>
+                                <p class="text-sm text-gray-700 leading-relaxed">
+                                    系统首先分析用户的查询，将其转换为适合检索的形式（如向量嵌入），然后在知识库中搜索相关的文档、段落或知识条目。
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 bg-brand text-white rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xl">
+                                2
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-1">上下文构建</h4>
+                                <p class="text-sm text-gray-700 leading-relaxed">
+                                    将检索到的相关信息与用户的原始查询组合在一起，构建一个包含上下文的提示（prompt）。这个上下文为语言模型提供了回答问题所需的背景信息。
+                                </p>
+                            </div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="w-12 h-12 bg-brand text-white rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-xl">
+                                3
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-1">生成回答</h4>
+                                <p class="text-sm text-gray-700 leading-relaxed">
+                                    语言模型基于包含检索信息的上下文生成回答。由于有了准确的参考信息，模型可以生成更准确、更有依据的答案。
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 rounded-xl p-6 border border-blue-100">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-brand"></i>
+                        应用场景
+                    </h3>
+                    <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                        RAG技术广泛应用于企业知识管理、智能客服、文档问答、技术支持等场景。它特别适合需要访问大量专业知识、实时信息或私有数据的应用，可以在不重新训练模型的情况下，为AI系统提供最新、最准确的知识支持。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 3: Development Trends Detail -->
+    <div id="modal-trends-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-trends-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                <i class="fas fa-rocket text-brand"></i>
+                知识库技术发展趋势详解
+            </h2>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-100">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-images text-purple-600"></i>
+                        多模态知识库
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        传统知识库主要处理文本信息，但现实世界的知识往往包含图像、音频、视频等多种模态。多模态知识库能够整合和关联不同类型的信息，提供更全面的知识表示。
+                    </p>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-purple-600 mt-1"></i>
+                            <p><strong>Visual Genome：</strong>一个大规模的视觉知识库，包含图像场景图，描述图像中的对象、属性和对象之间的关系。</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-purple-600 mt-1"></i>
+                            <p><strong>音频知识图谱：</strong>存储音乐、声音相关的知识，包括音乐流派、艺术家关系、声音特征等。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl p-6 border border-green-100">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-sync-alt text-green-600"></i>
+                        动态知识库
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        现实世界的知识是不断变化的。动态知识库能够实时更新知识，处理流式数据，适应快速变化的世界。这对于新闻、金融、社交媒体等需要实时信息的应用至关重要。
+                    </p>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-green-600 mt-1"></i>
+                            <p>支持增量更新，无需重建整个知识库</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-green-600 mt-1"></i>
+                            <p>实时监控和集成新的信息源</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-green-600 mt-1"></i>
+                            <p>时间感知的知识表示，追踪知识的演变</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-6 border border-orange-100">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-expand-arrows-alt text-orange-600"></i>
+                        大规模知识库
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        随着知识的积累，知识库的规模不断增长。大规模知识库需要处理万亿级别的实体和关系，这对存储、查询和推理都提出了挑战。
+                    </p>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-orange-600 mt-1"></i>
+                            <p>使用分布式存储和计算技术，如图数据库和分布式计算框架</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-orange-600 mt-1"></i>
+                            <p>优化的索引和查询算法，支持高效的大规模查询</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-orange-600 mt-1"></i>
+                            <p>知识压缩和近似推理技术，平衡规模与性能</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-100">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-brain text-blue-600"></i>
+                        神经符号混合
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        神经符号混合系统结合了神经网络的学习能力和符号系统的推理能力，是实现更强大AI的重要方向。
+                    </p>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-blue-600 mt-1"></i>
+                            <p><strong>神经网络部分：</strong>用于从数据中学习、进行知识抽取、处理不确定性和噪声数据。</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-blue-600 mt-1"></i>
+                            <p><strong>符号系统部分：</strong>用于表示明确的知识、进行逻辑推理、提供可解释性和保证推理的正确性。</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-blue-600 mt-1"></i>
+                            <p><strong>优势结合：</strong>神经网络的感知和学习能力与符号系统的推理和解释能力相结合，可以解决更复杂的问题。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-6 border border-red-100">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-shield-alt text-red-600"></i>
+                        隐私保护知识库
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        在大数据时代，隐私保护变得越来越重要。隐私保护知识库在保护敏感信息的同时，仍然能够共享和利用知识。
+                    </p>
+                    <div class="space-y-2 text-sm text-gray-700">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-red-600 mt-1"></i>
+                            <p><strong>联邦学习：</strong>在不共享原始数据的情况下，多方协作训练模型和构建知识库。</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-red-600 mt-1"></i>
+                            <p><strong>差分隐私：</strong>在知识提取和查询过程中添加噪声，保护个体隐私。</p>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-red-600 mt-1"></i>
+                            <p><strong>安全多方计算：</strong>允许多方在不泄露各自数据的情况下进行联合计算和推理。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal control functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // Close modal when clicking on background
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+        
+        // Intersection Observer for animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all animated elements
+        document.addEventListener('DOMContentLoaded', () => {
+            // Observe fade-in-up elements
+            document.querySelectorAll('.fade-in-up').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Observe mini-cards
+            document.querySelectorAll('.mini-card').forEach(el => {
+                observer.observe(el);
+            });
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const container = document.querySelector('.slides-container');
+            const slides = document.querySelectorAll('.slide');
+            const currentScroll = container.scrollTop;
+            const slideHeight = window.innerHeight;
+            
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+                e.preventDefault();
+                container.scrollBy({
+                    top: slideHeight,
+                    behavior: 'smooth'
+                });
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                container.scrollBy({
+                    top: -slideHeight,
+                    behavior: 'smooth'
+                });
+            } else if (e.key === 'Escape') {
+                // Close any open modal
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
+            }
+        });
+    </script>
+    
+</body>
+</html>
