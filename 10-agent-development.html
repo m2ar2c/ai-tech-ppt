@@ -1,0 +1,1782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能体开发技术 - 演示文稿</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Scroll Snap Container */
+        .slides-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        
+        /* Individual Slide - 16:9 Aspect Ratio */
+        .slide {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        /* 16:9 Content Container */
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            overflow: hidden;
+        }
+        
+        /* Brand Color - Tech Blue */
+        :root {
+            --brand-color: #00AEEF;
+            --brand-gradient-start: rgba(0, 174, 239, 0.8);
+            --brand-gradient-end: rgba(0, 174, 239, 0.2);
+        }
+        
+        .text-brand {
+            color: var(--brand-color);
+        }
+        
+        .bg-brand {
+            background-color: var(--brand-color);
+        }
+        
+        .bg-brand-gradient {
+            background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
+        }
+        
+        .border-brand {
+            border-color: var(--brand-color);
+        }
+        
+        /* Modal/Overlay Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            max-height: 85vh;
+            width: 90%;
+            overflow-y: auto;
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+            transform: scale(1.1);
+        }
+        
+        /* Animation Classes */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Mini Card Stagger Animation */
+        .mini-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .mini-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .mini-card:nth-child(1) { transition-delay: 0.1s; }
+        .mini-card:nth-child(2) { transition-delay: 0.2s; }
+        .mini-card:nth-child(3) { transition-delay: 0.3s; }
+        .mini-card:nth-child(4) { transition-delay: 0.4s; }
+        .mini-card:nth-child(5) { transition-delay: 0.5s; }
+        .mini-card:nth-child(6) { transition-delay: 0.6s; }
+        .mini-card:nth-child(7) { transition-delay: 0.7s; }
+        .mini-card:nth-child(8) { transition-delay: 0.8s; }
+        .mini-card:nth-child(9) { transition-delay: 0.9s; }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Button Styles */
+        .detail-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 174, 239, 0.3);
+        }
+        
+        .detail-button:hover {
+            background: #008ec4;
+            box-shadow: 0 4px 12px rgba(0, 174, 239, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .detail-button i {
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .modal-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            
+            .slide-content {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Slides Container -->
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <section class="slide">
+            <div class="slide-content bg-brand-gradient">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up">
+                        <i class="fas fa-robot text-6xl text-white mb-6"></i>
+                    </div>
+                    <h1 class="text-7xl font-bold text-white mb-4 fade-in-up">智能体开发技术</h1>
+                    <p class="text-2xl text-white/90 mb-8 fade-in-up">Agent Development Technology</p>
+                    <div class="w-24 h-1 bg-white/50 rounded-full mb-8 fade-in-up"></div>
+                    <h2 class="text-3xl font-bold text-white mb-3 fade-in-up">大模型时代的智能代理</h2>
+                    <p class="text-xl text-white/80 fade-in-up">Intelligent Agents in the Era of Large Models</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: What is Agent -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-question-circle text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">什么是智能体</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">What is an Agent</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 border border-blue-100 mb-6 fade-in-up">
+                                <p class="text-2xl text-gray-800 leading-relaxed text-center">
+                                    智能体是一个能够通过<span class="text-brand font-bold">传感器感知环境</span>，<br/>
+                                    并通过<span class="text-brand font-bold">执行器对环境产生影响</span>的系统
+                                </p>
+                            </div>
+                            
+                            <div class="grid grid-cols-4 gap-4">
+                                <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-running text-brand text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">自主性</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Autonomy</p>
+                                        <p class="text-sm text-gray-600">独立决策与行动</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-bolt text-brand text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">反应性</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Reactivity</p>
+                                        <p class="text-sm text-gray-600">及时响应环境</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-lightbulb text-brand text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">主动性</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Proactivity</p>
+                                        <p class="text-sm text-gray-600">主动实现目标</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-users text-brand text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">社会性</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Social Ability</p>
+                                        <p class="text-sm text-gray-600">协作与交互</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 3: Agent Architecture -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-project-diagram text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">智能体架构演进</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Agent Architecture Evolution</p>
+                    </div>
+                    
+                    <div class="flex-1 grid grid-cols-2 gap-6">
+                        <!-- Traditional Architecture -->
+                        <div class="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl p-6 border border-gray-200 fade-in-up">
+                            <div class="mb-6">
+                                <h3 class="text-3xl font-bold text-gray-900 mb-2">传统架构</h3>
+                                <p class="text-sm text-gray-500">Traditional Architecture</p>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <div class="bg-white rounded-lg p-4 border-l-4 border-gray-400 mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-eye text-gray-600 text-xl"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900">感知模块</h4>
+                                            <p class="text-xs text-gray-600">获取环境信息</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg p-4 border-l-4 border-gray-400 mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-brain text-gray-600 text-xl"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900">决策模块</h4>
+                                            <p class="text-xs text-gray-600">做出决策判断</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg p-4 border-l-4 border-gray-400 mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-hand-pointer text-gray-600 text-xl"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900">执行模块</h4>
+                                            <p class="text-xs text-gray-600">执行具体行动</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg p-4 border-l-4 border-gray-400 mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-database text-gray-600 text-xl"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900">记忆模块</h4>
+                                            <p class="text-xs text-gray-600">存储历史信息</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- LLM-based Architecture -->
+                        <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border-2 border-brand/30 fade-in-up">
+                            <div class="mb-6">
+                                <h3 class="text-3xl font-bold text-brand mb-2">大模型架构</h3>
+                                <p class="text-sm text-gray-500">LLM-based Architecture</p>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <div class="bg-white rounded-lg p-4 border-l-4 border-brand mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-brain text-brand text-xl"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900">语言模型核心</h4>
+                                            <p class="text-xs text-gray-600">GPT/Claude 作为大脑</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg p-4 border-l-4 border-brand mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-tools text-brand text-xl"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900">工具调用</h4>
+                                            <p class="text-xs text-gray-600">搜索/API/计算器等</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg p-4 border-l-4 border-brand mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-memory text-brand text-xl"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900">记忆系统</h4>
+                                            <p class="text-xs text-gray-600">短期+长期记忆</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg p-4 border-l-4 border-brand mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-map-marked-alt text-brand text-xl"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900">规划系统</h4>
+                                            <p class="text-xs text-gray-600">制定行动计划</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-lg p-4 border-l-4 border-brand mini-card">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fas fa-sync-alt text-brand text-xl"></i>
+                                        <div>
+                                            <h4 class="font-bold text-gray-900">反思机制</h4>
+                                            <p class="text-xs text-gray-600">评估调整策略</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 4: Tool Calling -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-wrench text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">工具调用能力</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Tool Calling Capability</p>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4 fade-in-up">外部工具类型</h3>
+                            <div class="grid grid-cols-4 gap-4">
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-3">
+                                            <i class="fas fa-search text-blue-500 text-2xl"></i>
+                                        </div>
+                                        <h4 class="text-xl font-bold text-gray-900 mb-1">搜索引擎</h4>
+                                        <p class="text-xs text-gray-500 mb-2">Search Engine</p>
+                                        <p class="text-sm text-gray-600">获取最新信息</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-14 h-14 bg-green-50 rounded-xl flex items-center justify-center mb-3">
+                                            <i class="fas fa-database text-green-500 text-2xl"></i>
+                                        </div>
+                                        <h4 class="text-xl font-bold text-gray-900 mb-1">数据查询</h4>
+                                        <p class="text-xs text-gray-500 mb-2">Database Query</p>
+                                        <p class="text-sm text-gray-600">访问结构化数据</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-14 h-14 bg-purple-50 rounded-xl flex items-center justify-center mb-3">
+                                            <i class="fas fa-plug text-purple-500 text-2xl"></i>
+                                        </div>
+                                        <h4 class="text-xl font-bold text-gray-900 mb-1">API 调用</h4>
+                                        <p class="text-xs text-gray-500 mb-2">API Calling</p>
+                                        <p class="text-sm text-gray-600">使用各种服务</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-14 h-14 bg-orange-50 rounded-xl flex items-center justify-center mb-3">
+                                            <i class="fas fa-file-alt text-orange-500 text-2xl"></i>
+                                        </div>
+                                        <h4 class="text-xl font-bold text-gray-900 mb-1">文件操作</h4>
+                                        <p class="text-xs text-gray-500 mb-2">File Operation</p>
+                                        <p class="text-sm text-gray-600">读写文件数据</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4 fade-in-up">实现方式</h3>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200 mini-card">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-10 h-10 bg-brand rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-code text-white text-lg"></i>
+                                        </div>
+                                        <h4 class="text-lg font-bold text-gray-900">函数调用格式</h4>
+                                    </div>
+                                    <p class="text-sm text-gray-600">使用 Function Calling</p>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200 mini-card">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-10 h-10 bg-brand rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-sitemap text-white text-lg"></i>
+                                        </div>
+                                        <h4 class="text-lg font-bold text-gray-900">调用协议设计</h4>
+                                    </div>
+                                    <p class="text-sm text-gray-600">设计标准化协议</p>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200 mini-card">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="w-10 h-10 bg-brand rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-exchange-alt text-white text-lg"></i>
+                                        </div>
+                                        <h4 class="text-lg font-bold text-gray-900">结果处理</h4>
+                                    </div>
+                                    <p class="text-sm text-gray-600">处理返回结果</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 text-center fade-in-up">
+                            <button class="detail-button" onclick="openModal('modal-tool-detail')">
+                                <i class="fas fa-info-circle"></i>
+                                <span>查看工具调用详细实现</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 5: Multimodal & Memory -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-layer-group text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">多模态与记忆管理</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Multimodal & Memory Management</p>
+                    </div>
+                    
+                    <div class="flex-1 grid grid-cols-2 gap-6">
+                        <!-- Multimodal Capability -->
+                        <div class="fade-in-up">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4">多模态能力</h3>
+                            <div class="space-y-4">
+                                <div class="bg-white rounded-xl p-5 border-l-4 border-purple-400 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-14 h-14 bg-purple-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-image text-purple-500 text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xl font-bold text-gray-900 mb-2">视觉理解</h4>
+                                            <p class="text-xs text-gray-500 mb-2">Visual Understanding</p>
+                                            <p class="text-sm text-gray-600">识别和理解图像内容</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-5 border-l-4 border-green-400 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-14 h-14 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-microphone text-green-500 text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xl font-bold text-gray-900 mb-2">语音交互</h4>
+                                            <p class="text-xs text-gray-500 mb-2">Speech Interaction</p>
+                                            <p class="text-sm text-gray-600">语音识别和语音合成</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-5 border-l-4 border-blue-400 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-magic text-blue-500 text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xl font-bold text-gray-900 mb-2">多模态生成</h4>
+                                            <p class="text-xs text-gray-500 mb-2">Multimodal Generation</p>
+                                            <p class="text-sm text-gray-600">生成文本/图像/音频</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Memory Management -->
+                        <div class="fade-in-up">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4">记忆管理</h3>
+                            <div class="space-y-4">
+                                <div class="bg-white rounded-xl p-5 border-l-4 border-orange-400 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-14 h-14 bg-orange-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-clock text-orange-500 text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xl font-bold text-gray-900 mb-2">短期记忆</h4>
+                                            <p class="text-xs text-gray-500 mb-2">Short-term Memory</p>
+                                            <p class="text-sm text-gray-600">保存当前对话上下文</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-5 border-l-4 border-cyan-400 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-14 h-14 bg-cyan-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-save text-cyan-500 text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xl font-bold text-gray-900 mb-2">长期记忆</h4>
+                                            <p class="text-xs text-gray-500 mb-2">Long-term Memory</p>
+                                            <p class="text-sm text-gray-600">存储历史信息和经验</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-5 border-l-4 border-pink-400 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-14 h-14 bg-pink-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-search-plus text-pink-500 text-2xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="text-xl font-bold text-gray-900 mb-2">检索机制</h4>
+                                            <p class="text-xs text-gray-500 mb-2">Retrieval Mechanism</p>
+                                            <p class="text-sm text-gray-600">快速查找相关记忆</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 6: Planning & Reasoning -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-8 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-chess text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">规划与推理</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Planning & Reasoning</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-3 gap-6">
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 border-2 border-blue-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="text-center mb-6">
+                                        <div class="inline-flex items-center justify-center w-20 h-20 bg-brand rounded-2xl mb-4">
+                                            <i class="fas fa-sitemap text-white text-4xl"></i>
+                                        </div>
+                                    </div>
+                                    <h3 class="text-3xl font-bold text-gray-900 text-center mb-3">分层规划</h3>
+                                    <p class="text-sm text-gray-500 text-center mb-4">Hierarchical Planning</p>
+                                    <p class="text-sm text-gray-600 text-center">将复杂任务分解为多个可执行的子任务</p>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-8 border-2 border-purple-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="text-center mb-6">
+                                        <div class="inline-flex items-center justify-center w-20 h-20 bg-purple-500 rounded-2xl mb-4">
+                                            <i class="fas fa-stream text-white text-4xl"></i>
+                                        </div>
+                                    </div>
+                                    <h3 class="text-3xl font-bold text-gray-900 text-center mb-3">时序推理</h3>
+                                    <p class="text-sm text-gray-500 text-center mb-4">Temporal Reasoning</p>
+                                    <p class="text-sm text-gray-600 text-center">理解时间关系和事件的因果关系</p>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 border-2 border-orange-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                    <div class="text-center mb-6">
+                                        <div class="inline-flex items-center justify-center w-20 h-20 bg-orange-500 rounded-2xl mb-4">
+                                            <i class="fas fa-random text-white text-4xl"></i>
+                                        </div>
+                                    </div>
+                                    <h3 class="text-3xl font-bold text-gray-900 text-center mb-3">不确定性处理</h3>
+                                    <p class="text-sm text-gray-500 text-center mb-4">Uncertainty Handling</p>
+                                    <p class="text-sm text-gray-600 text-center">在不完整信息下做出合理决策</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 7: Development Frameworks -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-code-branch text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">开发框架与工具</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Development Frameworks & Tools</p>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="mb-6">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4 fade-in-up">主流开发框架</h3>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/30 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-link text-brand text-3xl"></i>
+                                        </div>
+                                        <h4 class="text-2xl font-bold text-gray-900 mb-2">LangChain</h4>
+                                        <p class="text-xs text-gray-500 mb-3">Language Model Framework</p>
+                                        <p class="text-sm text-gray-600">链式调用·上下文管理</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/30 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-robot text-brand text-3xl"></i>
+                                        </div>
+                                        <h4 class="text-2xl font-bold text-gray-900 mb-2">HF Agent</h4>
+                                        <p class="text-xs text-gray-500 mb-3">Hugging Face Agent</p>
+                                        <p class="text-sm text-gray-600">多模型·预训练模型</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/30 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-cog text-brand text-3xl"></i>
+                                        </div>
+                                        <h4 class="text-2xl font-bold text-gray-900 mb-2">OpenAI Functions</h4>
+                                        <p class="text-xs text-gray-500 mb-3">Function Calling</p>
+                                        <p class="text-sm text-gray-600">简单格式·自动解析</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4 fade-in-up">自主智能体框架</h3>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200 mini-card">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <i class="fas fa-rocket text-green-500 text-2xl"></i>
+                                        <h4 class="text-lg font-bold text-gray-900">AutoGPT</h4>
+                                    </div>
+                                    <p class="text-sm text-gray-600">自主运行的 GPT 智能体</p>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-5 border border-blue-200 mini-card">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <i class="fas fa-baby text-blue-500 text-2xl"></i>
+                                        <h4 class="text-lg font-bold text-gray-900">BabyAGI</h4>
+                                    </div>
+                                    <p class="text-sm text-gray-600">基于任务优先级的智能体</p>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200 mini-card">
+                                    <div class="flex items-center gap-3 mb-2">
+                                        <i class="fas fa-users-cog text-purple-500 text-2xl"></i>
+                                        <h4 class="text-lg font-bold text-gray-900">AgentVerse</h4>
+                                    </div>
+                                    <p class="text-sm text-gray-600">多智能体协作框架</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6 text-center fade-in-up">
+                            <button class="detail-button" onclick="openModal('modal-framework-detail')">
+                                <i class="fas fa-book-open"></i>
+                                <span>查看框架详细功能对比</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 8: Application Scenarios -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-5 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-rocket text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">应用场景</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Application Scenarios</p>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto">
+                        <div class="grid grid-cols-5 gap-3 pb-4">
+                            <!-- Personal Assistant -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-user-clock text-blue-500 text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">个人助手</h4>
+                                    <p class="text-xs text-gray-500 mb-2">Personal Assistant</p>
+                                    <div class="text-left w-full space-y-1">
+                                        <p class="text-xs text-gray-600">• 日程管理</p>
+                                        <p class="text-xs text-gray-600">• 信息检索</p>
+                                        <p class="text-xs text-gray-600">• 任务执行</p>
+                                        <p class="text-xs text-gray-600">• 个性推荐</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Medical -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-heartbeat text-red-500 text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">医疗诊断</h4>
+                                    <p class="text-xs text-gray-500 mb-2">Medical Diagnosis</p>
+                                    <div class="text-left w-full space-y-1">
+                                        <p class="text-xs text-gray-600">• 病情分析</p>
+                                        <p class="text-xs text-gray-600">• 辅助诊断</p>
+                                        <p class="text-xs text-gray-600">• 方案建议</p>
+                                        <p class="text-xs text-gray-600">• 文献检索</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Legal -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-purple-50 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-balance-scale text-purple-500 text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">法律文书</h4>
+                                    <p class="text-xs text-gray-500 mb-2">Legal Documents</p>
+                                    <div class="text-left w-full space-y-1">
+                                        <p class="text-xs text-gray-600">• 合同起草</p>
+                                        <p class="text-xs text-gray-600">• 法律分析</p>
+                                        <p class="text-xs text-gray-600">• 风险评估</p>
+                                        <p class="text-xs text-gray-600">• 案例检索</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Code Development -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-code text-green-500 text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">代码开发</h4>
+                                    <p class="text-xs text-gray-500 mb-2">Code Development</p>
+                                    <div class="text-left w-full space-y-1">
+                                        <p class="text-xs text-gray-600">• 代码生成</p>
+                                        <p class="text-xs text-gray-600">• Bug 调试</p>
+                                        <p class="text-xs text-gray-600">• 代码审查</p>
+                                        <p class="text-xs text-gray-600">• 文档编写</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Education -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-graduation-cap text-orange-500 text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">教育辅导</h4>
+                                    <p class="text-xs text-gray-500 mb-2">Education Tutoring</p>
+                                    <div class="text-left w-full space-y-1">
+                                        <p class="text-xs text-gray-600">• 个性化教学</p>
+                                        <p class="text-xs text-gray-600">• 习题解答</p>
+                                        <p class="text-xs text-gray-600">• 学习规划</p>
+                                        <p class="text-xs text-gray-600">• 进度跟踪</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Content Creation -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-pen-fancy text-pink-500 text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">内容创作</h4>
+                                    <p class="text-xs text-gray-500 mb-2">Content Creation</p>
+                                    <div class="text-left w-full space-y-1">
+                                        <p class="text-xs text-gray-600">• 文章写作</p>
+                                        <p class="text-xs text-gray-600">• 设计方案</p>
+                                        <p class="text-xs text-gray-600">• 音乐创作</p>
+                                        <p class="text-xs text-gray-600">• 营销文案</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Customer Service -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-cyan-50 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-headset text-cyan-500 text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">客户服务</h4>
+                                    <p class="text-xs text-gray-500 mb-2">Customer Service</p>
+                                    <div class="text-left w-full space-y-1">
+                                        <p class="text-xs text-gray-600">• 智能客服</p>
+                                        <p class="text-xs text-gray-600">• 问题解答</p>
+                                        <p class="text-xs text-gray-600">• 投诉处理</p>
+                                        <p class="text-xs text-gray-600">• 满意度调查</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Market Analysis -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-indigo-50 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-chart-line text-indigo-500 text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">市场分析</h4>
+                                    <p class="text-xs text-gray-500 mb-2">Market Analysis</p>
+                                    <div class="text-left w-full space-y-1">
+                                        <p class="text-xs text-gray-600">• 数据分析</p>
+                                        <p class="text-xs text-gray-600">• 报告生成</p>
+                                        <p class="text-xs text-gray-600">• 趋势预测</p>
+                                        <p class="text-xs text-gray-600">• 竞品分析</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sales -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-yellow-50 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-handshake text-yellow-600 text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">销售支持</h4>
+                                    <p class="text-xs text-gray-500 mb-2">Sales Support</p>
+                                    <div class="text-left w-full space-y-1">
+                                        <p class="text-xs text-gray-600">• 线索挖掘</p>
+                                        <p class="text-xs text-gray-600">• 客户画像</p>
+                                        <p class="text-xs text-gray-600">• 方案推荐</p>
+                                        <p class="text-xs text-gray-600">• 跟进管理</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Research -->
+                            <div class="bg-white rounded-lg p-4 border border-gray-200 shadow-sm hover:shadow-md transition-all mini-card">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="w-12 h-12 bg-teal-50 rounded-xl flex items-center justify-center mb-3">
+                                        <i class="fas fa-microscope text-teal-500 text-xl"></i>
+                                    </div>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2">科研助手</h4>
+                                    <p class="text-xs text-gray-500 mb-2">Research Assistant</p>
+                                    <div class="text-left w-full space-y-1">
+                                        <p class="text-xs text-gray-600">• 文献综述</p>
+                                        <p class="text-xs text-gray-600">• 实验设计</p>
+                                        <p class="text-xs text-gray-600">• 数据处理</p>
+                                        <p class="text-xs text-gray-600">• 问题提出</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center fade-in-up pt-2">
+                            <button class="detail-button" onclick="openModal('modal-application-detail')">
+                                <i class="fas fa-expand-alt"></i>
+                                <span>查看应用案例详解</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 9: Technical Challenges -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-8 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-exclamation-triangle text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">技术挑战</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Technical Challenges</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-5 gap-4">
+                                <div class="bg-white rounded-xl p-6 border-l-4 border-red-400 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="text-6xl font-bold text-red-500 mb-4">01</div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">幻觉问题</h3>
+                                        <p class="text-xs text-gray-500 mb-3">Hallucination</p>
+                                        <p class="text-sm text-gray-600">模型可能产生错误或虚构的信息</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 border-l-4 border-orange-400 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="text-6xl font-bold text-orange-500 mb-4">02</div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">长期一致性</h3>
+                                        <p class="text-xs text-gray-500 mb-3">Long-term Consistency</p>
+                                        <p class="text-sm text-gray-600">保持对话历史的一致性困难</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 border-l-4 border-yellow-400 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="text-6xl font-bold text-yellow-600 mb-4">03</div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">复杂推理</h3>
+                                        <p class="text-xs text-gray-500 mb-3">Complex Reasoning</p>
+                                        <p class="text-sm text-gray-600">处理多步推理的复杂任务</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 border-l-4 border-purple-400 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="text-6xl font-bold text-purple-500 mb-4">04</div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">安全对齐</h3>
+                                        <p class="text-xs text-gray-500 mb-3">Safety & Alignment</p>
+                                        <p class="text-sm text-gray-600">确保行为符合人类价值观</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 border-l-4 border-blue-400 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="text-6xl font-bold text-blue-500 mb-4">05</div>
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-2">可解释性</h3>
+                                        <p class="text-xs text-gray-500 mb-3">Explainability</p>
+                                        <p class="text-sm text-gray-600">理解智能体的决策过程</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-8 text-center fade-in-up">
+                                <button class="detail-button" onclick="openModal('modal-challenge-detail')">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <span>查看挑战应对策略</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 10: Development Trends -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-8 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-chart-line text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">发展趋势</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Development Trends</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-5 gap-4">
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center h-full">
+                                        <div class="w-16 h-16 bg-brand rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-users text-white text-3xl"></i>
+                                        </div>
+                                        <div class="text-5xl font-bold text-brand mb-3">01</div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">多智能体系统</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Multi-Agent System</p>
+                                        <p class="text-sm text-gray-600">协作完成复杂任务</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-green-200 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center h-full">
+                                        <div class="w-16 h-16 bg-green-500 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-robot text-white text-3xl"></i>
+                                        </div>
+                                        <div class="text-5xl font-bold text-green-600 mb-3">02</div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">具身智能</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Embodied AI</p>
+                                        <p class="text-sm text-gray-600">与物理世界交互</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center h-full">
+                                        <div class="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-graduation-cap text-white text-3xl"></i>
+                                        </div>
+                                        <div class="text-5xl font-bold text-purple-600 mb-3">03</div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">持续学习</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Continuous Learning</p>
+                                        <p class="text-sm text-gray-600">使用中不断改进</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-6 border-2 border-orange-200 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center h-full">
+                                        <div class="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-bullseye text-white text-3xl"></i>
+                                        </div>
+                                        <div class="text-5xl font-bold text-orange-600 mb-3">04</div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">专业化智能体</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Specialized Agents</p>
+                                        <p class="text-sm text-gray-600">针对特定领域</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-gradient-to-br from-cyan-50 to-teal-50 rounded-xl p-6 border-2 border-cyan-200 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex flex-col items-center text-center h-full">
+                                        <div class="w-16 h-16 bg-cyan-500 rounded-xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-handshake text-white text-3xl"></i>
+                                        </div>
+                                        <div class="text-5xl font-bold text-cyan-600 mb-3">05</div>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-2">人机协作</h3>
+                                        <p class="text-xs text-gray-500 mb-2">Human-AI Collaboration</p>
+                                        <p class="text-sm text-gray-600">协作而非替代</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 11: Summary -->
+        <section class="slide">
+            <div class="slide-content bg-gradient-to-br from-gray-50 to-blue-50">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up mb-8">
+                        <i class="fas fa-flag-checkered text-brand text-6xl mb-6"></i>
+                    </div>
+                    <h2 class="text-5xl font-bold text-gray-900 mb-6 fade-in-up">智能体开发技术总结</h2>
+                    <p class="text-xl text-gray-600 mb-12 max-w-4xl fade-in-up">
+                        智能体技术正在改变人机交互方式，从基础架构到应用场景，大模型时代的智能体展现出前所未有的能力。
+                        随着技术不断进步，智能体将在更多领域发挥重要作用。
+                    </p>
+                    
+                    <div class="grid grid-cols-4 gap-6 max-w-6xl mb-12">
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">5</div>
+                            <p class="text-sm text-gray-600 mb-1">核心模块</p>
+                            <p class="text-xs text-gray-500">架构组件</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">6</div>
+                            <p class="text-sm text-gray-600 mb-1">关键技术</p>
+                            <p class="text-xs text-gray-500">技术能力</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">10+</div>
+                            <p class="text-sm text-gray-600 mb-1">应用场景</p>
+                            <p class="text-xs text-gray-500">实际应用</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">∞</div>
+                            <p class="text-sm text-gray-600 mb-1">发展潜力</p>
+                            <p class="text-xs text-gray-500">未来可能</p>
+                        </div>
+                    </div>
+                    
+                    <div class="fade-in-up">
+                        <p class="text-2xl font-bold text-gray-800">智能体时代已经到来</p>
+                        <p class="text-lg text-gray-500 mt-2">The Era of Intelligent Agents Has Arrived</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+    
+    <!-- Modal 1: Tool Calling Detail -->
+    <div id="modal-tool-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-tool-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">工具调用详细实现</h2>
+            <p class="text-sm text-gray-500 mb-8">Detailed Implementation of Tool Calling</p>
+            
+            <div class="space-y-6">
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">OpenAI Function Calling 示例</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        OpenAI 的函数调用功能允许模型以结构化的方式调用外部工具。模型会根据用户输入自动识别需要调用的函数，并生成相应的参数。
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <pre class="text-sm text-gray-800 overflow-x-auto"><code>{
+  "name": "get_weather",
+  "description": "获取指定城市的天气信息",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "location": {
+        "type": "string",
+        "description": "城市名称"
+      },
+      "unit": {
+        "type": "string",
+        "enum": ["celsius", "fahrenheit"]
+      }
+    },
+    "required": ["location"]
+  }
+}</code></pre>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">工具调用流程</h3>
+                    <div class="space-y-3">
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">1. 函数定义</h4>
+                            <p class="text-sm text-gray-700">定义可调用的函数名称、描述和参数格式，让模型理解每个工具的功能和使用方式。</p>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">2. 模型决策</h4>
+                            <p class="text-sm text-gray-700">模型根据用户输入，判断是否需要调用工具，以及调用哪个工具，并自动生成函数调用参数。</p>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">3. 执行调用</h4>
+                            <p class="text-sm text-gray-700">系统接收模型生成的函数调用请求，执行实际的工具调用（如 API 请求、数据库查询等）。</p>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">4. 结果处理</h4>
+                            <p class="text-sm text-gray-700">将工具返回的结果传回模型，模型基于结果生成最终的用户响应，完成整个交互流程。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-brand"></i>
+                        最佳实践
+                    </h3>
+                    <ul class="space-y-2 text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>清晰的函数描述：</strong>确保每个工具的描述准确、完整，帮助模型正确选择工具。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>参数验证：</strong>在执行工具调用前，验证参数的有效性和安全性。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>错误处理：</strong>优雅地处理工具调用失败的情况，提供有意义的错误信息。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>结果格式化：</strong>将工具返回的原始数据转换为模型易于理解的格式。</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 2: Framework Detail -->
+    <div id="modal-framework-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-framework-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">开发框架详细功能对比</h2>
+            <p class="text-sm text-gray-500 mb-8">Detailed Comparison of Development Frameworks</p>
+            
+            <div class="space-y-6">
+                <!-- LangChain -->
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border-l-4 border-brand">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-link text-brand text-2xl"></i>
+                        LangChain
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">核心功能</h4>
+                            <ul class="text-gray-700 space-y-1 text-sm ml-4">
+                                <li>• <strong>链式调用：</strong>支持将多个工具和模型串联在一起，形成复杂的工作流</li>
+                                <li>• <strong>上下文管理：</strong>自动管理对话历史和上下文，支持长对话场景</li>
+                                <li>• <strong>多模型支持：</strong>兼容 OpenAI、Anthropic、HuggingFace 等多种模型</li>
+                                <li>• <strong>工具集成：</strong>提供丰富的预构建工具，如搜索、数据库、API 调用等</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">适用场景</h4>
+                            <p class="text-sm text-gray-700">适合构建需要多步骤处理、复杂工具调用和灵活工作流的智能体应用。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hugging Face Agent -->
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border-l-4 border-purple-500">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-robot text-purple-600 text-2xl"></i>
+                        Hugging Face Agent
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">核心功能</h4>
+                            <ul class="text-gray-700 space-y-1 text-sm ml-4">
+                                <li>• <strong>多模型架构支持：</strong>支持各种 Transformer 模型架构</li>
+                                <li>• <strong>预训练模型库：</strong>提供大量预训练的智能体模型可直接使用</li>
+                                <li>• <strong>自定义训练：</strong>支持基于自有数据进行模型微调和训练</li>
+                                <li>• <strong>社区生态：</strong>拥有活跃的开源社区和丰富的模型共享</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">适用场景</h4>
+                            <p class="text-sm text-gray-700">适合需要深度定制模型、使用开源模型或进行模型研究的场景。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- OpenAI Functions -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-l-4 border-green-500">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-cog text-green-600 text-2xl"></i>
+                        OpenAI Functions
+                    </h3>
+                    
+                    <div class="space-y-3">
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">核心功能</h4>
+                            <ul class="text-gray-700 space-y-1 text-sm ml-4">
+                                <li>• <strong>简单函数调用格式：</strong>使用 JSON Schema 定义函数，简单直观</li>
+                                <li>• <strong>自动参数解析：</strong>模型自动从对话中提取和解析函数参数</li>
+                                <li>• <strong>结果处理：</strong>自动将函数返回结果整合到对话上下文中</li>
+                                <li>• <strong>原生集成：</strong>与 OpenAI 模型深度集成，开箱即用</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">适用场景</h4>
+                            <p class="text-sm text-gray-700">适合快速开发、使用 OpenAI 模型且工具调用需求相对简单的场景。</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Autonomous Agents -->
+                <div class="bg-gray-50 rounded-xl p-6 border-2 border-gray-300">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">自主智能体框架特点</h3>
+                    
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-rocket text-green-500"></i>
+                                AutoGPT
+                            </h4>
+                            <p class="text-sm text-gray-700">自主设定目标并循环执行任务，直到完成目标。适合需要长期自主运行的场景。</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-baby text-blue-500"></i>
+                                BabyAGI
+                            </h4>
+                            <p class="text-sm text-gray-700">基于任务优先级动态生成和执行子任务。适合需要灵活任务规划的场景。</p>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-users-cog text-purple-500"></i>
+                                AgentVerse
+                            </h4>
+                            <p class="text-sm text-gray-700">支持多个智能体协作，通过分工和协调完成复杂任务。适合大型协作场景。</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 3: Application Detail -->
+    <div id="modal-application-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-application-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">应用案例详解</h2>
+            <p class="text-sm text-gray-500 mb-8">Detailed Application Case Studies</p>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-user-clock text-blue-500 text-2xl"></i>
+                        个人助手应用案例
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        智能个人助手可以帮助用户管理日常事务，如自动安排会议、设置提醒、查找信息、总结邮件等。
+                        通过集成日历 API、邮件服务、搜索引擎等工具，助手能够理解用户意图并自动执行相应操作。
+                    </p>
+                    <div class="bg-white rounded-lg p-4">
+                        <p class="text-sm font-bold text-gray-900 mb-2">典型工作流：</p>
+                        <p class="text-sm text-gray-700">用户："帮我安排明天下午和张总的会议，并总结今天的工作邮件"</p>
+                        <p class="text-sm text-gray-700 mt-2">→ 智能体查询日历空闲时间 → 发送会议邀请 → 检索工作邮件 → 生成摘要 → 呈现结果</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-red-50 to-pink-50 rounded-xl p-6 border border-red-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-heartbeat text-red-500 text-2xl"></i>
+                        医疗诊断辅助系统
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        医疗智能体可以辅助医生进行初步诊断，通过分析患者症状、病史和检查结果，提供可能的诊断建议和治疗方案。
+                        系统可以检索医学文献、临床指南，并结合最新研究成果给出专业建议。
+                    </p>
+                    <div class="bg-white rounded-lg p-4">
+                        <p class="text-sm font-bold text-gray-900 mb-2">应用价值：</p>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• 提高诊断准确率，减少漏诊误诊</li>
+                            <li>• 节省医生查阅文献的时间</li>
+                            <li>• 为基层医疗提供专家级辅助</li>
+                            <li>• 实时更新医学知识，跟进最新研究</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-code text-green-500 text-2xl"></i>
+                        代码开发助手
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        代码智能体可以理解开发需求，自动生成代码、修复 bug、进行代码审查和编写文档。
+                        通过集成 IDE、版本控制系统和测试框架，实现全流程的开发辅助。
+                    </p>
+                    <div class="bg-white rounded-lg p-4">
+                        <p class="text-sm font-bold text-gray-900 mb-2">核心能力：</p>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• 根据自然语言描述生成代码</li>
+                            <li>• 自动定位和修复代码错误</li>
+                            <li>• 进行代码质量审查和优化建议</li>
+                            <li>• 生成单元测试和技术文档</li>
+                            <li>• 解释复杂代码逻辑</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-graduation-cap text-purple-500 text-2xl"></i>
+                        教育辅导系统
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        教育智能体可以根据学生的学习进度和知识薄弱点，提供个性化的学习内容和辅导。
+                        系统能够解答学生问题、布置针对性习题、追踪学习效果并调整教学策略。
+                    </p>
+                    <div class="bg-white rounded-lg p-4">
+                        <p class="text-sm font-bold text-gray-900 mb-2">个性化教学流程：</p>
+                        <p class="text-sm text-gray-700">评估学生水平 → 识别知识盲点 → 生成学习计划 → 提供针对性讲解 → 布置练习题 → 评估掌握情况 → 调整教学策略</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-xl p-6 border-2 border-gray-300">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-brand"></i>
+                        应用开发建议
+                    </h3>
+                    <ul class="space-y-2 text-gray-700 text-sm">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>明确应用边界：</strong>清晰界定智能体的能力范围和责任边界。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>人机协作设计：</strong>将智能体定位为辅助工具，而非完全替代人类。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>持续优化迭代：</strong>基于用户反馈不断优化智能体的性能和用户体验。</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>安全与隐私：</strong>确保数据安全和用户隐私保护。</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 4: Challenge Detail -->
+    <div id="modal-challenge-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-challenge-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">挑战应对策略</h2>
+            <p class="text-sm text-gray-500 mb-8">Strategies to Address Challenges</p>
+            
+            <div class="space-y-6">
+                <div class="border-l-4 border-red-400 pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <span class="text-3xl text-red-500">01</span>
+                        <span>幻觉问题</span>
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        大语言模型可能会生成看似合理但实际上不准确或虚构的信息，这在需要高精度的应用场景中尤为危险。
+                    </p>
+                    <div class="bg-red-50 rounded-lg p-4">
+                        <p class="font-bold text-gray-900 mb-2">应对策略：</p>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• 引入外部知识库和检索增强生成（RAG）技术</li>
+                            <li>• 对关键信息进行多源验证和交叉检查</li>
+                            <li>• 添加置信度评分机制，标注不确定的信息</li>
+                            <li>• 在关键决策点引入人工审核环节</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-orange-400 pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <span class="text-3xl text-orange-500">02</span>
+                        <span>长期一致性</span>
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        在长对话或多轮交互中，智能体可能会出现前后矛盾、遗忘早期信息或重复相同内容的问题。
+                    </p>
+                    <div class="bg-orange-50 rounded-lg p-4">
+                        <p class="font-bold text-gray-900 mb-2">应对策略：</p>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• 设计高效的记忆管理系统，区分短期和长期记忆</li>
+                            <li>• 实现对话摘要机制，保留关键信息</li>
+                            <li>• 使用知识图谱维护实体关系和事实一致性</li>
+                            <li>• 引入上下文压缩技术，优化长文本处理</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-yellow-400 pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <span class="text-3xl text-yellow-600">03</span>
+                        <span>复杂推理</span>
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        需要多步逻辑推理、数学计算或复杂决策的任务仍然是智能体的挑战，可能出现推理链断裂或逻辑错误。
+                    </p>
+                    <div class="bg-yellow-50 rounded-lg p-4">
+                        <p class="font-bold text-gray-900 mb-2">应对策略：</p>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• 采用思维链（Chain-of-Thought）提示技术</li>
+                            <li>• 将复杂任务分解为多个简单子任务</li>
+                            <li>• 集成外部工具处理专业计算和推理</li>
+                            <li>• 使用树状搜索或规划算法优化决策过程</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-purple-400 pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <span class="text-3xl text-purple-500">04</span>
+                        <span>安全与对齐</span>
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        确保智能体的行为符合人类价值观、伦理规范和法律要求，防止被恶意利用或产生有害输出。
+                    </p>
+                    <div class="bg-purple-50 rounded-lg p-4">
+                        <p class="font-bold text-gray-900 mb-2">应对策略：</p>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• 实施强化学习与人类反馈（RLHF）进行价值对齐</li>
+                            <li>• 设置内容过滤和安全防护机制</li>
+                            <li>• 建立多层审核和权限管理系统</li>
+                            <li>• 持续监控和审计智能体行为</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-blue-400 pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <span class="text-3xl text-blue-500">05</span>
+                        <span>可解释性</span>
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        理解智能体的决策过程和推理逻辑对于建立信任、调试问题和满足合规要求至关重要。
+                    </p>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <p class="font-bold text-gray-900 mb-2">应对策略：</p>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• 记录完整的推理过程和决策依据</li>
+                            <li>• 提供可视化的决策树或推理链展示</li>
+                            <li>• 实现"解释模式"，让智能体阐述决策理由</li>
+                            <li>• 开发调试工具，便于追踪和分析行为</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-brand/30">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-shield-alt text-brand"></i>
+                        综合建议
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        应对这些挑战需要技术创新和工程实践相结合。在实际开发中，应根据应用场景的特定需求和风险等级，
+                        <span class="font-bold text-brand">综合运用多种策略</span>，建立多层防护机制。
+                        同时，保持对智能体行为的持续监控和优化，确保系统的可靠性和安全性。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // Modal Control Functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // Close modal when clicking on background
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        });
+        
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
+            }
+        });
+        
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Add visible class to trigger animations
+                    entry.target.querySelectorAll('.fade-in-up, .mini-card').forEach((el, index) => {
+                        setTimeout(() => {
+                            el.classList.add('visible');
+                        }, index * 50);
+                    });
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all slides
+        document.querySelectorAll('.slide').forEach(slide => {
+            observer.observe(slide);
+        });
+        
+        // Smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Initialize animations on page load
+        window.addEventListener('load', () => {
+            // Trigger animation for first slide
+            const firstSlide = document.querySelector('.slide');
+            if (firstSlide) {
+                firstSlide.querySelectorAll('.fade-in-up, .mini-card').forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('visible');
+                    }, index * 100 + 300);
+                });
+            }
+        });
+        
+        // Track current slide for debugging (optional)
+        const slidesContainer = document.querySelector('.slides-container');
+        let currentSlide = 0;
+        
+        slidesContainer.addEventListener('scroll', () => {
+            const slides = document.querySelectorAll('.slide');
+            const scrollPosition = slidesContainer.scrollTop;
+            
+            slides.forEach((slide, index) => {
+                const slideTop = slide.offsetTop;
+                const slideHeight = slide.offsetHeight;
+                
+                if (scrollPosition >= slideTop - slideHeight / 2 && 
+                    scrollPosition < slideTop + slideHeight / 2) {
+                    if (currentSlide !== index) {
+                        currentSlide = index;
+                        console.log('Current slide:', currentSlide + 1);
+                    }
+                }
+            });
+        });
+    </script>
+    
+</body>
+</html>
