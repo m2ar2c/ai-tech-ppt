@@ -6,3 +6,6 @@ Thumbs.db
 *.log
 *.tmp
 ~$*
+
+# Python virtual environments
+.venv/
