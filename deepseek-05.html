@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大模型自注意力学习机制 - 演示文稿</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Scroll Snap Container */
+        .slides-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        
+        /* Individual Slide - 16:9 Aspect Ratio */
+        .slide {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        /* 16:9 Content Container */
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            overflow: hidden;
+        }
+        
+        /* Brand Color - Tech Blue */
+        :root {
+            --brand-color: #00AEEF;
+            --brand-gradient-start: rgba(0, 174, 239, 0.8);
+            --brand-gradient-end: rgba(0, 174, 239, 0.2);
+        }
+        
+        .text-brand {
+            color: var(--brand-color);
+        }
+        
+        .bg-brand {
+            background-color: var(--brand-color);
+        }
+        
+        .bg-brand-gradient {
+            background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
+        }
+        
+        .border-brand {
+            border-color: var(--brand-color);
+        }
+        
+        /* Modal/Overlay Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            max-height: 85vh;
+            width: 90%;
+            overflow-y: auto;
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+            transform: scale(1.1);
+        }
+        
+        /* Animation Classes */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Mini Card Stagger Animation */
+        .mini-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .mini-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .mini-card:nth-child(1) { transition-delay: 0.1s; }
+        .mini-card:nth-child(2) { transition-delay: 0.2s; }
+        .mini-card:nth-child(3) { transition-delay: 0.3s; }
+        .mini-card:nth-child(4) { transition-delay: 0.4s; }
+        .mini-card:nth-child(5) { transition-delay: 0.5s; }
+        .mini-card:nth-child(6) { transition-delay: 0.6s; }
+        .mini-card:nth-child(7) { transition-delay: 0.7s; }
+        .mini-card:nth-child(8) { transition-delay: 0.8s; }
+        .mini-card:nth-child(9) { transition-delay: 0.9s; }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Button Styles */
+        .detail-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 174, 239, 0.3);
+        }
+        
+        .detail-button:hover {
+            background: #008ec4;
+            box-shadow: 0 4px 12px rgba(0, 174, 239, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .detail-button i {
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .modal-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            
+            .slide-content {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+        
+        /* Math formula styling */
+        .math-formula {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            background: #f8f9fa;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--brand-color);
+            font-size: 1.125rem;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Slides Container -->
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <section class="slide">
+            <div class="slide-content bg-brand-gradient">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up">
+                        <i class="fas fa-network-wired text-6xl text-white mb-6"></i>
+                    </div>
+                    <h1 class="text-7xl font-bold text-white mb-4 fade-in-up">大模型自注意力学习机制</h1>
+                    <p class="text-2xl text-white/90 mb-8 fade-in-up">Self-Attention Learning Mechanism in Large Models</p>
+                    <div class="w-24 h-1 bg-white/50 rounded-full mb-8 fade-in-up"></div>
+                    <h2 class="text-3xl font-bold text-white mb-3 fade-in-up">第五章</h2>
+                    <p class="text-xl text-white/80 fade-in-up">Chapter Five</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: Self-Attention Overview -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-eye text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">自注意力机制核心概念</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Core Concepts of Self-Attention</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-100 mb-6 fade-in-up">
+                                <p class="text-2xl text-gray-800 leading-relaxed">
+                                    自注意力机制是 <span class="text-brand font-bold text-3xl">Transformer 架构</span>的核心创新，<br/>
+                                    彻底改变了模型处理<span class="font-bold text-gray-900">序列数据</span>的方式
+                                </p>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-6">
+                                <div class="bg-white rounded-xl p-6 border border-gray-200 shadow-sm mini-card">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-red-50 rounded-lg p-3">
+                                            <i class="fas fa-times-circle text-red-500 text-2xl"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h3 class="text-xl font-bold text-gray-900 mb-2">传统方式</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Traditional RNN/LSTM</p>
+                                            <p class="text-sm text-gray-600">循环神经网络必须顺序处理，难以捕获长距离依赖</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/30 shadow-md mini-card">
+                                    <div class="flex items-start gap-3">
+                                        <div class="bg-brand/10 rounded-lg p-3">
+                                            <i class="fas fa-check-circle text-brand text-2xl"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h3 class="text-xl font-bold text-brand mb-2">自注意力</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Self-Attention</p>
+                                            <p class="text-sm text-gray-600">直接关注序列中所有元素，捕获任意距离依赖</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 text-center fade-in-up">
+                                <button class="detail-button" onclick="openModal('modal-mechanism-detail')">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>查看工作原理详解</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 3: Query-Key-Value -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-key text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">查询-键-值三元组</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Query-Key-Value Triplet</p>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div class="grid grid-cols-3 gap-6 mb-8">
+                            <!-- Query Card -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-purple-200 shadow-md mini-card">
+                                <div class="text-center">
+                                    <div class="w-16 h-16 bg-purple-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-question text-purple-500 text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-4xl font-bold text-purple-600 mb-2">Q</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Query</p>
+                                    <h4 class="text-2xl font-bold text-gray-900 mb-3">查询</h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed">当前元素发出的查询信号，用于寻找相关信息</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Key Card -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-blue-200 shadow-md mini-card">
+                                <div class="text-center">
+                                    <div class="w-16 h-16 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-key text-brand text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-4xl font-bold text-brand mb-2">K</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Key</p>
+                                    <h4 class="text-2xl font-bold text-gray-900 mb-3">键</h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed">其他元素提供的标识或标签，用于匹配查询</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Value Card -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-green-200 shadow-md mini-card">
+                                <div class="text-center">
+                                    <div class="w-16 h-16 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-4">
+                                        <i class="fas fa-database text-green-600 text-3xl"></i>
+                                    </div>
+                                    <h3 class="text-4xl font-bold text-green-600 mb-2">V</h3>
+                                    <p class="text-xs text-gray-500 mb-3">Value</p>
+                                    <h4 class="text-2xl font-bold text-gray-900 mb-3">值</h4>
+                                    <p class="text-sm text-gray-600 leading-relaxed">其他元素携带的实际内容或信息</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-purple-50 via-blue-50 to-green-50 rounded-2xl p-6 border border-blue-200 fade-in-up">
+                            <h4 class="text-xl font-bold text-gray-900 mb-4 text-center">计算流程</h4>
+                            <div class="grid grid-cols-3 gap-4 text-center">
+                                <div>
+                                    <div class="text-3xl font-bold text-brand mb-2">01</div>
+                                    <p class="text-sm text-gray-700">计算查询与所有键的相似度</p>
+                                </div>
+                                <div>
+                                    <div class="text-3xl font-bold text-brand mb-2">02</div>
+                                    <p class="text-sm text-gray-700">Softmax归一化得到权重</p>
+                                </div>
+                                <div>
+                                    <div class="text-3xl font-bold text-brand mb-2">03</div>
+                                    <p class="text-sm text-gray-700">对值进行加权求和输出</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center fade-in-up">
+                            <button class="detail-button" onclick="openModal('modal-formula-detail')">
+                                <i class="fas fa-square-root-alt"></i>
+                                <span>查看数学公式</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 4: Transformer Architecture -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-project-diagram text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">Transformer 架构设计</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Transformer Architecture Design</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-5 border border-blue-200 mb-6 fade-in-up">
+                                <p class="text-xl text-gray-800 text-center leading-relaxed">
+                                    由 Vaswani 等人于 <span class="text-brand font-bold text-2xl">2017年</span> 提出<br/>
+                                    完全基于注意力机制，<span class="font-bold text-gray-900">摒弃循环结构</span>
+                                </p>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-6">
+                                <!-- Encoder -->
+                                <div class="bg-white rounded-xl border-2 border-brand/30 shadow-md mini-card">
+                                    <div class="bg-brand/10 rounded-t-xl px-6 py-4 border-b border-brand/20">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-sign-in-alt text-brand text-2xl"></i>
+                                            <h3 class="text-3xl font-bold text-brand">编码器</h3>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">Encoder</p>
+                                    </div>
+                                    <div class="p-6">
+                                        <div class="space-y-4">
+                                            <div class="flex items-start gap-3">
+                                                <div class="bg-brand/10 rounded-lg px-3 py-1 mt-1">
+                                                    <span class="text-brand font-bold">1</span>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h4 class="font-bold text-gray-900 mb-1">多头自注意力层</h4>
+                                                    <p class="text-xs text-gray-600">Multi-Head Self-Attention</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-start gap-3">
+                                                <div class="bg-brand/10 rounded-lg px-3 py-1 mt-1">
+                                                    <span class="text-brand font-bold">2</span>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h4 class="font-bold text-gray-900 mb-1">前馈神经网络层</h4>
+                                                    <p class="text-xs text-gray-600">Feed-Forward Network</p>
+                                                </div>
+                                            </div>
+                                            <div class="bg-blue-50 rounded-lg p-3 mt-4">
+                                                <p class="text-sm text-gray-700">
+                                                    <i class="fas fa-plus-circle text-brand mr-2"></i>
+                                                    残差连接 + 层归一化
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Decoder -->
+                                <div class="bg-white rounded-xl border-2 border-purple-200 shadow-md mini-card">
+                                    <div class="bg-purple-50 rounded-t-xl px-6 py-4 border-b border-purple-200">
+                                        <div class="flex items-center gap-3">
+                                            <i class="fas fa-sign-out-alt text-purple-600 text-2xl"></i>
+                                            <h3 class="text-3xl font-bold text-purple-600">解码器</h3>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">Decoder</p>
+                                    </div>
+                                    <div class="p-6">
+                                        <div class="space-y-4">
+                                            <div class="flex items-start gap-3">
+                                                <div class="bg-purple-100 rounded-lg px-3 py-1 mt-1">
+                                                    <span class="text-purple-600 font-bold">1</span>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h4 class="font-bold text-gray-900 mb-1">掩码自注意力层</h4>
+                                                    <p class="text-xs text-gray-600">Masked Self-Attention</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-start gap-3">
+                                                <div class="bg-purple-100 rounded-lg px-3 py-1 mt-1">
+                                                    <span class="text-purple-600 font-bold">2</span>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h4 class="font-bold text-gray-900 mb-1">交叉注意力层</h4>
+                                                    <p class="text-xs text-gray-600">Cross-Attention</p>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-start gap-3">
+                                                <div class="bg-purple-100 rounded-lg px-3 py-1 mt-1">
+                                                    <span class="text-purple-600 font-bold">3</span>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <h4 class="font-bold text-gray-900 mb-1">前馈神经网络层</h4>
+                                                    <p class="text-xs text-gray-600">Feed-Forward Network</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 5: Multi-Head Attention -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-layer-group text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">多头自注意力机制</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Multi-Head Self-Attention Mechanism</p>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div class="grid grid-cols-3 gap-5 mb-6">
+                            <!-- Advantage 1 -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="text-center">
+                                    <div class="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                        <i class="fas fa-expand-arrows-alt text-brand text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">扩展能力</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Extended Capability</p>
+                                    <p class="text-sm text-gray-600">不同的头学习不同类型的依赖关系</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Advantage 2 -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="text-center">
+                                    <div class="w-14 h-14 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                        <i class="fas fa-bolt text-green-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">增强表示</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Enhanced Representation</p>
+                                    <p class="text-sm text-gray-600">多子空间融合提升表达能力</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Advantage 3 -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="text-center">
+                                    <div class="w-14 h-14 bg-purple-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                                        <i class="fas fa-shield-alt text-purple-600 text-2xl"></i>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900 mb-2">提高鲁棒性</h3>
+                                    <p class="text-xs text-gray-500 mb-2">Improved Robustness</p>
+                                    <p class="text-sm text-gray-600">多角度理解输入序列</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border border-blue-200 fade-in-up">
+                            <h4 class="text-2xl font-bold text-gray-900 mb-4 text-center flex items-center justify-center gap-3">
+                                <i class="fas fa-sitemap text-brand"></i>
+                                工作流程
+                            </h4>
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <div class="text-4xl font-bold text-brand mb-2">h</div>
+                                    <p class="text-sm text-gray-700 font-semibold mb-1">并行计算</p>
+                                    <p class="text-xs text-gray-600">对 Q, K, V 进行 h 次线性投影</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <div class="text-4xl font-bold text-brand mb-2">⊕</div>
+                                    <p class="text-sm text-gray-700 font-semibold mb-1">拼接融合</p>
+                                    <p class="text-xs text-gray-600">将 h 个头的输出拼接</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <div class="text-4xl font-bold text-brand mb-2">W</div>
+                                    <p class="text-sm text-gray-700 font-semibold mb-1">线性变换</p>
+                                    <p class="text-xs text-gray-600">通过输出矩阵得到最终结果</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center fade-in-up">
+                            <button class="detail-button" onclick="openModal('modal-multihead-detail')">
+                                <i class="fas fa-calculator"></i>
+                                <span>查看计算过程</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 6: Advantages Comparison -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-trophy text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">自注意力机制的优势</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Advantages of Self-Attention</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-3 gap-5">
+                                <!-- Advantage 1: Parallel -->
+                                <div class="bg-white rounded-xl border-2 border-brand/30 shadow-md mini-card">
+                                    <div class="bg-brand/10 rounded-t-xl px-5 py-4 text-center">
+                                        <i class="fas fa-forward text-brand text-4xl mb-2"></i>
+                                        <h3 class="text-3xl font-bold text-brand mb-1">10倍+</h3>
+                                        <p class="text-xs text-gray-600">Training Speed</p>
+                                    </div>
+                                    <div class="p-5">
+                                        <h4 class="text-xl font-bold text-gray-900 mb-3">并行计算能力</h4>
+                                        <p class="text-sm text-gray-600 leading-relaxed mb-3">RNN 必须顺序执行，而 Transformer 所有位置可同时计算</p>
+                                        <div class="bg-blue-50 rounded-lg px-3 py-2">
+                                            <p class="text-xs text-gray-700">训练速度比 RNN 快 10 倍以上</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Advantage 2: Long Distance -->
+                                <div class="bg-white rounded-xl border-2 border-green-200 shadow-md mini-card">
+                                    <div class="bg-green-50 rounded-t-xl px-5 py-4 text-center">
+                                        <i class="fas fa-infinity text-green-600 text-4xl mb-2"></i>
+                                        <h3 class="text-3xl font-bold text-green-600 mb-1">O(1)</h3>
+                                        <p class="text-xs text-gray-600">Distance Complexity</p>
+                                    </div>
+                                    <div class="p-5">
+                                        <h4 class="text-xl font-bold text-gray-900 mb-3">长距离依赖建模</h4>
+                                        <p class="text-sm text-gray-600 leading-relaxed mb-3">任意两个位置直接交互，RNN 通过隐藏状态传递容易遗忘</p>
+                                        <div class="bg-green-50 rounded-lg px-3 py-2">
+                                            <p class="text-xs text-gray-700">距离复杂度为 O(1)</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Advantage 3: Interpretability -->
+                                <div class="bg-white rounded-xl border-2 border-purple-200 shadow-md mini-card">
+                                    <div class="bg-purple-50 rounded-t-xl px-5 py-4 text-center">
+                                        <i class="fas fa-eye text-purple-600 text-4xl mb-2"></i>
+                                        <h3 class="text-3xl font-bold text-purple-600 mb-1">100%</h3>
+                                        <p class="text-xs text-gray-600">Transparency</p>
+                                    </div>
+                                    <div class="p-5">
+                                        <h4 class="text-xl font-bold text-gray-900 mb-3">可解释性</h4>
+                                        <p class="text-sm text-gray-600 leading-relaxed mb-3">注意力权重表明不同位置的贡献，使模型决策透明</p>
+                                        <div class="bg-purple-50 rounded-lg px-3 py-2">
+                                            <p class="text-xs text-gray-700">可视化注意力分布</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-4 border border-blue-200 fade-in-up">
+                                <div class="flex items-center justify-center gap-8">
+                                    <div class="text-center">
+                                        <p class="text-sm text-gray-600 mb-1">传统 RNN/LSTM</p>
+                                        <div class="text-2xl font-bold text-red-600">顺序计算 + 长距离遗忘</div>
+                                    </div>
+                                    <div class="text-3xl text-brand">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </div>
+                                    <div class="text-center">
+                                        <p class="text-sm text-gray-600 mb-1">自注意力机制</p>
+                                        <div class="text-2xl font-bold text-brand">并行计算 + 直接交互</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 7: Applications - BERT & GPT -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-rocket text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">实际应用案例</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Practical Applications</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-2 gap-6">
+                                <!-- BERT Application -->
+                                <div class="bg-white rounded-xl border-2 border-brand/30 shadow-md mini-card">
+                                    <div class="bg-brand/10 rounded-t-xl px-6 py-4">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <i class="fas fa-book-reader text-brand text-3xl"></i>
+                                            <h3 class="text-4xl font-bold text-brand">BERT</h3>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Bidirectional Encoder Representations</p>
+                                    </div>
+                                    <div class="p-6">
+                                        <div class="mb-4">
+                                            <h4 class="text-lg font-bold text-gray-900 mb-2">架构特点</h4>
+                                            <p class="text-sm text-gray-600 leading-relaxed">基于 Transformer 编码器堆叠的双向预训练模型</p>
+                                        </div>
+                                        <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                                            <h5 class="text-sm font-bold text-gray-900 mb-2">应用场景示例</h5>
+                                            <p class="text-xs text-gray-700 leading-relaxed italic mb-2">
+                                                "The movie was not bad, it was actually great."
+                                            </p>
+                                            <p class="text-xs text-gray-600">
+                                                捕捉 "bad" 与 "not" 的否定关系，以及与 "great" 的对比关系
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 bg-brand/10 rounded px-3 py-2">
+                                                <p class="text-xs font-semibold text-brand">理解否定语义</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- GPT Application -->
+                                <div class="bg-white rounded-xl border-2 border-green-200 shadow-md mini-card">
+                                    <div class="bg-green-50 rounded-t-xl px-6 py-4">
+                                        <div class="flex items-center gap-3 mb-2">
+                                            <i class="fas fa-pen-fancy text-green-600 text-3xl"></i>
+                                            <h3 class="text-4xl font-bold text-green-600">GPT</h3>
+                                        </div>
+                                        <p class="text-sm text-gray-600">Generative Pre-trained Transformer</p>
+                                    </div>
+                                    <div class="p-6">
+                                        <div class="mb-4">
+                                            <h4 class="text-lg font-bold text-gray-900 mb-2">架构特点</h4>
+                                            <p class="text-sm text-gray-600 leading-relaxed">基于 Transformer 解码器的掩码自注意力生成模型</p>
+                                        </div>
+                                        <div class="bg-green-50 rounded-lg p-4 mb-4">
+                                            <h5 class="text-sm font-bold text-gray-900 mb-2">应用场景示例</h5>
+                                            <p class="text-xs text-gray-700 leading-relaxed mb-2">
+                                                <span class="font-semibold">输入：</span>"The best thing about AI is its"
+                                            </p>
+                                            <p class="text-xs text-gray-700 leading-relaxed">
+                                                <span class="font-semibold">输出：</span>"ability" / "potential"
+                                            </p>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <div class="flex-1 bg-green-100 rounded px-3 py-2">
+                                                <p class="text-xs font-semibold text-green-700">基于历史生成</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 text-center fade-in-up">
+                                <button class="detail-button" onclick="openModal('modal-vision-detail')">
+                                    <i class="fas fa-image"></i>
+                                    <span>查看计算机视觉应用</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 8: Summary -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-check-circle text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">核心要点总结</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Key Takeaways</p>
+                    </div>
+                    
+                    <div class="flex-1 flex flex-col justify-center">
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <!-- Key Point 1 -->
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-brand/30 mini-card">
+                                <div class="flex items-start gap-4">
+                                    <div class="text-6xl font-bold text-brand">01</div>
+                                    <div class="flex-1">
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-3">核心机制</h3>
+                                        <p class="text-sm text-gray-700 leading-relaxed">
+                                            自注意力通过 Query-Key-Value 三元组实现序列内部元素的直接交互，彻底改变了序列建模方式
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Key Point 2 -->
+                            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200 mini-card">
+                                <div class="flex items-start gap-4">
+                                    <div class="text-6xl font-bold text-purple-600">02</div>
+                                    <div class="flex-1">
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-3">架构创新</h3>
+                                        <p class="text-sm text-gray-700 leading-relaxed">
+                                            Transformer 完全基于注意力机制，通过编码器-解码器结构和残差连接实现强大的建模能力
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Key Point 3 -->
+                            <div class="bg-gradient-to-br from-green-50 to-teal-50 rounded-xl p-6 border-2 border-green-200 mini-card">
+                                <div class="flex items-start gap-4">
+                                    <div class="text-6xl font-bold text-green-600">03</div>
+                                    <div class="flex-1">
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-3">多头机制</h3>
+                                        <p class="text-sm text-gray-700 leading-relaxed">
+                                            多头自注意力从多个子空间学习不同类型的依赖关系，显著增强了模型的表示能力和鲁棒性
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Key Point 4 -->
+                            <div class="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-xl p-6 border-2 border-orange-200 mini-card">
+                                <div class="flex items-start gap-4">
+                                    <div class="text-6xl font-bold text-orange-600">04</div>
+                                    <div class="flex-1">
+                                        <h3 class="text-2xl font-bold text-gray-900 mb-3">广泛应用</h3>
+                                        <p class="text-sm text-gray-700 leading-relaxed">
+                                            从 BERT 的语言理解到 GPT 的文本生成，再到 Vision Transformer 的图像识别，应用领域不断扩展
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-brand-gradient rounded-2xl p-6 text-center fade-in-up">
+                            <p class="text-2xl font-bold text-white mb-2">自注意力机制是大模型时代的基石</p>
+                            <p class="text-lg text-white/90">The Foundation of Large Language Models</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+    
+    <!-- Modal: Mechanism Detail -->
+    <div id="modal-mechanism-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-mechanism-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-cogs text-brand mr-3"></i>
+                自注意力工作原理详解
+            </h3>
+            
+            <div class="space-y-6">
+                <div class="bg-blue-50 rounded-lg p-5 border border-blue-200">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3">核心思想</h4>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        自注意力机制允许模型在处理序列中的每个元素时，直接关注序列中的所有其他元素，从而捕获长距离依赖关系。
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        与传统的循环神经网络（RNN）和长短期记忆网络（LSTM）不同，自注意力不需要按顺序处理序列，所有位置可以并行计算。
+                    </p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-5">
+                    <h4 class="text-xl font-bold text-gray-900 mb-4">计算步骤</h4>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">1</div>
+                            <div>
+                                <h5 class="font-bold text-gray-900 mb-1">计算相似度得分</h5>
+                                <p class="text-sm text-gray-600">对每个查询 (Query)，计算它与所有键 (Key) 的点积相似度</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">2</div>
+                            <div>
+                                <h5 class="font-bold text-gray-900 mb-1">归一化权重</h5>
+                                <p class="text-sm text-gray-600">将相似度得分通过 Softmax 函数进行归一化，得到注意力权重</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">3</div>
+                            <div>
+                                <h5 class="font-bold text-gray-900 mb-1">加权求和</h5>
+                                <p class="text-sm text-gray-600">根据注意力权重对所有值 (Value) 进行加权求和，得到最终的自注意力输出</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-5 border border-purple-200">
+                    <h4 class="text-xl font-bold text-gray-900 mb-3">为什么有效？</h4>
+                    <ul class="space-y-2">
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <p class="text-sm text-gray-700">通过动态计算注意力权重，模型可以根据上下文灵活地选择关注哪些信息</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <p class="text-sm text-gray-700">任意两个位置之间的距离都是常数 O(1)，不受序列长度影响</p>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <p class="text-sm text-gray-700">完全可并行化的计算过程大幅提升了训练和推理效率</p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Formula Detail -->
+    <div id="modal-formula-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-formula-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-square-root-alt text-brand mr-3"></i>
+                自注意力数学公式
+            </h3>
+            
+            <div class="space-y-6">
+                <div class="bg-blue-50 rounded-lg p-6 border-2 border-brand/30">
+                    <h4 class="text-xl font-bold text-gray-900 mb-4 text-center">核心计算公式</h4>
+                    <div class="math-formula text-center">
+                        Attention(Q, K, V) = softmax(QK<sup>T</sup> / √d<sub>k</sub>) V
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-white rounded-lg p-5 border border-gray-200">
+                        <h5 class="font-bold text-gray-900 mb-3">参数说明</h5>
+                        <ul class="space-y-2 text-sm">
+                            <li><span class="font-semibold text-brand">Q</span> - 查询矩阵 (Query Matrix)</li>
+                            <li><span class="font-semibold text-brand">K</span> - 键矩阵 (Key Matrix)</li>
+                            <li><span class="font-semibold text-brand">V</span> - 值矩阵 (Value Matrix)</li>
+                            <li><span class="font-semibold text-brand">d<sub>k</sub></span> - 键向量的维度</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-5 border border-gray-200">
+                        <h5 class="font-bold text-gray-900 mb-3">关键设计</h5>
+                        <ul class="space-y-2 text-sm">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-arrow-right text-brand mt-1"></i>
+                                <span><strong>QK<sup>T</sup></strong>：计算查询与键的相似度</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-arrow-right text-brand mt-1"></i>
+                                <span><strong>√d<sub>k</sub></strong>：缩放因子，防止点积过大</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-arrow-right text-brand mt-1"></i>
+                                <span><strong>softmax</strong>：归一化为概率分布</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg p-5 border border-orange-200">
+                    <h5 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-orange-500"></i>
+                        为什么需要缩放因子？
+                    </h5>
+                    <p class="text-sm text-gray-700 leading-relaxed">
+                        当维度 d<sub>k</sub> 很大时，点积 QK<sup>T</sup> 的结果会非常大，导致 softmax 函数进入梯度极小的饱和区。
+                        通过除以 √d<sub>k</sub>，可以将点积结果缩放到合理的范围内，使得梯度保持在有效的数值范围，
+                        从而提高训练的稳定性和收敛速度。
+                    </p>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-5">
+                    <h5 class="font-bold text-gray-900 mb-3">计算复杂度</h5>
+                    <div class="grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">时间复杂度</p>
+                            <p class="text-2xl font-bold text-brand">O(n²d)</p>
+                            <p class="text-xs text-gray-500 mt-1">n 为序列长度，d 为特征维度</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">空间复杂度</p>
+                            <p class="text-2xl font-bold text-brand">O(n²)</p>
+                            <p class="text-xs text-gray-500 mt-1">需要存储注意力权重矩阵</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Multi-Head Detail -->
+    <div id="modal-multihead-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-multihead-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-calculator text-brand mr-3"></i>
+                多头注意力计算过程
+            </h3>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-6 border-2 border-brand/30">
+                    <h4 class="text-xl font-bold text-gray-900 mb-4 text-center">计算公式</h4>
+                    <div class="space-y-4">
+                        <div class="math-formula">
+                            head<sub>i</sub> = Attention(QW<sub>i</sub><sup>Q</sup>, KW<sub>i</sub><sup>K</sup>, VW<sub>i</sub><sup>V</sup>)
+                        </div>
+                        <div class="math-formula">
+                            MultiHead(Q, K, V) = Concat(head<sub>1</sub>, ..., head<sub>h</sub>) W<sup>O</sup>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-white rounded-lg p-5 border border-purple-200 text-center">
+                        <div class="text-4xl font-bold text-purple-600 mb-2">W<sub>i</sub><sup>Q</sup></div>
+                        <p class="text-sm font-semibold text-gray-900 mb-1">查询投影矩阵</p>
+                        <p class="text-xs text-gray-600">将 Q 投影到第 i 个头的子空间</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-5 border border-blue-200 text-center">
+                        <div class="text-4xl font-bold text-brand mb-2">W<sub>i</sub><sup>K</sup></div>
+                        <p class="text-sm font-semibold text-gray-900 mb-1">键投影矩阵</p>
+                        <p class="text-xs text-gray-600">将 K 投影到第 i 个头的子空间</p>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-5 border border-green-200 text-center">
+                        <div class="text-4xl font-bold text-green-600 mb-2">W<sub>i</sub><sup>V</sup></div>
+                        <p class="text-sm font-semibold text-gray-900 mb-1">值投影矩阵</p>
+                        <p class="text-xs text-gray-600">将 V 投影到第 i 个头的子空间</p>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg p-5">
+                    <h4 class="text-lg font-bold text-gray-900 mb-4">执行流程</h4>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 font-bold">1</div>
+                            <div class="flex-1">
+                                <h5 class="font-bold text-gray-900 mb-1">线性投影</h5>
+                                <p class="text-sm text-gray-600">对输入的 Q, K, V 分别进行 h 次不同的线性变换，得到 h 组不同的查询、键和值</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 font-bold">2</div>
+                            <div class="flex-1">
+                                <h5 class="font-bold text-gray-900 mb-1">并行注意力计算</h5>
+                                <p class="text-sm text-gray-600">在 h 个不同的表示子空间中并行地执行注意力计算，每个头独立地学习不同类型的依赖关系</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 font-bold">3</div>
+                            <div class="flex-1">
+                                <h5 class="font-bold text-gray-900 mb-1">拼接</h5>
+                                <p class="text-sm text-gray-600">将 h 个头的输出在特征维度上拼接起来，形成一个综合的表示</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-10 h-10 flex items-center justify-center flex-shrink-0 font-bold">4</div>
+                            <div class="flex-1">
+                                <h5 class="font-bold text-gray-900 mb-1">输出投影</h5>
+                                <p class="text-sm text-gray-600">通过输出矩阵 W<sup>O</sup> 对拼接后的结果进行线性变换，得到最终输出</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-teal-50 rounded-lg p-5 border border-green-200">
+                    <h5 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-star text-green-600"></i>
+                        为什么使用多个头？
+                    </h5>
+                    <ul class="space-y-2 text-sm text-gray-700">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-600 mt-1"></i>
+                            <span>不同的头可以关注输入序列的不同方面（如局部依赖、全局依赖、句法关系、语义关系等）</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-600 mt-1"></i>
+                            <span>在多个较低维度的子空间中进行计算，比单一高维空间更有效率和表达力</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check text-green-600 mt-1"></i>
+                            <span>增加了模型的容量和灵活性，提高了对复杂模式的学习能力</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-blue-50 rounded-lg p-5 border border-blue-200">
+                    <h5 class="font-bold text-gray-900 mb-3">典型配置示例</h5>
+                    <div class="grid grid-cols-3 gap-3 text-center">
+                        <div>
+                            <p class="text-xs text-gray-600 mb-1">头数 (h)</p>
+                            <p class="text-2xl font-bold text-brand">8 - 16</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-600 mb-1">模型维度 (d<sub>model</sub>)</p>
+                            <p class="text-2xl font-bold text-brand">512 - 1024</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-600 mb-1">每头维度 (d<sub>k</sub>)</p>
+                            <p class="text-2xl font-bold text-brand">64</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Vision Transformer Detail -->
+    <div id="modal-vision-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-vision-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h3 class="text-3xl font-bold text-gray-900 mb-6">
+                <i class="fas fa-image text-brand mr-3"></i>
+                计算机视觉中的应用
+            </h3>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-6 border-2 border-purple-200">
+                    <h4 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-eye text-purple-600"></i>
+                        Vision Transformer (ViT)
+                    </h4>
+                    <p class="text-gray-700 leading-relaxed">
+                        Vision Transformer 将自注意力机制扩展到计算机视觉领域，实现了图像识别任务的突破性进展。
+                    </p>
+                </div>
+                
+                <div class="bg-white rounded-lg p-6 border border-gray-200">
+                    <h5 class="text-xl font-bold text-gray-900 mb-4">工作原理</h5>
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">1</div>
+                            <div>
+                                <h6 class="font-bold text-gray-900 mb-1">图像分块</h6>
+                                <p class="text-sm text-gray-600">将输入图像分割成固定大小的小块（patches），例如 16×16 像素的块</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">2</div>
+                            <div>
+                                <h6 class="font-bold text-gray-900 mb-1">线性嵌入</h6>
+                                <p class="text-sm text-gray-600">将每个图像块展平并通过线性层映射到固定维度的向量空间</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">3</div>
+                            <div>
+                                <h6 class="font-bold text-gray-900 mb-1">位置编码</h6>
+                                <p class="text-sm text-gray-600">添加位置信息，使模型能够理解图像块之间的空间关系</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">4</div>
+                            <div>
+                                <h6 class="font-bold text-gray-900 mb-1">Transformer编码</h6>
+                                <p class="text-sm text-gray-600">将图像块序列输入到标准的 Transformer 编码器中进行处理</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start gap-3">
+                            <div class="bg-brand text-white rounded-full w-8 h-8 flex items-center justify-center flex-shrink-0 font-bold">5</div>
+                            <div>
+                                <h6 class="font-bold text-gray-900 mb-1">分类输出</h6>
+                                <p class="text-sm text-gray-600">通过分类头对图像进行识别和分类</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 rounded-lg p-5 border border-blue-200">
+                    <h5 class="font-bold text-gray-900 mb-3">应用场景示例</h5>
+                    <div class="bg-white rounded-lg p-4 border border-blue-300">
+                        <p class="text-sm text-gray-700 mb-3">
+                            <strong>输入：</strong>猫的图像
+                        </p>
+                        <p class="text-sm text-gray-700 mb-3">
+                            <strong>处理过程：</strong>通过自注意力机制，模型计算不同图像块之间的关系
+                        </p>
+                        <p class="text-sm text-gray-700">
+                            <strong>识别结果：</strong>能够区分并识别猫的头部、身体、尾巴等不同部位，理解它们之间的空间关系
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-gradient-to-br from-green-50 to-teal-50 rounded-lg p-5 border border-green-200">
+                        <h5 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <i class="fas fa-thumbs-up text-green-600"></i>
+                            优势
+                        </h5>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check text-green-600 mt-1"></i>
+                                <span>全局感受野，能捕获远距离的视觉依赖</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check text-green-600 mt-1"></i>
+                                <span>架构统一，易于扩展和迁移</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check text-green-600 mt-1"></i>
+                                <span>大规模数据下性能优越</span>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg p-5 border border-orange-200">
+                        <h5 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <i class="fas fa-chart-line text-orange-600"></i>
+                            性能表现
+                        </h5>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-star text-orange-600 mt-1"></i>
+                                <span>在 ImageNet 等基准测试中达到顶级性能</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-star text-orange-600 mt-1"></i>
+                                <span>随着模型规模增大，性能持续提升</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-star text-orange-600 mt-1"></i>
+                                <span>在多个视觉任务中展现出色的迁移能力</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal Management
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // Close modal when clicking on background
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
+            }
+        });
+        
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px'
+        };
+        
+        const observer = new IntersectionObserver(function(entries) {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all animated elements
+        document.addEventListener('DOMContentLoaded', function() {
+            // Observe fade-in elements
+            document.querySelectorAll('.fade-in-up').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Observe mini cards
+            document.querySelectorAll('.mini-card').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Trigger initial animations for first slide
+            setTimeout(() => {
+                const firstSlide = document.querySelector('.slide');
+                if (firstSlide) {
+                    firstSlide.querySelectorAll('.fade-in-up, .mini-card').forEach(el => {
+                        el.classList.add('visible');
+                    });
+                }
+            }, 100);
+        });
+        
+        // Scroll event for slide-specific animations
+        const slidesContainer = document.querySelector('.slides-container');
+        const slides = document.querySelectorAll('.slide');
+        
+        let currentSlideIndex = 0;
+        
+        slidesContainer.addEventListener('scroll', function() {
+            const scrollPosition = slidesContainer.scrollTop;
+            const windowHeight = window.innerHeight;
+            
+            slides.forEach((slide, index) => {
+                const slideTop = slide.offsetTop;
+                const slideHeight = slide.offsetHeight;
+                
+                // Check if slide is in view
+                if (scrollPosition >= slideTop - windowHeight / 2 && 
+                    scrollPosition < slideTop + slideHeight - windowHeight / 2) {
+                    
+                    if (currentSlideIndex !== index) {
+                        currentSlideIndex = index;
+                        
+                        // Trigger animations for current slide
+                        slide.querySelectorAll('.fade-in-up, .mini-card').forEach(el => {
+                            el.classList.add('visible');
+                        });
+                    }
+                }
+            });
+        });
+        
+        // Smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+    
+</body>
+</html>

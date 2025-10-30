@@ -1,0 +1,1651 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>算力卡底层逻辑详解 - AI技术报告</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Scroll Snap Container */
+        .slides-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        
+        /* Individual Slide - 16:9 Aspect Ratio */
+        .slide {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        /* 16:9 Content Container */
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            overflow: hidden;
+        }
+        
+        /* Brand Color - NVIDIA Green */
+        :root {
+            --brand-color: #76B900;
+            --brand-gradient-start: rgba(118, 185, 0, 0.8);
+            --brand-gradient-end: rgba(118, 185, 0, 0.2);
+        }
+        
+        .text-brand {
+            color: var(--brand-color);
+        }
+        
+        .bg-brand {
+            background-color: var(--brand-color);
+        }
+        
+        .bg-brand-gradient {
+            background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
+        }
+        
+        .border-brand {
+            border-color: var(--brand-color);
+        }
+        
+        /* Modal/Overlay Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            max-height: 85vh;
+            width: 90%;
+            overflow-y: auto;
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+            transform: scale(1.1);
+        }
+        
+        /* Animation Classes */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Mini Card Stagger Animation */
+        .mini-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .mini-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .mini-card:nth-child(1) { transition-delay: 0.1s; }
+        .mini-card:nth-child(2) { transition-delay: 0.2s; }
+        .mini-card:nth-child(3) { transition-delay: 0.3s; }
+        .mini-card:nth-child(4) { transition-delay: 0.4s; }
+        .mini-card:nth-child(5) { transition-delay: 0.5s; }
+        .mini-card:nth-child(6) { transition-delay: 0.6s; }
+        .mini-card:nth-child(7) { transition-delay: 0.7s; }
+        .mini-card:nth-child(8) { transition-delay: 0.8s; }
+        .mini-card:nth-child(9) { transition-delay: 0.9s; }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Button Styles */
+        .detail-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(118, 185, 0, 0.3);
+        }
+        
+        .detail-button:hover {
+            background: #5d9100;
+            box-shadow: 0 4px 12px rgba(118, 185, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .detail-button i {
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .modal-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            
+            .slide-content {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Slides Container -->
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <section class="slide">
+            <div class="slide-content bg-brand-gradient">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up">
+                        <i class="fas fa-microchip text-6xl text-white mb-6"></i>
+                    </div>
+                    <h1 class="text-7xl font-bold text-white mb-4 fade-in-up">算力卡底层逻辑详解</h1>
+                    <p class="text-2xl text-white/90 mb-8 fade-in-up">Computing Card Architecture Deep Dive</p>
+                    <div class="w-24 h-1 bg-white/50 rounded-full mb-8 fade-in-up"></div>
+                    <h2 class="text-3xl font-bold text-white mb-3 fade-in-up">GPU架构 · 并行计算 · CUDA · 内存技术</h2>
+                    <p class="text-xl text-white/80 fade-in-up">Understanding the Foundation of AI Computing Power</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: GPU vs CPU Architecture -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-code-branch text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">GPU与CPU架构的本质区别</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Fundamental Differences</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-100 mb-6 fade-in-up">
+                                <p class="text-2xl text-gray-800 leading-relaxed text-center">
+                                    CPU 和 GPU 的<span class="text-brand font-bold">设计目标完全不同</span>，<br/>
+                                    分别针对两种不同的应用场景进行了优化
+                                </p>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-6">
+                                <!-- CPU Card -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-gray-300 shadow-sm mini-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-16 h-16 bg-gray-100 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-brain text-gray-700 text-3xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-3xl font-bold text-gray-900">CPU</h3>
+                                            <p class="text-sm text-gray-500">控制中心</p>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-check-circle text-gray-600 text-sm mt-1"></i>
+                                            <div>
+                                                <p class="text-sm font-bold text-gray-900">核心数量</p>
+                                                <p class="text-xs text-gray-600">4-16 个强大核心</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-check-circle text-gray-600 text-sm mt-1"></i>
+                                            <div>
+                                                <p class="text-sm font-bold text-gray-900">设计目标</p>
+                                                <p class="text-xs text-gray-600">通用性与灵活性</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-check-circle text-gray-600 text-sm mt-1"></i>
+                                            <div>
+                                                <p class="text-sm font-bold text-gray-900">优势场景</p>
+                                                <p class="text-xs text-gray-600">复杂逻辑、任务调度</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-check-circle text-gray-600 text-sm mt-1"></i>
+                                            <div>
+                                                <p class="text-sm font-bold text-gray-900">性能特点</p>
+                                                <p class="text-xs text-gray-600">低延迟、强单线程</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- GPU Card -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand shadow-sm mini-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-16 h-16 bg-brand/10 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-bolt text-brand text-3xl"></i>
+                                        </div>
+                                        <div>
+                                            <h3 class="text-3xl font-bold text-brand">GPU</h3>
+                                            <p class="text-sm text-gray-500">并行引擎</p>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-check-circle text-brand text-sm mt-1"></i>
+                                            <div>
+                                                <p class="text-sm font-bold text-gray-900">核心数量</p>
+                                                <p class="text-xs text-gray-600">数千个流处理器</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-check-circle text-brand text-sm mt-1"></i>
+                                            <div>
+                                                <p class="text-sm font-bold text-gray-900">设计目标</p>
+                                                <p class="text-xs text-gray-600">大规模并行计算</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-check-circle text-brand text-sm mt-1"></i>
+                                            <div>
+                                                <p class="text-sm font-bold text-gray-900">芯片面积</p>
+                                                <p class="text-xs text-gray-600">80%+ 用于 ALU</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-start gap-2">
+                                            <i class="fas fa-check-circle text-brand text-sm mt-1"></i>
+                                            <div>
+                                                <p class="text-sm font-bold text-gray-900">优势场景</p>
+                                                <p class="text-xs text-gray-600">矩阵运算、深度学习</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 text-center fade-in-up">
+                                <button class="detail-button" onclick="openModal('modal-architecture-detail')">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>查看架构详细对比</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 3: GPU Parallel Computing Principles -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-project-diagram text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">GPU并行计算原理</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Parallel Computing Architecture</p>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto">
+                        <div class="grid grid-cols-3 gap-4 mb-6">
+                            <!-- SIMD Architecture -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="text-center mb-3">
+                                    <div class="inline-block bg-brand/10 rounded-full p-4 mb-3">
+                                        <i class="fas fa-stream text-brand text-3xl"></i>
+                                    </div>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900 text-center mb-2">SIMD</h3>
+                                <p class="text-xs text-gray-500 text-center mb-3">Single Instruction Multiple Data</p>
+                                <p class="text-sm text-gray-700 leading-relaxed">
+                                    多个计算单元同时执行相同指令，处理不同数据
+                                </p>
+                            </div>
+                            
+                            <!-- SM Architecture -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="text-center mb-3">
+                                    <div class="inline-block bg-brand/10 rounded-full p-4 mb-3">
+                                        <i class="fas fa-cube text-brand text-3xl"></i>
+                                    </div>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900 text-center mb-2">SM</h3>
+                                <p class="text-xs text-gray-500 text-center mb-3">Streaming Multiprocessor</p>
+                                <p class="text-sm text-gray-700 leading-relaxed">
+                                    流式多处理器，GPU架构的核心并行单元
+                                </p>
+                            </div>
+                            
+                            <!-- Thread Hierarchy -->
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                <div class="text-center mb-3">
+                                    <div class="inline-block bg-brand/10 rounded-full p-4 mb-3">
+                                        <i class="fas fa-layer-group text-brand text-3xl"></i>
+                                    </div>
+                                </div>
+                                <h3 class="text-2xl font-bold text-gray-900 text-center mb-2">线程层次</h3>
+                                <p class="text-xs text-gray-500 text-center mb-3">Thread Hierarchy</p>
+                                <p class="text-sm text-gray-700 leading-relaxed">
+                                    Grid-Block-Thread 三级结构
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <!-- Ampere SM Composition -->
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200 mb-6 fade-in-up">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-microchip text-brand"></i>
+                                Ampere 架构 SM 组成
+                            </h3>
+                            <div class="grid grid-cols-4 gap-4">
+                                <div class="text-center">
+                                    <div class="text-5xl font-bold text-brand mb-2">64</div>
+                                    <p class="text-sm font-medium text-gray-900">FP32 核心</p>
+                                    <p class="text-xs text-gray-600">单精度浮点</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-5xl font-bold text-brand mb-2">64</div>
+                                    <p class="text-sm font-medium text-gray-900">INT32 核心</p>
+                                    <p class="text-xs text-gray-600">整数运算</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-5xl font-bold text-brand mb-2">32</div>
+                                    <p class="text-sm font-medium text-gray-900">FP64 核心</p>
+                                    <p class="text-xs text-gray-600">双精度浮点</p>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-5xl font-bold text-brand mb-2">4</div>
+                                    <p class="text-sm font-medium text-gray-900">Tensor Core</p>
+                                    <p class="text-xs text-gray-600">张量计算</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- GPU Advantages -->
+                        <div class="grid grid-cols-3 gap-4">
+                            <div class="bg-white rounded-lg p-4 border-l-4 border-brand shadow-sm mini-card">
+                                <div class="text-4xl font-bold text-brand mb-2">极高</div>
+                                <p class="text-sm font-bold text-gray-900 mb-1">吞吐量</p>
+                                <p class="text-xs text-gray-600">同时处理大量数据</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 border-l-4 border-brand shadow-sm mini-card">
+                                <div class="text-4xl font-bold text-brand mb-2">强大</div>
+                                <p class="text-sm font-bold text-gray-900 mb-1">计算密度</p>
+                                <p class="text-xs text-gray-600">惊人的峰值算力</p>
+                            </div>
+                            <div class="bg-white rounded-lg p-4 border-l-4 border-brand shadow-sm mini-card">
+                                <div class="text-4xl font-bold text-brand mb-2">优秀</div>
+                                <p class="text-sm font-bold text-gray-900 mb-1">能效比</p>
+                                <p class="text-xs text-gray-600">单位功耗计算能力</p>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center fade-in-up">
+                            <button class="detail-button" onclick="openModal('modal-parallel-detail')">
+                                <i class="fas fa-cogs"></i>
+                                <span>深入了解并行计算机制</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 4: CUDA Architecture -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-code text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">CUDA架构底层实现</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Compute Unified Device Architecture</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-200 mb-6 fade-in-up">
+                                <p class="text-2xl text-gray-800 leading-relaxed">
+                                    <span class="font-bold text-brand">CUDA</span> 让开发者能够使用 
+                                    <span class="font-bold">C/C++、Python</span> 等熟悉的编程语言<br/>
+                                    直接控制 GPU 进行<span class="text-brand font-bold">通用计算</span>
+                                </p>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-6 mb-6">
+                                <!-- SM Structure -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/30 shadow-sm mini-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-boxes text-brand text-2xl"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-gray-900">SM 结构</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                                        每个 SM 包含多个 CUDA 核心，能够并行执行大量线程
+                                    </p>
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <p class="text-xs text-gray-600 mb-1">
+                                            <i class="fas fa-arrow-right text-brand text-xs mr-2"></i>
+                                            <span class="font-bold">CUDA 核心</span>：基本计算单元
+                                        </p>
+                                        <p class="text-xs text-gray-600 mb-1">
+                                            <i class="fas fa-arrow-right text-brand text-xs mr-2"></i>
+                                            <span class="font-bold">共享内存</span>：SM 内高速缓存
+                                        </p>
+                                        <p class="text-xs text-gray-600">
+                                            <i class="fas fa-arrow-right text-brand text-xs mr-2"></i>
+                                            <span class="font-bold">寄存器</span>：线程私有存储
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- PTX Compilation -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/30 shadow-sm mini-card">
+                                    <div class="flex items-center gap-3 mb-4">
+                                        <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-file-code text-brand text-2xl"></i>
+                                        </div>
+                                        <h3 class="text-2xl font-bold text-gray-900">PTX</h3>
+                                    </div>
+                                    <p class="text-sm text-gray-700 leading-relaxed mb-3">
+                                        Parallel Thread Execution 虚拟指令集架构
+                                    </p>
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <p class="text-xs text-gray-600 mb-1">
+                                            <i class="fas fa-arrow-right text-brand text-xs mr-2"></i>
+                                            <span class="font-bold">中间表示</span>：设备代码抽象
+                                        </p>
+                                        <p class="text-xs text-gray-600 mb-1">
+                                            <i class="fas fa-arrow-right text-brand text-xs mr-2"></i>
+                                            <span class="font-bold">跨架构</span>：硬件独立性
+                                        </p>
+                                        <p class="text-xs text-gray-600">
+                                            <i class="fas fa-arrow-right text-brand text-xs mr-2"></i>
+                                            <span class="font-bold">优化</span>：驱动时编译优化
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Thread Scheduling -->
+                            <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-l-4 border-brand shadow-sm fade-in-up">
+                                <h3 class="text-2xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                                    <i class="fas fa-tasks text-brand"></i>
+                                    线程调度机制
+                                </h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-900 mb-2">Warp 调度</p>
+                                        <p class="text-xs text-gray-700 leading-relaxed">
+                                            每 32 个线程组成一个 Warp，SM 拥有两个线程束调度器和两个指令调度单元
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-bold text-gray-900 mb-2">延迟隐藏</p>
+                                        <p class="text-xs text-gray-700 leading-relaxed">
+                                            当一个 Warp 等待数据时，调度器立即切换到另一个就绪 Warp，保持计算单元满负荷运转
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 text-center fade-in-up">
+                                <button class="detail-button" onclick="openModal('modal-cuda-detail')">
+                                    <i class="fas fa-book"></i>
+                                    <span>查看 CUDA 编程模型详解</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 5: Memory Architecture - GDDR6 vs HBM -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-memory text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">内存架构技术</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Memory Technology Comparison</p>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto">
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <!-- GDDR6 -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-gray-300 shadow-sm mini-card">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-hdd text-gray-700 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900">GDDR6</h3>
+                                        <p class="text-xs text-gray-500">传统高速显存</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check text-gray-600 text-sm mt-1"></i>
+                                        <div>
+                                            <p class="text-sm font-bold text-gray-900">较高带宽潜力</p>
+                                            <p class="text-xs text-gray-600">成本相对较低</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-times text-red-500 text-sm mt-1"></i>
+                                        <div>
+                                            <p class="text-sm font-bold text-gray-900">功耗较大</p>
+                                            <p class="text-xs text-gray-600">热密度高</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-times text-red-500 text-sm mt-1"></i>
+                                        <div>
+                                            <p class="text-sm font-bold text-gray-900">散热要求高</p>
+                                            <p class="text-xs text-gray-600">需要强大散热机制</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- HBM -->
+                            <div class="bg-white rounded-xl p-6 border-2 border-brand shadow-sm mini-card">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-14 h-14 bg-brand/10 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-layer-group text-brand text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-brand">HBM</h3>
+                                        <p class="text-xs text-gray-500">高带宽内存</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check text-brand text-sm mt-1"></i>
+                                        <div>
+                                            <p class="text-sm font-bold text-gray-900">3D 堆叠架构</p>
+                                            <p class="text-xs text-gray-600">TSV 硅通孔技术</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check text-brand text-sm mt-1"></i>
+                                        <div>
+                                            <p class="text-sm font-bold text-gray-900">超高带宽</p>
+                                            <p class="text-xs text-gray-600">缩短数据传输路径</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="fas fa-check text-brand text-sm mt-1"></i>
+                                        <div>
+                                            <p class="text-sm font-bold text-gray-900">低功耗高效</p>
+                                            <p class="text-xs text-gray-600">AI 训练首选</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- HBM Evolution -->
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200 mb-4 fade-in-up">
+                            <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <i class="fas fa-chart-line text-brand"></i>
+                                HBM 技术演进
+                            </h3>
+                            <div class="grid grid-cols-4 gap-3">
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <div class="text-brand font-bold text-lg mb-1">HBM2</div>
+                                    <p class="text-xs text-gray-600 mb-2">2016</p>
+                                    <div class="text-3xl font-bold text-gray-900 mb-1">256</div>
+                                    <p class="text-xs text-gray-600">GB/s 带宽</p>
+                                    <div class="text-2xl font-bold text-gray-900 mt-2">8GB</div>
+                                    <p class="text-xs text-gray-600">容量</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <div class="text-brand font-bold text-lg mb-1">HBM2e</div>
+                                    <p class="text-xs text-gray-600 mb-2">2018</p>
+                                    <div class="text-3xl font-bold text-gray-900 mb-1">461</div>
+                                    <p class="text-xs text-gray-600">GB/s 带宽</p>
+                                    <div class="text-2xl font-bold text-gray-900 mt-2">16GB</div>
+                                    <p class="text-xs text-gray-600">容量</p>
+                                </div>
+                                <div class="bg-white rounded-lg p-4 text-center">
+                                    <div class="text-brand font-bold text-lg mb-1">HBM3</div>
+                                    <p class="text-xs text-gray-600 mb-2">2022</p>
+                                    <div class="text-3xl font-bold text-gray-900 mb-1">600+</div>
+                                    <p class="text-xs text-gray-600">GB/s 带宽</p>
+                                    <div class="text-2xl font-bold text-gray-900 mt-2">24GB</div>
+                                    <p class="text-xs text-gray-600">容量</p>
+                                </div>
+                                <div class="bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg p-4 text-center border-2 border-brand">
+                                    <div class="text-brand font-bold text-lg mb-1">HBM3e</div>
+                                    <p class="text-xs text-gray-600 mb-2">Latest</p>
+                                    <div class="text-3xl font-bold text-brand mb-1">1.2</div>
+                                    <p class="text-xs text-gray-600">TB/s 带宽</p>
+                                    <div class="text-2xl font-bold text-brand mt-2">8Gbps</div>
+                                    <p class="text-xs text-gray-600">传输速率</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center fade-in-up">
+                            <button class="detail-button" onclick="openModal('modal-memory-detail')">
+                                <i class="fas fa-database"></i>
+                                <span>查看 HBM 技术详细解析</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 6: NVLink Technology -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-network-wired text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">高速互联技术</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">NVLink High-Speed Interconnect</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-200 mb-6 fade-in-up">
+                                <div class="flex items-center gap-6">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-24 h-24 bg-brand rounded-2xl flex items-center justify-center">
+                                            <i class="fas fa-bolt text-white text-5xl"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h3 class="text-4xl font-bold text-gray-900 mb-3">NVLink</h3>
+                                        <p class="text-lg text-gray-700 leading-relaxed">
+                                            英伟达开发的<span class="font-bold text-brand">高速 GPU 互联技术</span>，<br/>
+                                            采用高速差分信号传输，支持多链路聚合
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-6 mb-6">
+                                <!-- Bandwidth -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand shadow-md mini-card text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-tachometer-alt text-brand text-4xl"></i>
+                                    </div>
+                                    <div class="text-6xl font-bold text-brand mb-2">1.8</div>
+                                    <p class="text-lg font-bold text-gray-900 mb-1">TB/s</p>
+                                    <p class="text-sm text-gray-600">双向带宽</p>
+                                    <p class="text-xs text-gray-500 mt-2">Gen 5</p>
+                                </div>
+                                
+                                <!-- GPU Cluster -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand shadow-md mini-card text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-server text-brand text-4xl"></i>
+                                    </div>
+                                    <div class="text-6xl font-bold text-brand mb-2">576</div>
+                                    <p class="text-lg font-bold text-gray-900 mb-1">GPU</p>
+                                    <p class="text-sm text-gray-600">集群规模</p>
+                                    <p class="text-xs text-gray-500 mt-2">可扩展</p>
+                                </div>
+                                
+                                <!-- Unified Memory -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand shadow-md mini-card text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-link text-brand text-4xl"></i>
+                                    </div>
+                                    <div class="text-5xl font-bold text-brand mb-2">统一</div>
+                                    <p class="text-lg font-bold text-gray-900 mb-1">内存空间</p>
+                                    <p class="text-sm text-gray-600">GPU 间共享</p>
+                                    <p class="text-xs text-gray-500 mt-2">低延迟</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Key Features -->
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-5 border-l-4 border-brand mini-card">
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-flash text-brand"></i>
+                                        高速低延迟通信
+                                    </h4>
+                                    <p class="text-sm text-gray-700 leading-relaxed">
+                                        GPU 间直接数据传输，避免通过 CPU 和 PCIe 总线，大幅降低通信延迟
+                                    </p>
+                                </div>
+                                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-5 border-l-4 border-brand mini-card">
+                                    <h4 class="text-lg font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                        <i class="fas fa-expand-arrows-alt text-brand"></i>
+                                        多链路聚合
+                                    </h4>
+                                    <p class="text-sm text-gray-700 leading-relaxed">
+                                        支持多条 NVLink 链路并行工作，实现更高的聚合带宽和容错能力
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 text-center fade-in-up">
+                                <button class="detail-button" onclick="openModal('modal-nvlink-detail')">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>查看 NVLink 技术演进</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 7: Summary -->
+        <section class="slide">
+            <div class="slide-content bg-gradient-to-br from-gray-50 to-green-50">
+                <div class="h-full flex flex-col items-center justify-center">
+                    <div class="text-center mb-8 fade-in-up">
+                        <i class="fas fa-flag-checkered text-brand text-6xl mb-6"></i>
+                        <h2 class="text-5xl font-bold text-gray-900 mb-6">算力卡核心要点总结</h2>
+                        <p class="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+                            从架构设计到并行计算，从 CUDA 编程到内存技术，<br/>
+                            理解 GPU 算力卡的底层逻辑是掌握 AI 计算基础的关键
+                        </p>
+                    </div>
+                    
+                    <div class="grid grid-cols-4 gap-4 max-w-5xl mb-8">
+                        <div class="bg-white rounded-xl p-5 shadow-md mini-card text-center">
+                            <div class="text-4xl mb-2">🏗️</div>
+                            <div class="text-3xl font-bold text-brand mb-2">架构</div>
+                            <p class="text-xs text-gray-600">GPU vs CPU<br/>并行 vs 串行</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-5 shadow-md mini-card text-center">
+                            <div class="text-4xl mb-2">⚡</div>
+                            <div class="text-3xl font-bold text-brand mb-2">并行</div>
+                            <p class="text-xs text-gray-600">SIMD · SM<br/>线程层次</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-5 shadow-md mini-card text-center">
+                            <div class="text-4xl mb-2">💻</div>
+                            <div class="text-3xl font-bold text-brand mb-2">CUDA</div>
+                            <p class="text-xs text-gray-600">编程模型<br/>线程调度</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-5 shadow-md mini-card text-center">
+                            <div class="text-4xl mb-2">🔗</div>
+                            <div class="text-3xl font-bold text-brand mb-2">互联</div>
+                            <p class="text-xs text-gray-600">HBM · NVLink<br/>高速带宽</p>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white rounded-2xl p-8 shadow-lg max-w-4xl fade-in-up">
+                        <div class="grid grid-cols-3 gap-8 text-center">
+                            <div>
+                                <div class="text-5xl font-bold text-brand mb-2">80%+</div>
+                                <p class="text-sm text-gray-700">GPU 芯片面积<br/>用于 ALU</p>
+                            </div>
+                            <div class="border-l border-r border-gray-200">
+                                <div class="text-5xl font-bold text-brand mb-2">1.2TB/s</div>
+                                <p class="text-sm text-gray-700">HBM3e<br/>内存带宽</p>
+                            </div>
+                            <div>
+                                <div class="text-5xl font-bold text-brand mb-2">1.8TB/s</div>
+                                <p class="text-sm text-gray-700">NVLink Gen 5<br/>互联带宽</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 fade-in-up">
+                        <p class="text-2xl font-bold text-gray-800">算力是 AI 发展的基石</p>
+                        <p class="text-lg text-gray-500 mt-2">Computing Power: Foundation of AI</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+    
+    <!-- Modal 1: Architecture Detail -->
+    <div id="modal-architecture-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-architecture-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">CPU 与 GPU 架构详细对比</h2>
+            <p class="text-sm text-gray-500 mb-8">Detailed Architecture Comparison</p>
+            
+            <div class="space-y-6">
+                <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i class="fas fa-brain text-gray-700"></i>
+                        CPU：控制中心
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        CPU 是计算机的"控制中心"，其设计追求<strong>通用性和灵活性</strong>。CPU 拥有少量但强大的计算核心（通常为 4-16 个），每个核心具有较高的主频和复杂的流水线控制，能够快速完成依赖性强的计算任务。
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">核心特点</h4>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• 4-16 个强大核心</li>
+                                <li>• 高主频</li>
+                                <li>• 复杂流水线控制</li>
+                                <li>• 大容量缓存（L1/L2/L3）</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">性能优势</h4>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• 低延迟</li>
+                                <li>• 强单线程性能</li>
+                                <li>• 复杂逻辑判断</li>
+                                <li>• 灵活任务调度</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-green-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                        <i class="fas fa-bolt text-brand"></i>
+                        GPU：并行引擎
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        相比之下，GPU 的设计目标是<strong>大规模并行计算</strong>。GPU 拥有大量相对简单的计算单元（通常为数千个流处理器），采用长延时流水线以实现高吞吐量。GPU 将 <strong>80% 以上的芯片面积用于 ALU（算术逻辑单元）</strong>，而 CPU 则将更多面积用于缓存和控制单元。
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">核心特点</h4>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• 数千个流处理器</li>
+                                <li>• 长延时流水线</li>
+                                <li>• 80%+ 面积用于 ALU</li>
+                                <li>• 简化的控制逻辑</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">性能优势</h4>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• 极高吞吐量</li>
+                                <li>• 强大计算密度</li>
+                                <li>• 优秀能效比</li>
+                                <li>• 适合数据并行</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 rounded-xl p-6 border-2 border-brand/30">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-balance-scale text-brand"></i>
+                        应用场景对比
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">CPU 适用场景</h4>
+                            <p class="text-sm text-gray-700">复杂逻辑判断、任务调度、多任务处理、操作系统运行、数据库事务处理</p>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">GPU 适用场景</h4>
+                            <p class="text-sm text-gray-700">矩阵运算、图像处理、深度学习训练与推理、科学计算、视频编解码</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 2: Parallel Computing Detail -->
+    <div id="modal-parallel-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-parallel-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">GPU 并行计算机制详解</h2>
+            <p class="text-sm text-gray-500 mb-8">In-depth Parallel Computing Mechanisms</p>
+            
+            <div class="space-y-6">
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">单指令多数据（SIMD）架构</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        SIMD 是 GPU 并行计算的基础。在这种架构中，多个计算单元同时执行相同的指令，但处理不同的数据。这与 CPU 的复杂指令集形成鲜明对比。
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <p class="text-sm text-gray-700 mb-2"><strong>工作原理：</strong></p>
+                        <p class="text-sm text-gray-600 leading-relaxed">
+                            当 GPU 执行一条指令（如"将两个数相加"）时，成百上千个计算单元会同时执行这条指令，但每个单元处理不同的数据对。这种方式特别适合处理大规模数据并行任务，如矩阵乘法、图像卷积等。
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">流式多处理器（SM）</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        SM 是 NVIDIA GPU 架构的核心。每个 SM 都是一个高度并行的处理单元，包含多个 CUDA 核心、共享内存、寄存器等组件。
+                    </p>
+                    <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                        <p class="text-sm text-gray-700 mb-3"><strong>Ampere 架构 SM 组成：</strong></p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="bg-white rounded p-3">
+                                <p class="font-bold text-brand mb-1">64 个 FP32 核心</p>
+                                <p class="text-xs text-gray-600">单精度浮点运算，用于深度学习训练的主要计算</p>
+                            </div>
+                            <div class="bg-white rounded p-3">
+                                <p class="font-bold text-brand mb-1">64 个 INT32 核心</p>
+                                <p class="text-xs text-gray-600">整数运算，用于地址计算和索引操作</p>
+                            </div>
+                            <div class="bg-white rounded p-3">
+                                <p class="font-bold text-brand mb-1">32 个 FP64 核心</p>
+                                <p class="text-xs text-gray-600">双精度浮点运算，用于科学计算高精度需求</p>
+                            </div>
+                            <div class="bg-white rounded p-3">
+                                <p class="font-bold text-brand mb-1">4 个 Tensor Core</p>
+                                <p class="text-xs text-gray-600">专用张量计算单元，大幅加速矩阵乘法</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">线程层次结构</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        CUDA 采用 <strong>Grid-Block-Thread</strong> 的三级结构。线程被组织成线程块（Thread Block），多个线程块构成一个网格（Grid）。
+                    </p>
+                    <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                        <div class="space-y-3">
+                            <div>
+                                <p class="font-bold text-gray-900 mb-1">Warp（线程束）</p>
+                                <p class="text-sm text-gray-700">每个 CUDA 核心可以并发执行多个线程，通常以 <strong>32 个线程为一组</strong>，称为 Warp。Warp 是 GPU 调度和执行的基本单位。</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900 mb-1">Thread Block（线程块）</p>
+                                <p class="text-sm text-gray-700">多个线程组成一个线程块，块内线程可以通过共享内存协作。线程块被分配到 SM 上执行。</p>
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900 mb-1">Grid（网格）</p>
+                                <p class="text-sm text-gray-700">多个线程块构成网格，网格定义了整个并行计算任务的规模。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-brand/30">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-trophy text-brand"></i>
+                        GPU 并行计算三大优势
+                    </h3>
+                    <div class="space-y-2">
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <div>
+                                <p class="font-bold text-gray-900">极高的吞吐量</p>
+                                <p class="text-sm text-gray-700">能够同时处理大量数据，适合大规模并行任务</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <div>
+                                <p class="font-bold text-gray-900">强大的计算密度</p>
+                                <p class="text-sm text-gray-700">通过大量计算单元实现惊人的峰值算力</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <div>
+                                <p class="font-bold text-gray-900">优秀的能效比</p>
+                                <p class="text-sm text-gray-700">在处理并行任务时，单位功耗下的计算能力远超 CPU</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 3: CUDA Detail -->
+    <div id="modal-cuda-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-cuda-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">CUDA 编程模型详解</h2>
+            <p class="text-sm text-gray-500 mb-8">CUDA Programming Model Deep Dive</p>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">CUDA 简介</h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        CUDA（Compute Unified Device Architecture）是 NVIDIA 推出的并行计算平台和编程模型，它让开发者能够使用 C/C++、Python 等熟悉的编程语言直接控制 GPU 进行通用计算。
+                    </p>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">SM 结构基础</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        CUDA 的底层实现基于 <strong>SM（流式多处理器）结构</strong>。每个 SM 包含多个 CUDA 核心，这些核心能够并行执行大量线程。
+                    </p>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-900 mb-2">SM 组件：</h4>
+                        <ul class="text-sm text-gray-700 space-y-1">
+                            <li>• <strong>CUDA 核心：</strong>基本计算单元，执行浮点和整数运算</li>
+                            <li>• <strong>共享内存：</strong>SM 内线程共享的高速缓存，延迟低于全局内存</li>
+                            <li>• <strong>寄存器：</strong>每个线程的私有存储空间，速度最快</li>
+                            <li>• <strong>L1 缓存：</strong>一级缓存，加速数据访问</li>
+                            <li>• <strong>线程调度器：</strong>管理 Warp 调度和指令分发</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">PTX 中间表示</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        CUDA 程序最终被编译成 <strong>PTX（Parallel Thread Execution）</strong>中间表示，这是一种用于 CUDA 设备代码的虚拟指令集架构。
+                    </p>
+                    <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                        <h4 class="font-bold text-gray-900 mb-2">PTX 的优势：</h4>
+                        <ul class="text-sm text-gray-700 space-y-2">
+                            <li>
+                                <strong>硬件独立性：</strong>PTX 代码可以在不同代的 NVIDIA GPU 上运行，驱动会在运行时将 PTX 编译为特定硬件的机器码
+                            </li>
+                            <li>
+                                <strong>前向兼容：</strong>为旧架构编译的 PTX 代码可以在新架构上运行并获得优化
+                            </li>
+                            <li>
+                                <strong>优化机会：</strong>驱动可以针对具体硬件进行运行时优化
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">线程调度机制</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        线程调度是 CUDA 高效运行的关键。每个 SM 有 <strong>两个线程束调度器和两个指令调度单元</strong>。
+                    </p>
+                    <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                        <h4 class="font-bold text-gray-900 mb-3">调度流程：</h4>
+                        <div class="space-y-3">
+                            <div class="bg-white rounded p-3">
+                                <p class="font-bold text-brand mb-1">1. 线程块分配</p>
+                                <p class="text-sm text-gray-700">当线程块被分配给 SM 时，线程块内的所有线程被分成多个 Warp（每 Warp 32 个线程）</p>
+                            </div>
+                            <div class="bg-white rounded p-3">
+                                <p class="font-bold text-brand mb-1">2. Warp 选择</p>
+                                <p class="text-sm text-gray-700">调度器从准备就绪的 Warp 中选择一个执行指令</p>
+                            </div>
+                            <div class="bg-white rounded p-3">
+                                <p class="font-bold text-brand mb-1">3. 隐藏延迟</p>
+                                <p class="text-sm text-gray-700">当一个 Warp 因等待数据而暂停时，调度器立即切换到另一个准备就绪的 Warp，<strong>保持计算单元始终处于工作状态</strong></p>
+                            </div>
+                            <div class="bg-white rounded p-3">
+                                <p class="font-bold text-brand mb-1">4. 指令执行</p>
+                                <p class="text-sm text-gray-700">Warp 内的 32 个线程同时执行相同指令（SIMD 模式）</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-brand/30">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-brand"></i>
+                        延迟隐藏技术
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        通过维护大量并发线程（Warp），当一个 Warp 等待内存访问时，调度器可以立即切换到其他就绪 Warp 继续计算。这种设计使得 GPU 即使在较高的内存访问延迟下，也能维持很高的计算效率。这是 GPU 能够高效处理大规模并行任务的核心技术之一。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 4: Memory Detail -->
+    <div id="modal-memory-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-memory-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">HBM 高带宽内存技术详解</h2>
+            <p class="text-sm text-gray-500 mb-8">High Bandwidth Memory Technology Deep Dive</p>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">HBM 技术概述</h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        HBM（高带宽内存）代表了内存技术的最新发展。HBM 采用 <strong>3D 堆叠架构和 TSV（硅通孔）技术</strong>，通过垂直堆叠多层 DRAM 芯片并使用硅通孔实现层间互连，大幅缩短了数据传输路径。
+                    </p>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">HBM 核心技术</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-bold text-brand mb-2">3D 堆叠架构</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                将多层 DRAM 芯片垂直堆叠在一起，每层之间通过 TSV（Through-Silicon Via，硅通孔）连接。这种堆叠方式大幅减少了芯片占用面积，同时显著缩短了数据传输距离。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-bold text-brand mb-2">TSV 硅通孔技术</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                在硅晶圆中打通垂直孔洞并填充导电材料，实现芯片层间的高速互连。TSV 技术相比传统的引线键合，具有更短的信号路径、更低的功耗和更高的带宽。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-bold text-brand mb-2">宽位宽接口</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                HBM 使用 1024 位或更宽的数据接口（相比 GDDR6 的 32 位），虽然频率相对较低，但通过超宽位宽实现了极高的聚合带宽。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">HBM 发展历程</h3>
+                    <div class="space-y-3">
+                        <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0 w-20 text-center">
+                                    <div class="text-2xl font-bold text-brand">HBM2</div>
+                                    <p class="text-xs text-gray-600">2016</p>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700 leading-relaxed">
+                                        首次商用版本，提供 <strong>256GB/s 带宽</strong>，容量 <strong>8GB</strong>。相比 GDDR5 实现了显著的带宽提升和功耗降低。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0 w-20 text-center">
+                                    <div class="text-2xl font-bold text-brand">HBM2e</div>
+                                    <p class="text-xs text-gray-600">2018</p>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700 leading-relaxed">
+                                        增强版本，传输速度提升至 <strong>3.6Gbps</strong>，容量扩展到 <strong>16GB</strong>，带宽达到 <strong>461GB/s</strong>。开始大规模应用于 AI 训练。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0 w-20 text-center">
+                                    <div class="text-2xl font-bold text-brand">HBM3</div>
+                                    <p class="text-xs text-gray-600">2022</p>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700 leading-relaxed">
+                                        第三代产品，采用改进的 2.5D/3D 架构，带宽突破 <strong>600GB/s</strong>，容量可达 <strong>24GB</strong>。能效比再次提升。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-4 border-2 border-brand">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0 w-20 text-center">
+                                    <div class="text-2xl font-bold text-brand">HBM3e</div>
+                                    <p class="text-xs text-gray-600">Latest</p>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700 leading-relaxed">
+                                        最新版本，传输速率达到 <strong>8Gbps</strong>，最高每秒可处理 <strong>1.15-1.225TB 数据</strong>。成为大规模 AI 训练的标配，显著降低了训练时间和能耗。
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border-2 border-brand/30">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-chart-bar text-brand"></i>
+                        HBM vs GDDR6 对比
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="bg-gray-100">
+                                    <th class="text-left p-3 font-bold text-gray-900">特性</th>
+                                    <th class="text-left p-3 font-bold text-gray-900">GDDR6</th>
+                                    <th class="text-left p-3 font-bold text-brand">HBM3e</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-gray-700">
+                                <tr class="border-t">
+                                    <td class="p-3 font-medium">带宽</td>
+                                    <td class="p-3">~500GB/s</td>
+                                    <td class="p-3 font-bold text-brand">~1.2TB/s</td>
+                                </tr>
+                                <tr class="border-t bg-gray-50">
+                                    <td class="p-3 font-medium">位宽</td>
+                                    <td class="p-3">32-bit</td>
+                                    <td class="p-3 font-bold text-brand">1024-bit+</td>
+                                </tr>
+                                <tr class="border-t">
+                                    <td class="p-3 font-medium">功耗</td>
+                                    <td class="p-3">较高</td>
+                                    <td class="p-3 font-bold text-brand">较低</td>
+                                </tr>
+                                <tr class="border-t bg-gray-50">
+                                    <td class="p-3 font-medium">封装</td>
+                                    <td class="p-3">2D 平面</td>
+                                    <td class="p-3 font-bold text-brand">3D 堆叠</td>
+                                </tr>
+                                <tr class="border-t">
+                                    <td class="p-3 font-medium">成本</td>
+                                    <td class="p-3">较低</td>
+                                    <td class="p-3">较高</td>
+                                </tr>
+                                <tr class="border-t bg-gray-50">
+                                    <td class="p-3 font-medium">应用场景</td>
+                                    <td class="p-3">游戏、消费级</td>
+                                    <td class="p-3 font-bold text-brand">AI 训练、HPC</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-brand/30">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-star text-brand"></i>
+                        HBM 对 AI 的重要性
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        内存带宽是影响 GPU 性能的关键瓶颈之一。在大模型训练中，模型参数和激活值的频繁读写对内存带宽提出了极高要求。HBM 的超高带宽和低延迟特性使得 GPU 能够更快地获取数据、完成计算，从而显著缩短训练时间、降低能耗，并支持更大规模的模型训练。<strong>HBM 已经成为现代 AI 算力卡的标配技术。</strong>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 5: NVLink Detail -->
+    <div id="modal-nvlink-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-nvlink-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">NVLink 技术演进与应用</h2>
+            <p class="text-sm text-gray-500 mb-8">NVLink Technology Evolution and Applications</p>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">NVLink 技术概述</h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        <strong>NVLink</strong> 是英伟达开发的高速 GPU 互联技术，采用高速差分信号传输，支持多链路聚合。NVLink 实现了 GPU 间的高速低延迟通信，构建了统一的内存空间。
+                    </p>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">核心技术特点</h3>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-bold text-brand mb-2">高速差分信号传输</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                NVLink 采用高速差分信号技术，每条链路由多对差分信号线组成。差分信号具有更强的抗干扰能力和更低的电磁辐射，能够支持更高的传输速率。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-bold text-brand mb-2">多链路聚合</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                两个 GPU 之间可以部署多条 NVLink 链路并行工作，实现带宽聚合。例如，8 条链路可以提供 8 倍于单链路的带宽，同时增强了容错能力。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-bold text-brand mb-2">统一内存空间</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                通过 NVLink 连接的多个 GPU 可以形成统一的内存地址空间，GPU 可以直接访问其他 GPU 的显存，无需通过 CPU 中转，大幅降低了通信延迟和开销。
+                            </p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 border border-gray-200">
+                            <h4 class="font-bold text-brand mb-2">点对点直连</h4>
+                            <p class="text-sm text-gray-700 leading-relaxed">
+                                GPU 之间通过 NVLink 直接连接，无需经过 PCIe 总线和 CPU。这种点对点拓扑大幅降低了通信路径上的延迟和带宽瓶颈。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-3">NVLink 代际演进</h3>
+                    <div class="space-y-3">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0 w-16 text-center">
+                                    <div class="text-xl font-bold text-brand">Gen 1</div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700">Pascal 架构，单链路 20GB/s，主要用于 P100</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0 w-16 text-center">
+                                    <div class="text-xl font-bold text-brand">Gen 2</div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700">Volta 架构，单链路 25GB/s，应用于 V100，支持 6 条链路</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0 w-16 text-center">
+                                    <div class="text-xl font-bold text-brand">Gen 3</div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700">Ampere 架构，单链路 50GB/s，应用于 A100，支持 12 条链路，总带宽 600GB/s</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0 w-16 text-center">
+                                    <div class="text-xl font-bold text-brand">Gen 4</div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700">Hopper 架构，单链路 100GB/s，应用于 H100，总带宽可达 900GB/s</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-4 border-2 border-brand">
+                            <div class="flex items-start gap-4">
+                                <div class="flex-shrink-0 w-16 text-center">
+                                    <div class="text-xl font-bold text-brand">Gen 5</div>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm text-gray-700">
+                                        <strong>最新一代，提供 1.8TB/s 的双向带宽，可扩展至 576 个 GPU 集群</strong>，为超大规模 AI 训练提供基础设施支持
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-blue-50 rounded-xl p-6 border border-blue-200">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-network-wired text-brand"></i>
+                        NVLink vs PCIe
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <h4 class="font-bold text-gray-900 mb-2">PCIe 4.0 x16</h4>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• 带宽：~32GB/s（双向）</li>
+                                <li>• 需经过 CPU</li>
+                                <li>• 延迟较高</li>
+                                <li>• 通用标准</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-brand mb-2">NVLink Gen 5</h4>
+                            <ul class="text-sm text-gray-700 space-y-1">
+                                <li>• 带宽：<strong>1.8TB/s（双向）</strong></li>
+                                <li>• GPU 直连</li>
+                                <li>• 延迟极低</li>
+                                <li>• 专用技术</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border-2 border-brand/30">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-rocket text-brand"></i>
+                        NVLink 对大规模 AI 训练的意义
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        在大规模分布式训练中，GPU 之间需要频繁交换梯度、参数等数据。传统的 PCIe 总线带宽有限且需要经过 CPU 中转，成为严重的性能瓶颈。
+                    </p>
+                    <p class="text-gray-700 leading-relaxed">
+                        <strong>NVLink 的超高带宽和低延迟特性</strong>使得 GPU 集群能够高效协作，大幅缩短训练时间。例如，在训练 GPT-3 这样的千亿参数模型时，NVLink 的通信效率直接决定了训练的可行性和成本。第五代 NVLink 支持的 576 GPU 集群规模，为未来更大规模模型的训练奠定了硬件基础。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // Modal Control Functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // Close modal when clicking on background
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        });
+        
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
+            }
+        });
+        
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Add visible class to trigger animations
+                    entry.target.querySelectorAll('.fade-in-up, .mini-card').forEach((el, index) => {
+                        setTimeout(() => {
+                            el.classList.add('visible');
+                        }, index * 50);
+                    });
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all slides
+        document.querySelectorAll('.slide').forEach(slide => {
+            observer.observe(slide);
+        });
+        
+        // Smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Initialize animations on page load
+        window.addEventListener('load', () => {
+            // Trigger animation for first slide
+            const firstSlide = document.querySelector('.slide');
+            if (firstSlide) {
+                firstSlide.querySelectorAll('.fade-in-up, .mini-card').forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('visible');
+                    }, index * 100 + 300);
+                });
+            }
+        });
+        
+        // Track current slide for debugging (optional)
+        const slidesContainer = document.querySelector('.slides-container');
+        let currentSlide = 0;
+        
+        slidesContainer.addEventListener('scroll', () => {
+            const slides = document.querySelectorAll('.slide');
+            const scrollPosition = slidesContainer.scrollTop;
+            
+            slides.forEach((slide, index) => {
+                const slideTop = slide.offsetTop;
+                const slideHeight = slide.offsetHeight;
+                
+                if (scrollPosition >= slideTop - slideHeight / 2 && 
+                    scrollPosition < slideTop + slideHeight / 2) {
+                    if (currentSlide !== index) {
+                        currentSlide = index;
+                        console.log('Current slide:', currentSlide + 1);
+                    }
+                }
+            });
+        });
+    </script>
+    
+</body>
+</html>
