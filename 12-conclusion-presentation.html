@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>结语 - AI技术报告演示文稿</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Scroll Snap Container */
+        .slides-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        
+        /* Individual Slide - 16:9 Aspect Ratio */
+        .slide {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        /* 16:9 Content Container */
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            overflow: hidden;
+        }
+        
+        /* Brand Color - Tech Blue */
+        :root {
+            --brand-color: #00AEEF;
+            --brand-gradient-start: rgba(0, 174, 239, 0.8);
+            --brand-gradient-end: rgba(0, 174, 239, 0.2);
+        }
+        
+        .text-brand {
+            color: var(--brand-color);
+        }
+        
+        .bg-brand {
+            background-color: var(--brand-color);
+        }
+        
+        .bg-brand-gradient {
+            background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
+        }
+        
+        .border-brand {
+            border-color: var(--brand-color);
+        }
+        
+        /* Modal/Overlay Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            max-height: 85vh;
+            width: 90%;
+            overflow-y: auto;
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+            transform: scale(1.1);
+        }
+        
+        /* Animation Classes */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Mini Card Stagger Animation */
+        .mini-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .mini-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .mini-card:nth-child(1) { transition-delay: 0.1s; }
+        .mini-card:nth-child(2) { transition-delay: 0.2s; }
+        .mini-card:nth-child(3) { transition-delay: 0.3s; }
+        .mini-card:nth-child(4) { transition-delay: 0.4s; }
+        .mini-card:nth-child(5) { transition-delay: 0.5s; }
+        .mini-card:nth-child(6) { transition-delay: 0.6s; }
+        .mini-card:nth-child(7) { transition-delay: 0.7s; }
+        .mini-card:nth-child(8) { transition-delay: 0.8s; }
+        
+        /* Button Styles */
+        .detail-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0, 174, 239, 0.3);
+        }
+        
+        .detail-button:hover {
+            background: #008ec4;
+            box-shadow: 0 4px 12px rgba(0, 174, 239, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .detail-button i {
+            font-size: 0.875rem;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .modal-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            
+            .slide-content {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Slides Container -->
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <section class="slide">
+            <div class="slide-content bg-brand-gradient">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up">
+                        <i class="fas fa-flag-checkered text-6xl text-white mb-6"></i>
+                    </div>
+                    <h1 class="text-8xl font-bold text-white mb-4 fade-in-up">结语</h1>
+                    <p class="text-2xl text-white/90 mb-8 fade-in-up">Conclusion</p>
+                    <div class="w-24 h-1 bg-white/50 rounded-full mb-8 fade-in-up"></div>
+                    <h2 class="text-3xl font-bold text-white mb-3 fade-in-up">开创智慧治理的美好未来</h2>
+                    <p class="text-xl text-white/80 fade-in-up">Embracing the Future of Intelligent Governance</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: AI Transformation Impact -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-8 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-rocket text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">AI驱动的深刻变革</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">AI-Driven Transformation</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-8 border border-blue-100 mb-8 fade-in-up">
+                                <p class="text-2xl text-gray-800 leading-relaxed text-center">
+                                    人工智能技术正在<span class="text-brand font-bold text-3xl">深刻改变</span><br/>
+                                    政府治理模式和公共服务方式
+                                </p>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-6">
+                                <!-- Card 1: Governance -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-20 h-20 bg-brand/10 rounded-2xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-landmark text-brand text-4xl"></i>
+                                        </div>
+                                        <h3 class="text-3xl font-bold text-gray-900 mb-2">治理模式</h3>
+                                        <p class="text-sm text-gray-500 mb-3">Governance Model</p>
+                                        <p class="text-sm text-gray-600 leading-relaxed">智能化决策支持系统，提升治理效率与精准度</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Card 2: Public Service -->
+                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm hover:shadow-md transition-shadow mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-20 h-20 bg-brand/10 rounded-2xl flex items-center justify-center mb-4">
+                                            <i class="fas fa-users text-brand text-4xl"></i>
+                                        </div>
+                                        <h3 class="text-3xl font-bold text-gray-900 mb-2">公共服务</h3>
+                                        <p class="text-sm text-gray-500 mb-3">Public Service</p>
+                                        <p class="text-sm text-gray-600 leading-relaxed">个性化、智能化服务，提升群众满意度</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-8 text-center fade-in-up">
+                                <button class="detail-button" onclick="openModal('modal-transformation')">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>查看AI变革详细案例</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 3: Four Pillars of Success -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-chess-king text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">成功AI应用的四大支柱</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Four Pillars of Successful AI Implementation</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-2 gap-5">
+                                <!-- Pillar 1: Strategy -->
+                                <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-6 border-l-4 border-red-400 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-16 h-16 bg-red-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-chess text-white text-3xl"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="text-5xl font-bold text-red-500 mb-2">01</div>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">战略规划</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Strategic Planning</p>
+                                            <p class="text-sm text-gray-600 leading-relaxed">明确AI应用目标与路线图</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pillar 2: Technology -->
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-l-4 border-blue-400 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-16 h-16 bg-brand rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-microchip text-white text-3xl"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="text-5xl font-bold text-brand mb-2">02</div>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">技术支撑</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Technical Support</p>
+                                            <p class="text-sm text-gray-600 leading-relaxed">建立完善的技术基础设施</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pillar 3: Talent -->
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border-l-4 border-green-400 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-16 h-16 bg-green-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-user-graduate text-white text-3xl"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="text-5xl font-bold text-green-500 mb-2">03</div>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">人才保障</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Talent Development</p>
+                                            <p class="text-sm text-gray-600 leading-relaxed">培养AI技术与应用人才</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pillar 4: Culture -->
+                                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-l-4 border-purple-400 shadow-sm hover:shadow-lg transition-all mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="w-16 h-16 bg-purple-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <i class="fas fa-sync-alt text-white text-3xl"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <div class="text-5xl font-bold text-purple-500 mb-2">04</div>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">文化变革</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Cultural Transformation</p>
+                                            <p class="text-sm text-gray-600 leading-relaxed">营造创新与数字化文化</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 bg-gray-50 rounded-xl p-5 border border-gray-200 fade-in-up">
+                                <p class="text-center text-lg text-gray-700">
+                                    <i class="fas fa-link text-brand mr-2"></i>
+                                    四大支柱<span class="font-bold text-brand">有机结合</span>，共同推动AI应用成功落地
+                                </p>
+                            </div>
+                            
+                            <div class="mt-4 text-center fade-in-up">
+                                <button class="detail-button" onclick="openModal('modal-pillars')">
+                                    <i class="fas fa-book-open"></i>
+                                    <span>深入了解四大支柱详解</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 4: Core Principles -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-8 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-heart text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">核心原则</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Core Principles</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center justify-center">
+                        <div class="w-full max-w-5xl">
+                            <div class="grid grid-cols-2 gap-8 mb-8">
+                                <!-- Principle 1 -->
+                                <div class="bg-white rounded-2xl p-8 border-2 border-brand shadow-lg mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-24 h-24 bg-brand/10 rounded-full flex items-center justify-center mb-6">
+                                            <i class="fas fa-user-friends text-brand text-5xl"></i>
+                                        </div>
+                                        <h3 class="text-4xl font-bold text-gray-900 mb-3">以人为本</h3>
+                                        <p class="text-sm text-gray-500 mb-4">People-Centered</p>
+                                        <p class="text-base text-gray-600 leading-relaxed">
+                                            AI技术的发展与应用必须始终以服务人民、造福社会为根本出发点
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Principle 2 -->
+                                <div class="bg-white rounded-2xl p-8 border-2 border-brand shadow-lg mini-card">
+                                    <div class="flex flex-col items-center text-center">
+                                        <div class="w-24 h-24 bg-brand/10 rounded-full flex items-center justify-center mb-6">
+                                            <i class="fas fa-shield-alt text-brand text-5xl"></i>
+                                        </div>
+                                        <h3 class="text-4xl font-bold text-gray-900 mb-3">公共利益</h3>
+                                        <p class="text-sm text-gray-500 mb-4">Public Interest</p>
+                                        <p class="text-base text-gray-600 leading-relaxed">
+                                            确保技术服务于公共利益，推动社会公平与可持续发展
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-2xl p-6 border border-blue-200 fade-in-up">
+                                <p class="text-xl text-center text-gray-800 leading-relaxed">
+                                    <i class="fas fa-quote-left text-brand mr-2"></i>
+                                    只有坚持以人为本，确保技术服务于公共利益，<br/>
+                                    才能<span class="font-bold text-brand text-2xl">真正实现AI技术的价值</span>，<br/>
+                                    推动国家治理体系和治理能力现代化
+                                    <i class="fas fa-quote-right text-brand ml-2"></i>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 5: Opportunities and Challenges -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-balance-scale text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">机遇与挑战并存</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Opportunities and Challenges</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-2 gap-8 mb-6">
+                                <!-- Opportunities -->
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-8 border border-green-200 shadow-sm mini-card">
+                                    <div class="flex items-center gap-4 mb-6">
+                                        <div class="w-16 h-16 bg-green-500 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-lightbulb text-white text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-3xl font-bold text-gray-900">机遇</h3>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                                            <p class="text-sm text-gray-700">技术创新加速发展</p>
+                                        </div>
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                                            <p class="text-sm text-gray-700">应用场景不断拓展</p>
+                                        </div>
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                                            <p class="text-sm text-gray-700">治理能力显著提升</p>
+                                        </div>
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-check-circle text-green-500 text-xl mt-1"></i>
+                                            <p class="text-sm text-gray-700">服务水平持续优化</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Challenges -->
+                                <div class="bg-gradient-to-br from-orange-50 to-red-50 rounded-2xl p-8 border border-orange-200 shadow-sm mini-card">
+                                    <div class="flex items-center gap-4 mb-6">
+                                        <div class="w-16 h-16 bg-orange-500 rounded-xl flex items-center justify-center">
+                                            <i class="fas fa-exclamation-triangle text-white text-3xl"></i>
+                                        </div>
+                                        <h3 class="text-3xl font-bold text-gray-900">挑战</h3>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-times-circle text-orange-500 text-xl mt-1"></i>
+                                            <p class="text-sm text-gray-700">技术伦理与安全风险</p>
+                                        </div>
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-times-circle text-orange-500 text-xl mt-1"></i>
+                                            <p class="text-sm text-gray-700">人才储备与能力建设</p>
+                                        </div>
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-times-circle text-orange-500 text-xl mt-1"></i>
+                                            <p class="text-sm text-gray-700">数据治理与隐私保护</p>
+                                        </div>
+                                        <div class="flex items-start gap-3">
+                                            <i class="fas fa-times-circle text-orange-500 text-xl mt-1"></i>
+                                            <p class="text-sm text-gray-700">组织变革与文化适应</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-4 fade-in-up">
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm text-center mini-card">
+                                    <i class="fas fa-eye text-brand text-3xl mb-2"></i>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-1">开放心态</h4>
+                                    <p class="text-xs text-gray-600">Open Mindset</p>
+                                </div>
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm text-center mini-card">
+                                    <i class="fas fa-hands-helping text-brand text-3xl mb-2"></i>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-1">拥抱变革</h4>
+                                    <p class="text-xs text-gray-600">Embrace Change</p>
+                                </div>
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm text-center mini-card">
+                                    <i class="fas fa-rocket text-brand text-3xl mb-2"></i>
+                                    <h4 class="text-lg font-bold text-gray-900 mb-1">持续创新</h4>
+                                    <p class="text-xs text-gray-600">Continuous Innovation</p>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 text-center fade-in-up">
+                                <button class="detail-button" onclick="openModal('modal-challenges')">
+                                    <i class="fas fa-info-circle"></i>
+                                    <span>查看应对策略详解</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 6: Vision Chart -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-chart-line text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">AI应用成熟度路径</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">AI Application Maturity Path</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center justify-center">
+                        <div class="w-full max-w-4xl">
+                            <div class="chart-container mb-6" style="max-width: 800px;">
+                                <canvas id="maturityChart"></canvas>
+                            </div>
+                            
+                            <div class="grid grid-cols-5 gap-3">
+                                <div class="bg-red-50 rounded-lg p-3 border border-red-200 text-center mini-card">
+                                    <div class="text-2xl font-bold text-red-500 mb-1">初识</div>
+                                    <p class="text-xs text-gray-600">Awareness</p>
+                                </div>
+                                <div class="bg-orange-50 rounded-lg p-3 border border-orange-200 text-center mini-card">
+                                    <div class="text-2xl font-bold text-orange-500 mb-1">探索</div>
+                                    <p class="text-xs text-gray-600">Exploration</p>
+                                </div>
+                                <div class="bg-yellow-50 rounded-lg p-3 border border-yellow-200 text-center mini-card">
+                                    <div class="text-2xl font-bold text-yellow-600 mb-1">试点</div>
+                                    <p class="text-xs text-gray-600">Pilot</p>
+                                </div>
+                                <div class="bg-green-50 rounded-lg p-3 border border-green-200 text-center mini-card">
+                                    <div class="text-2xl font-bold text-green-500 mb-1">推广</div>
+                                    <p class="text-xs text-gray-600">Scale</p>
+                                </div>
+                                <div class="bg-brand/10 rounded-lg p-3 border border-brand text-center mini-card">
+                                    <div class="text-2xl font-bold text-brand mb-1">优化</div>
+                                    <p class="text-xs text-gray-600">Optimize</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 7: Final Call to Action -->
+        <section class="slide">
+            <div class="slide-content bg-gradient-to-br from-gray-50 to-blue-50">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up mb-8">
+                        <i class="fas fa-sun text-brand text-6xl mb-6"></i>
+                    </div>
+                    <h2 class="text-6xl font-bold text-gray-900 mb-6 fade-in-up">共同开创</h2>
+                    <h3 class="text-5xl font-bold text-brand mb-8 fade-in-up">智慧治理的美好未来</h3>
+                    <p class="text-xl text-gray-600 mb-12 max-w-4xl leading-relaxed fade-in-up">
+                        在实践中不断探索和创新，充分利用AI技术的强大能力，<br/>
+                        显著提升治理能力和服务水平，更好地满足人民群众的需求
+                    </p>
+                    
+                    <div class="grid grid-cols-4 gap-6 max-w-5xl mb-12">
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">学习</div>
+                            <p class="text-xs text-gray-500 mb-2">Learn</p>
+                            <p class="text-sm text-gray-600">系统学习AI技术</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">掌握</div>
+                            <p class="text-xs text-gray-500 mb-2">Master</p>
+                            <p class="text-sm text-gray-600">掌握核心能力</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">应用</div>
+                            <p class="text-xs text-gray-500 mb-2">Apply</p>
+                            <p class="text-sm text-gray-600">推动技术落地</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 shadow-md mini-card">
+                            <div class="text-5xl font-bold text-brand mb-3">创新</div>
+                            <p class="text-xs text-gray-500 mb-2">Innovate</p>
+                            <p class="text-sm text-gray-600">持续探索创新</p>
+                        </div>
+                    </div>
+                    
+                    <div class="fade-in-up">
+                        <div class="text-3xl font-bold text-gray-900 mb-3">AI时代，未来已来</div>
+                        <p class="text-lg text-gray-600">The AI Era is Here - Let's Shape the Future Together</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+    
+    <!-- Modal 1: Transformation Details -->
+    <div id="modal-transformation" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-transformation')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">AI变革详细案例</h2>
+            <p class="text-sm text-gray-500 mb-8">Detailed AI Transformation Cases</p>
+            
+            <div class="space-y-6">
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-landmark text-brand"></i>
+                        政府治理模式变革
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        AI技术正在从根本上改变政府的决策方式、执行方式和监督方式。通过大数据分析、预测模型和智能决策系统，政府能够更加精准地识别社会需求、预测发展趋势、制定科学政策。
+                    </p>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-900 mb-2">典型应用场景：</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check text-brand mt-1"></i>
+                                <span><strong>智能政务大厅：</strong>通过自然语言处理和智能问答系统，提供24小时在线咨询服务，减少群众等待时间</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check text-brand mt-1"></i>
+                                <span><strong>城市大脑：</strong>集成交通、环保、公安等多部门数据，实现城市运行态势的实时感知和智能调度</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check text-brand mt-1"></i>
+                                <span><strong>政策模拟系统：</strong>利用AI模型预测政策实施效果，为决策提供科学依据</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-purple-500 pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-users text-purple-500"></i>
+                        公共服务方式革新
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        AI技术使公共服务从"人找服务"转变为"服务找人"，从标准化服务转变为个性化服务，从被动响应转变为主动预测。
+                    </p>
+                    <div class="bg-purple-50 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-900 mb-2">创新服务模式：</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check text-purple-500 mt-1"></i>
+                                <span><strong>智能推荐：</strong>基于用户画像和行为分析，主动推送相关政策和服务信息</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check text-purple-500 mt-1"></i>
+                                <span><strong>一网通办：</strong>利用知识图谱和流程自动化，实现"最多跑一次"甚至"一次不用跑"</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <i class="fas fa-check text-purple-500 mt-1"></i>
+                                <span><strong>精准扶助：</strong>通过数据分析识别困难群体，提供精准化、个性化的帮扶服务</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-chart-line text-brand"></i>
+                        核心价值体现
+                    </h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-brand mb-1">效率</div>
+                            <p class="text-sm text-gray-600">大幅提升工作效率</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-brand mb-1">精准</div>
+                            <p class="text-sm text-gray-600">实现精准化服务</p>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-3xl font-bold text-brand mb-1">满意</div>
+                            <p class="text-sm text-gray-600">提升群众满意度</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 2: Four Pillars Details -->
+    <div id="modal-pillars" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-pillars')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">四大支柱深度解析</h2>
+            <p class="text-sm text-gray-500 mb-8">In-depth Analysis of Four Pillars</p>
+            
+            <div class="space-y-6">
+                <!-- Pillar 1: Strategy -->
+                <div class="bg-gradient-to-r from-red-50 to-orange-50 rounded-xl p-6 border border-red-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <div class="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-chess text-white text-xl"></i>
+                        </div>
+                        战略规划
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        战略规划是AI应用成功的第一步，需要从组织的整体战略出发，明确AI技术的定位、目标和实施路径。
+                    </p>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">关键要素：</h4>
+                            <ul class="space-y-2 text-sm text-gray-700">
+                                <li>• <strong>顶层设计：</strong>制定AI发展战略和行动计划</li>
+                                <li>• <strong>目标设定：</strong>明确短期、中期和长期目标</li>
+                                <li>• <strong>路径规划：</strong>设计分阶段、分领域的实施路线</li>
+                                <li>• <strong>资源配置：</strong>合理配置人力、财力和物力资源</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pillar 2: Technology -->
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border border-blue-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <div class="w-12 h-12 bg-brand rounded-lg flex items-center justify-center">
+                            <i class="fas fa-microchip text-white text-xl"></i>
+                        </div>
+                        技术支撑
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        完善的技术基础设施是AI应用的物质基础，包括算力资源、数据平台、开发工具和安全保障等。
+                    </p>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">核心内容：</h4>
+                            <ul class="space-y-2 text-sm text-gray-700">
+                                <li>• <strong>算力设施：</strong>建设或采购GPU服务器、云计算资源</li>
+                                <li>• <strong>数据平台：</strong>构建统一的数据治理和管理平台</li>
+                                <li>• <strong>模型库：</strong>建立可复用的模型资产库</li>
+                                <li>• <strong>安全体系：</strong>建立完善的数据安全和模型安全机制</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pillar 3: Talent -->
+                <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <div class="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user-graduate text-white text-xl"></i>
+                        </div>
+                        人才保障
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        人才是AI应用的核心驱动力，需要建立多层次、多类型的人才培养和引进体系。
+                    </p>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">人才体系：</h4>
+                            <ul class="space-y-2 text-sm text-gray-700">
+                                <li>• <strong>技术人才：</strong>培养算法工程师、数据科学家等核心技术人才</li>
+                                <li>• <strong>应用人才：</strong>培养业务部门的AI应用和推广人才</li>
+                                <li>• <strong>管理人才：</strong>培养具备AI认知的管理和决策人才</li>
+                                <li>• <strong>外部合作：</strong>与高校、企业建立人才培养和交流机制</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pillar 4: Culture -->
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-6 border border-purple-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <div class="w-12 h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-sync-alt text-white text-xl"></i>
+                        </div>
+                        文化变革
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed mb-4">
+                        文化变革是AI应用的软环境，需要营造鼓励创新、容忍失败、拥抱变化的组织文化。
+                    </p>
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2">变革方向：</h4>
+                            <ul class="space-y-2 text-sm text-gray-700">
+                                <li>• <strong>创新文化：</strong>鼓励探索新技术、新应用、新模式</li>
+                                <li>• <strong>数据文化：</strong>建立数据驱动的决策和工作方式</li>
+                                <li>• <strong>学习文化：</strong>持续学习和更新AI知识与技能</li>
+                                <li>• <strong>协同文化：</strong>打破部门壁垒，促进跨部门协作</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal 3: Challenges and Strategies -->
+    <div id="modal-challenges" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-challenges')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">应对策略详解</h2>
+            <p class="text-sm text-gray-500 mb-8">Detailed Response Strategies</p>
+            
+            <div class="space-y-6">
+                <div class="border-l-4 border-brand pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">技术伦理与安全风险</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        AI技术的广泛应用带来了算法偏见、隐私泄露、安全攻击等风险，需要建立完善的伦理规范和安全保障体系。
+                    </p>
+                    <div class="bg-blue-50 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-900 mb-2">应对措施：</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• 制定AI伦理准则和审查机制</li>
+                            <li>• 建立模型可解释性和透明度标准</li>
+                            <li>• 实施数据安全和隐私保护措施</li>
+                            <li>• 开展算法偏见检测和纠正</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-green-500 pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">人才储备与能力建设</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        AI人才短缺是制约AI应用发展的重要瓶颈，需要通过多渠道、多层次的方式加强人才培养和能力建设。
+                    </p>
+                    <div class="bg-green-50 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-900 mb-2">解决路径：</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• 与高校合作开展定向人才培养</li>
+                            <li>• 组织系统性的AI技能培训</li>
+                            <li>• 引进外部专家和技术团队</li>
+                            <li>• 建立内部知识分享和学习机制</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-purple-500 pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">数据治理与隐私保护</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        高质量的数据是AI应用的基础，但同时也面临数据孤岛、数据质量和隐私保护等挑战。
+                    </p>
+                    <div class="bg-purple-50 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-900 mb-2">治理策略：</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• 建立统一的数据治理框架</li>
+                            <li>• 推动数据标准化和质量管理</li>
+                            <li>• 实施差分隐私和联邦学习等技术</li>
+                            <li>• 制定数据共享和使用规范</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="border-l-4 border-orange-500 pl-6 py-3">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">组织变革与文化适应</h3>
+                    <p class="text-gray-700 leading-relaxed mb-3">
+                        AI应用往往需要调整组织结构、业务流程和工作方式，这对传统组织文化构成挑战。
+                    </p>
+                    <div class="bg-orange-50 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-900 mb-2">变革方法：</h4>
+                        <ul class="space-y-2 text-sm text-gray-700">
+                            <li>• 自上而下推动组织变革</li>
+                            <li>• 建立跨部门的AI协作机制</li>
+                            <li>• 设立创新试点项目和容错机制</li>
+                            <li>• 加强变革管理和沟通宣传</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-brand/30">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-lightbulb text-brand"></i>
+                        核心理念
+                    </h3>
+                    <p class="text-gray-700 leading-relaxed">
+                        面对挑战，我们需要保持<span class="font-bold text-brand">开放的心态</span>，
+                        <span class="font-bold text-brand">积极拥抱变革</span>，
+                        在实践中<span class="font-bold text-brand">不断探索和创新</span>，
+                        将挑战转化为发展的机遇。只有这样，才能真正发挥AI技术的价值，
+                        推动治理体系和治理能力的现代化。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- JavaScript -->
+    <script>
+        // Modal Control Functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // Close modal when clicking on background
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        });
+        
+        // Close modal with ESC key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
+            }
+        });
+        
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    // Add visible class to trigger animations
+                    entry.target.querySelectorAll('.fade-in-up, .mini-card').forEach((el, index) => {
+                        setTimeout(() => {
+                            el.classList.add('visible');
+                        }, index * 50);
+                    });
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all slides
+        document.querySelectorAll('.slide').forEach(slide => {
+            observer.observe(slide);
+        });
+        
+        // Smooth scroll behavior
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+        
+        // Initialize animations on page load
+        window.addEventListener('load', () => {
+            // Trigger animation for first slide
+            const firstSlide = document.querySelector('.slide');
+            if (firstSlide) {
+                firstSlide.querySelectorAll('.fade-in-up, .mini-card').forEach((el, index) => {
+                    setTimeout(() => {
+                        el.classList.add('visible');
+                    }, index * 100 + 300);
+                });
+            }
+            
+            // Initialize chart
+            initMaturityChart();
+        });
+        
+        // Track current slide for debugging
+        const slidesContainer = document.querySelector('.slides-container');
+        let currentSlide = 0;
+        
+        slidesContainer.addEventListener('scroll', () => {
+            const slides = document.querySelectorAll('.slide');
+            const scrollPosition = slidesContainer.scrollTop;
+            
+            slides.forEach((slide, index) => {
+                const slideTop = slide.offsetTop;
+                const slideHeight = slide.offsetHeight;
+                
+                if (scrollPosition >= slideTop - slideHeight / 2 && 
+                    scrollPosition < slideTop + slideHeight / 2) {
+                    if (currentSlide !== index) {
+                        currentSlide = index;
+                        console.log('Current slide:', currentSlide + 1);
+                    }
+                }
+            });
+        });
+        
+        // Initialize Maturity Chart
+        function initMaturityChart() {
+            const ctx = document.getElementById('maturityChart');
+            if (!ctx) return;
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['初识阶段', '探索阶段', '试点阶段', '推广阶段', '优化阶段'],
+                    datasets: [{
+                        label: 'AI应用成熟度',
+                        data: [15, 35, 60, 85, 95],
+                        borderColor: '#00AEEF',
+                        backgroundColor: 'rgba(0, 174, 239, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#00AEEF',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return '成熟度: ' + context.parsed.y + '%';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+    
+</body>
+</html>
