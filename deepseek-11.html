@@ -248,6 +248,19 @@
             }
         }
         
+        /* Ensure content fits within container */
+        @media (max-height: 800px) {
+            .slide-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            .slide-content {
+                padding: 1.5rem;
+            }
+        }
+        
         /* Prevent body scroll when modal is open */
         body.modal-open {
             overflow: hidden;
@@ -831,81 +844,81 @@
         <section class="slide">
             <div class="slide-content">
                 <div class="h-full flex flex-col">
-                    <div class="mb-6 fade-in-up">
+                    <div class="mb-4 fade-in-up">
                         <div class="flex items-center gap-3 mb-2">
-                            <i class="fas fa-lightbulb text-brand text-4xl"></i>
-                            <h2 class="text-5xl font-bold text-gray-900">案例总结与启示</h2>
+                            <i class="fas fa-lightbulb text-brand text-3xl"></i>
+                            <h2 class="text-4xl font-bold text-gray-900">案例总结与启示</h2>
                         </div>
-                        <p class="text-xl text-gray-500 ml-16">Case Summary & Insights</p>
+                        <p class="text-lg text-gray-500 ml-12">Case Summary & Insights</p>
                     </div>
                     
-                    <div class="flex-1 flex items-center">
-                        <div class="w-full">
-                            <div class="grid grid-cols-2 gap-6 mb-6">
+                    <div class="flex-1 overflow-y-auto">
+                        <div class="w-full pb-4">
+                            <div class="grid grid-cols-2 gap-4 mb-4">
                                 <!-- Feature 1: Efficiency -->
-                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
-                                    <div class="flex items-start gap-4">
-                                        <div class="text-6xl font-bold text-brand">01</div>
+                                <div class="bg-white rounded-xl p-4 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="flex items-start gap-3">
+                                        <div class="text-5xl font-bold text-brand">01</div>
                                         <div class="flex-1">
-                                            <h3 class="text-3xl font-bold text-gray-900 mb-3">提高效率</h3>
-                                            <p class="text-xs text-gray-500 mb-2">Efficiency Enhancement</p>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">提高效率</h3>
+                                            <p class="text-xs text-gray-500 mb-1">Efficiency Enhancement</p>
                                             <p class="text-sm text-gray-600 leading-relaxed">AI 技术显著缩短了办事流程，提高了政府服务效率</p>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Feature 2: Convenience -->
-                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
-                                    <div class="flex items-start gap-4">
-                                        <div class="text-6xl font-bold text-brand">02</div>
+                                <div class="bg-white rounded-xl p-4 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="flex items-start gap-3">
+                                        <div class="text-5xl font-bold text-brand">02</div>
                                         <div class="flex-1">
-                                            <h3 class="text-3xl font-bold text-gray-900 mb-3">便民利民</h3>
-                                            <p class="text-xs text-gray-500 mb-2">Citizen-Friendly</p>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">便民利民</h3>
+                                            <p class="text-xs text-gray-500 mb-1">Citizen-Friendly</p>
                                             <p class="text-sm text-gray-600 leading-relaxed">通过智能化手段，让群众办事更方便、更快捷</p>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Feature 3: Precision -->
-                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
-                                    <div class="flex items-start gap-4">
-                                        <div class="text-6xl font-bold text-brand">03</div>
+                                <div class="bg-white rounded-xl p-4 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="flex items-start gap-3">
+                                        <div class="text-5xl font-bold text-brand">03</div>
                                         <div class="flex-1">
-                                            <h3 class="text-3xl font-bold text-gray-900 mb-3">精准服务</h3>
-                                            <p class="text-xs text-gray-500 mb-2">Precision Service</p>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">精准服务</h3>
+                                            <p class="text-xs text-gray-500 mb-1">Precision Service</p>
                                             <p class="text-sm text-gray-600 leading-relaxed">基于大数据和 AI 分析，提供个性化、精准化服务</p>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Feature 4: Scientific Decision -->
-                                <div class="bg-white rounded-xl p-6 border-2 border-brand/20 shadow-sm mini-card">
-                                    <div class="flex items-start gap-4">
-                                        <div class="text-6xl font-bold text-brand">04</div>
+                                <div class="bg-white rounded-xl p-4 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="flex items-start gap-3">
+                                        <div class="text-5xl font-bold text-brand">04</div>
                                         <div class="flex-1">
-                                            <h3 class="text-3xl font-bold text-gray-900 mb-3">科学决策</h3>
-                                            <p class="text-xs text-gray-500 mb-2">Scientific Decision</p>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">科学决策</h3>
+                                            <p class="text-xs text-gray-500 mb-1">Scientific Decision</p>
                                             <p class="text-sm text-gray-600 leading-relaxed">AI 技术为政府决策提供了数据支撑和智能分析</p>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Feature 5: Innovation -->
-                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-brand shadow-sm mini-card col-span-2">
-                                    <div class="flex items-center gap-6">
-                                        <div class="text-7xl font-bold text-brand">05</div>
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border-2 border-brand shadow-sm mini-card col-span-2">
+                                    <div class="flex items-center gap-4">
+                                        <div class="text-5xl font-bold text-brand">05</div>
                                         <div class="flex-1">
-                                            <h3 class="text-4xl font-bold text-gray-900 mb-3">创新应用</h3>
-                                            <p class="text-xs text-gray-500 mb-3">Innovation Application</p>
-                                            <p class="text-base text-gray-700 leading-relaxed">在传统政务服务基础上，创造了许多新的服务模式，推动政府数字化转型</p>
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-2">创新应用</h3>
+                                            <p class="text-xs text-gray-500 mb-2">Innovation Application</p>
+                                            <p class="text-sm text-gray-700 leading-relaxed">在传统政务服务基础上，创造了许多新的服务模式，推动政府数字化转型</p>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <div class="bg-gradient-to-r from-brand/10 to-brand/5 rounded-xl p-5 border-2 border-brand">
-                                <p class="text-xl text-center text-gray-800 font-semibold">
-                                    这些成功案例表明，<span class="text-brand font-bold">AI 技术在政府数字化转型中</span>具有广阔应用前景，<br/>
+                            <div class="bg-gradient-to-r from-brand/10 to-brand/5 rounded-xl p-4 border-2 border-brand">
+                                <p class="text-lg text-center text-gray-800 font-semibold leading-relaxed">
+                                    这些成功案例表明,<span class="text-brand font-bold">AI 技术在政府数字化转型中</span>具有广阔应用前景,
                                     能够<span class="text-brand font-bold">有效提升治理能力现代化水平</span>
                                 </p>
                             </div>
