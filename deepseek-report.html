@@ -7867,7 +7867,7 @@ body.modal-open {
           </p>
          </div>
          <div class="flex items-center justify-center">
-          <button class="detail-button" onclick="openModal('modal-formula-detail')">
+          <button class="detail-button" onclick="openModal('modal-distillation-formula')">
            <i class="fas fa-calculator">
            </i>
            <span>
@@ -17393,20 +17393,21 @@ body.modal-open {
     </div>
    </div>
   </div>
-  <div class="modal theme-blue" id="modal-formula-detail">
+  <div class="modal theme-blue" id="modal-distillation-formula">
    <div class="modal-content">
-    <button class="modal-close" onclick="closeModal('modal-formula-detail')">
+    <button class="modal-close" onclick="closeModal('modal-distillation-formula')">
      <i class="fas fa-times">
      </i>
     </button>
     <h2 class="text-4xl font-bold text-gray-900 mb-6">
-     数学公式详解
+     知识蒸馏数学公式详解
     </h2>
     <p class="text-sm text-gray-500 mb-8">
-     Detailed Mathematical Formulas
+     Detailed Mathematical Formulas for Knowledge Distillation
     </p>
+
     <div class="space-y-8">
-     <!-- Soft Label Loss -->
+
      <div class="border-l-4 border-brand pl-6 py-3">
       <h3 class="text-2xl font-bold text-gray-900 mb-4">
        软标签损失（Soft Label Loss）
@@ -19501,7 +19502,6 @@ body.modal-open {
             const currentSlide = slides[activeSlideIndex];
             if (currentSlide) {
                 revealElements(currentSlide);
-                console.log(`Current slide: ${activeSlideIndex + 1}`);
             }
         }
     };
