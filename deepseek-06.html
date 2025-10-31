@@ -8,6 +8,21 @@
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#00AEEF',
+                        'brand-gradient-start': 'rgba(0, 174, 239, 0.8)',
+                        'brand-gradient-end': 'rgba(0, 174, 239, 0.2)'
+                    }
+                }
+            }
+        }
+    </script>
+    
     <!-- Font Awesome CDN -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -914,7 +929,7 @@
                                         <p class="text-xs">支持更长上下文长度</p>
                                     </div>
                                 </div>
-                                <button class="mt-2 bg-white/20 hover:bg-white/30 rounded-lg px-3 py-2 text-sm font-medium transition-all" onclick="openModal('modal-distkv')">
+                                <button class="mt-2 bg-white/20 hover:bg-white/30 rounded-lg px-3 py-2 text-sm font-medium transition-all" onclick="openModal('modal-distkv-llm')">
                                     <i class="fas fa-info-circle mr-1"></i>详细了解
                                 </button>
                             </div>
@@ -1379,9 +1394,9 @@
     </div>
     
     <!-- Modal: DistKV-LLM Details -->
-    <div id="modal-distkv" class="modal">
+    <div id="modal-distkv-llm" class="modal">
         <div class="modal-content">
-            <button class="modal-close" onclick="closeModal('modal-distkv')">
+            <button class="modal-close" onclick="closeModal('modal-distkv-llm')">
                 <i class="fas fa-times"></i>
             </button>
             <div class="mb-6">
