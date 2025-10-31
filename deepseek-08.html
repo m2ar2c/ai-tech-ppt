@@ -59,7 +59,8 @@
             border-radius: 24px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
             padding: 3rem;
-            overflow: hidden;
+            overflow-y: auto;
+            overflow-x: hidden;
         }
         
         /* Brand Color - Tech Blue */
@@ -240,11 +241,18 @@
             .slide-content {
                 padding: 1.5rem;
                 border-radius: 16px;
+                aspect-ratio: auto;
+                min-height: 100vh;
             }
             
             .modal-content {
                 padding: 1.5rem;
                 width: 95%;
+            }
+            
+            /* Slide 5 responsive layout */
+            .slide .grid-cols-3 {
+                grid-template-columns: 1fr;
             }
         }
         
@@ -271,6 +279,31 @@
         
         .flow-arrow:last-child::after {
             display: none;
+        }
+        
+        /* Custom Scrollbar for slide-content */
+        .slide-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .slide-content::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        
+        .slide-content::-webkit-scrollbar-thumb {
+            background: var(--brand-color);
+            border-radius: 10px;
+            transition: background 0.3s ease;
+        }
+        
+        .slide-content::-webkit-scrollbar-thumb:hover {
+            background: #008ec4;
+        }
+        
+        /* Smooth scrolling behavior for slide content */
+        .slide-content {
+            scroll-behavior: smooth;
         }
     </style>
 </head>
@@ -600,69 +633,69 @@
         <section class="slide">
             <div class="slide-content">
                 <div class="h-full flex flex-col">
-                    <div class="mb-6 fade-in-up">
-                        <div class="flex items-center gap-3 mb-2">
-                            <i class="fas fa-rocket text-brand text-4xl"></i>
-                            <h2 class="text-5xl font-bold text-gray-900">大模型应用</h2>
+                    <div class="mb-4 fade-in-up">
+                        <div class="flex items-center gap-3 mb-1">
+                            <i class="fas fa-rocket text-brand text-3xl"></i>
+                            <h2 class="text-4xl font-bold text-gray-900">大模型应用</h2>
                         </div>
-                        <p class="text-xl text-gray-500 ml-16">Applications in Large Models</p>
+                        <p class="text-lg text-gray-500 ml-14">Applications in Large Models</p>
                     </div>
                     
-                    <div class="flex-1 flex items-center">
+                    <div class="flex-1">
                         <div class="w-full">
-                            <div class="grid grid-cols-3 gap-5 mb-6">
+                            <div class="grid grid-cols-3 gap-4 mb-4">
                                 <!-- Model Compression -->
-                                <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-6 border-2 border-red-200 shadow-sm mini-card">
-                                    <div class="text-center mb-4">
-                                        <div class="w-16 h-16 bg-red-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                            <i class="fas fa-compress text-white text-3xl"></i>
+                                <div class="bg-gradient-to-br from-red-50 to-orange-50 rounded-xl p-4 border-2 border-red-200 shadow-sm mini-card">
+                                    <div class="text-center mb-3">
+                                        <div class="w-12 h-12 bg-red-500 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                            <i class="fas fa-compress text-white text-xl"></i>
                                         </div>
-                                        <h3 class="text-2xl font-bold text-gray-900 mb-1">模型压缩</h3>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-1">模型压缩</h3>
                                         <p class="text-xs text-gray-500">Model Compression</p>
                                     </div>
-                                    <div class="space-y-3">
-                                        <div class="bg-white/80 rounded-lg p-3 text-center">
-                                            <p class="text-4xl font-bold text-red-600 mb-1">175B→7B</p>
+                                    <div class="space-y-2">
+                                        <div class="bg-white/80 rounded-lg p-2 text-center">
+                                            <p class="text-2xl font-bold text-red-600 mb-1">175B→7B</p>
                                             <p class="text-xs text-gray-600">参数规模压缩</p>
                                         </div>
-                                        <div class="bg-white/80 rounded-lg p-3 text-center">
-                                            <p class="text-4xl font-bold text-red-600 mb-1">90%+</p>
+                                        <div class="bg-white/80 rounded-lg p-2 text-center">
+                                            <p class="text-2xl font-bold text-red-600 mb-1">90%+</p>
                                             <p class="text-xs text-gray-600">性能保持率</p>
                                         </div>
-                                        <div class="bg-white/80 rounded-lg p-3 text-center">
-                                            <p class="text-4xl font-bold text-red-600 mb-1">95%+</p>
+                                        <div class="bg-white/80 rounded-lg p-2 text-center">
+                                            <p class="text-2xl font-bold text-red-600 mb-1">95%+</p>
                                             <p class="text-xs text-gray-600">参数减少率</p>
                                         </div>
                                     </div>
                                 </div>
                                 
                                 <!-- Cross-task Transfer -->
-                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 border-2 border-blue-200 shadow-sm mini-card">
-                                    <div class="text-center mb-4">
-                                        <div class="w-16 h-16 bg-brand rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                            <i class="fas fa-exchange-alt text-white text-3xl"></i>
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border-2 border-blue-200 shadow-sm mini-card">
+                                    <div class="text-center mb-3">
+                                        <div class="w-12 h-12 bg-brand rounded-xl flex items-center justify-center mx-auto mb-2">
+                                            <i class="fas fa-exchange-alt text-white text-xl"></i>
                                         </div>
-                                        <h3 class="text-2xl font-bold text-gray-900 mb-1">跨任务迁移</h3>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-1">跨任务迁移</h3>
                                         <p class="text-xs text-gray-500">Cross-task Transfer</p>
                                     </div>
                                     <div class="space-y-2">
-                                        <div class="bg-white/80 rounded-lg p-3">
+                                        <div class="bg-white/80 rounded-lg p-2">
                                             <div class="flex items-center gap-2 mb-1">
-                                                <i class="fas fa-database text-brand"></i>
+                                                <i class="fas fa-database text-brand text-sm"></i>
                                                 <p class="text-sm font-semibold text-gray-900">预训练老师</p>
                                             </div>
                                             <p class="text-xs text-gray-600">大规模无监督数据训练</p>
                                         </div>
-                                        <div class="bg-white/80 rounded-lg p-3">
+                                        <div class="bg-white/80 rounded-lg p-2">
                                             <div class="flex items-center gap-2 mb-1">
-                                                <i class="fas fa-user-graduate text-brand"></i>
+                                                <i class="fas fa-user-graduate text-brand text-sm"></i>
                                                 <p class="text-sm font-semibold text-gray-900">特定任务学生</p>
                                             </div>
                                             <p class="text-xs text-gray-600">针对性任务模型训练</p>
                                         </div>
-                                        <div class="bg-white/80 rounded-lg p-3">
+                                        <div class="bg-white/80 rounded-lg p-2">
                                             <div class="flex items-center gap-2 mb-1">
-                                                <i class="fas fa-cog text-brand"></i>
+                                                <i class="fas fa-cog text-brand text-sm"></i>
                                                 <p class="text-sm font-semibold text-gray-900">训练范式</p>
                                             </div>
                                             <p class="text-xs text-gray-600">预训练 - 蒸馏 - 微调</p>
@@ -671,32 +704,32 @@
                                 </div>
                                 
                                 <!-- Multilingual Distillation -->
-                                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-6 border-2 border-purple-200 shadow-sm mini-card">
-                                    <div class="text-center mb-4">
-                                        <div class="w-16 h-16 bg-purple-500 rounded-2xl flex items-center justify-center mx-auto mb-3">
-                                            <i class="fas fa-language text-white text-3xl"></i>
+                                <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-4 border-2 border-purple-200 shadow-sm mini-card">
+                                    <div class="text-center mb-3">
+                                        <div class="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center mx-auto mb-2">
+                                            <i class="fas fa-language text-white text-xl"></i>
                                         </div>
-                                        <h3 class="text-2xl font-bold text-gray-900 mb-1">多语言蒸馏</h3>
+                                        <h3 class="text-xl font-bold text-gray-900 mb-1">多语言蒸馏</h3>
                                         <p class="text-xs text-gray-500">Multilingual Distillation</p>
                                     </div>
                                     <div class="space-y-2">
-                                        <div class="bg-white/80 rounded-lg p-3">
+                                        <div class="bg-white/80 rounded-lg p-2">
                                             <div class="flex items-center gap-2 mb-1">
-                                                <i class="fas fa-globe text-purple-500"></i>
+                                                <i class="fas fa-globe text-purple-500 text-sm"></i>
                                                 <p class="text-sm font-semibold text-gray-900">多语言老师</p>
                                             </div>
                                             <p class="text-xs text-gray-600">支持多种语言的大模型</p>
                                         </div>
-                                        <div class="bg-white/80 rounded-lg p-3">
+                                        <div class="bg-white/80 rounded-lg p-2">
                                             <div class="flex items-center gap-2 mb-1">
-                                                <i class="fas fa-flag text-purple-500"></i>
+                                                <i class="fas fa-flag text-purple-500 text-sm"></i>
                                                 <p class="text-sm font-semibold text-gray-900">单语言学生</p>
                                             </div>
                                             <p class="text-xs text-gray-600">特定语言的小型模型</p>
                                         </div>
-                                        <div class="bg-white/80 rounded-lg p-3">
+                                        <div class="bg-white/80 rounded-lg p-2">
                                             <div class="flex items-center gap-2 mb-1">
-                                                <i class="fas fa-check-double text-purple-500"></i>
+                                                <i class="fas fa-check-double text-purple-500 text-sm"></i>
                                                 <p class="text-sm font-semibold text-gray-900">能力保持</p>
                                             </div>
                                             <p class="text-xs text-gray-600">跨语言理解能力迁移</p>
@@ -706,12 +739,12 @@
                             </div>
                             
                             <!-- Performance Chart -->
-                            <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
-                                <div class="text-center mb-3">
-                                    <h4 class="text-lg font-bold text-gray-900">核心收益对比</h4>
+                            <div class="bg-gray-50 rounded-xl p-3 border border-gray-200">
+                                <div class="text-center mb-2">
+                                    <h4 class="text-base font-bold text-gray-900">核心收益对比</h4>
                                     <p class="text-xs text-gray-500">Core Benefits Comparison</p>
                                 </div>
-                                <div class="chart-container" style="max-width: 800px; height: 180px;">
+                                <div class="chart-container" style="max-width: 800px; height: 150px;">
                                     <canvas id="compressionChart"></canvas>
                                 </div>
                             </div>
