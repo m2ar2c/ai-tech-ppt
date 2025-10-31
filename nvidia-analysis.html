@@ -1,0 +1,1725 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英伟达算力卡龙头地位分析 - AI技术报告</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            background: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* Scroll Snap Container */
+        .slides-container {
+            height: 100vh;
+            overflow-y: scroll;
+            scroll-snap-type: y mandatory;
+            scroll-behavior: smooth;
+        }
+        
+        /* Individual Slide - 16:9 Aspect Ratio */
+        .slide {
+            min-height: 100vh;
+            scroll-snap-align: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+        }
+        
+        /* 16:9 Content Container */
+        .slide-content {
+            width: 100%;
+            max-width: 1400px;
+            aspect-ratio: 16 / 9;
+            position: relative;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            padding: 3rem;
+            overflow: hidden;
+        }
+        
+        /* Brand Color - NVIDIA Green */
+        :root {
+            --brand-color: #76B900;
+            --brand-gradient-start: rgba(118, 185, 0, 0.8);
+            --brand-gradient-end: rgba(118, 185, 0, 0.2);
+        }
+        
+        .text-brand {
+            color: var(--brand-color);
+        }
+        
+        .bg-brand {
+            background-color: var(--brand-color);
+        }
+        
+        .bg-brand-gradient {
+            background: linear-gradient(135deg, var(--brand-gradient-start), var(--brand-gradient-end));
+        }
+        
+        .border-brand {
+            border-color: var(--brand-color);
+        }
+        
+        /* Modal/Overlay Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+        
+        .modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            max-width: 900px;
+            max-height: 85vh;
+            width: 90%;
+            overflow-y: auto;
+            position: relative;
+            padding: 3rem;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-size: 20px;
+            color: #6b7280;
+        }
+        
+        .modal-close:hover {
+            background: #e5e7eb;
+            color: #1f2937;
+            transform: scale(1.1);
+        }
+        
+        /* Animation Classes */
+        .fade-in-up {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        
+        .fade-in-up.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Mini Card Stagger Animation */
+        .mini-card {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        
+        .mini-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .mini-card:nth-child(1) { transition-delay: 0.1s; }
+        .mini-card:nth-child(2) { transition-delay: 0.2s; }
+        .mini-card:nth-child(3) { transition-delay: 0.3s; }
+        .mini-card:nth-child(4) { transition-delay: 0.4s; }
+        .mini-card:nth-child(5) { transition-delay: 0.5s; }
+        .mini-card:nth-child(6) { transition-delay: 0.6s; }
+        .mini-card:nth-child(7) { transition-delay: 0.7s; }
+        .mini-card:nth-child(8) { transition-delay: 0.8s; }
+        .mini-card:nth-child(9) { transition-delay: 0.9s; }
+        
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Button Styles */
+        .detail-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.625rem 1.25rem;
+            background: var(--brand-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(118, 185, 0, 0.3);
+        }
+        
+        .detail-button:hover {
+            background: #5f9400;
+            box-shadow: 0 4px 12px rgba(118, 185, 0, 0.4);
+            transform: translateY(-2px);
+        }
+        
+        .detail-button i {
+            font-size: 0.875rem;
+        }
+        
+        /* Timeline Styles */
+        .timeline-item {
+            position: relative;
+            padding-left: 3rem;
+            padding-bottom: 2rem;
+            border-left: 3px solid var(--brand-color);
+        }
+        
+        .timeline-item:last-child {
+            padding-bottom: 0;
+            border-left-color: transparent;
+        }
+        
+        .timeline-dot {
+            position: absolute;
+            left: -0.625rem;
+            top: 0;
+            width: 1.25rem;
+            height: 1.25rem;
+            border-radius: 50%;
+            background: var(--brand-color);
+            border: 3px solid white;
+            box-shadow: 0 0 0 3px rgba(118, 185, 0, 0.2);
+        }
+        
+        /* Table Styles */
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .compare-table th {
+            background: var(--brand-gradient-start);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .compare-table td {
+            padding: 0.875rem 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .compare-table tr:hover {
+            background: #f9fafb;
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 1024px) {
+            .slide-content {
+                padding: 2rem;
+            }
+            
+            .modal-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .slide {
+                padding: 1rem;
+            }
+            
+            .slide-content {
+                padding: 1.5rem;
+                border-radius: 16px;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+                width: 95%;
+            }
+        }
+        
+        /* Prevent body scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- Slides Container -->
+    <div class="slides-container">
+        
+        <!-- Slide 1: Title Slide -->
+        <section class="slide">
+            <div class="slide-content bg-brand-gradient">
+                <div class="h-full flex flex-col items-center justify-center text-center">
+                    <div class="fade-in-up">
+                        <i class="fas fa-microchip text-7xl text-white mb-6"></i>
+                    </div>
+                    <h1 class="text-7xl font-bold text-white mb-4 fade-in-up">英伟达算力卡</h1>
+                    <h2 class="text-6xl font-bold text-white mb-6 fade-in-up">龙头地位分析</h2>
+                    <p class="text-2xl text-white/90 mb-8 fade-in-up">NVIDIA Computing Card Leadership Analysis</p>
+                    <div class="w-24 h-1 bg-white/50 rounded-full mb-8 fade-in-up"></div>
+                    <p class="text-xl text-white/80 fade-in-up">AI 技术报告 · 第三章</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 2: Development History Overview -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-history text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">发展历程</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Development History</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-4 gap-4 mb-6">
+                                <!-- Milestone 1 -->
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                    <div class="text-center">
+                                        <div class="text-5xl font-bold text-brand mb-2">1993</div>
+                                        <p class="text-xs text-gray-500 mb-3">Founded</p>
+                                        <h3 class="text-lg font-bold text-gray-900 mb-2">公司创立</h3>
+                                        <p class="text-sm text-gray-600">黄仁勋等三人创立</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Milestone 2 -->
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                    <div class="text-center">
+                                        <div class="text-5xl font-bold text-brand mb-2">1999</div>
+                                        <p class="text-xs text-gray-500 mb-3">GPU Era</p>
+                                        <h3 class="text-lg font-bold text-gray-900 mb-2">GPU 概念</h3>
+                                        <p class="text-sm text-gray-600">GeForce 256 诞生</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Milestone 3 -->
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                    <div class="text-center">
+                                        <div class="text-5xl font-bold text-brand mb-2">2006</div>
+                                        <p class="text-xs text-gray-500 mb-3">Game Changer</p>
+                                        <h3 class="text-lg font-bold text-gray-900 mb-2">CUDA 架构</h3>
+                                        <p class="text-sm text-gray-600">通用计算新纪元</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Milestone 4 -->
+                                <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm mini-card">
+                                    <div class="text-center">
+                                        <div class="text-5xl font-bold text-brand mb-2">2010+</div>
+                                        <p class="text-xs text-gray-500 mb-3">AI Revolution</p>
+                                        <h3 class="text-lg font-bold text-gray-900 mb-2">AI 首选</h3>
+                                        <p class="text-sm text-gray-600">深度学习硬件标准</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100 mb-4 fade-in-up">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-4">
+                                        <i class="fas fa-rocket text-brand text-4xl"></i>
+                                        <div>
+                                            <p class="text-sm text-gray-600 mb-1">GTX480 vs 至强 CPU 训练速度</p>
+                                            <div class="text-5xl font-bold text-brand">12 倍</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-sm text-gray-600 mb-1">吴恩达猫脸识别实验采用</p>
+                                        <div class="text-3xl font-bold text-gray-900">GPU 集群</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-4">
+                                <!-- Market Cap 1 -->
+                                <div class="bg-white rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="text-center">
+                                        <p class="text-sm text-gray-600 mb-2">1999 年上市</p>
+                                        <div class="text-4xl font-bold text-gray-900 mb-1">2 亿</div>
+                                        <p class="text-xs text-gray-500">美元市值</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Market Cap 2 -->
+                                <div class="bg-white rounded-xl p-5 border-2 border-brand/20 shadow-sm mini-card">
+                                    <div class="text-center">
+                                        <p class="text-sm text-gray-600 mb-2">2022 年 ChatGPT 后</p>
+                                        <div class="text-4xl font-bold text-gray-900 mb-1">1 万亿</div>
+                                        <p class="text-xs text-gray-500">美元市值</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Market Cap 3 -->
+                                <div class="bg-white rounded-xl p-5 border-2 border-brand shadow-sm mini-card">
+                                    <div class="text-center">
+                                        <p class="text-sm text-white/90 mb-2 bg-brand rounded px-2 py-1">2024 年 6 月</p>
+                                        <div class="text-4xl font-bold text-brand mb-1">3 万亿</div>
+                                        <p class="text-xs text-gray-500">超越苹果全球第二</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-4 text-center">
+                                <button class="detail-button" onclick="openModal('modal-history-detail')">
+                                    <i class="fas fa-timeline"></i>
+                                    <span>查看完整发展时间线</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 3: Three Core Reasons -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-trophy text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">龙头地位三大核心原因</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Three Core Pillars of Leadership</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-3 gap-6">
+                                <!-- Pillar 1: Technology -->
+                                <div class="bg-white rounded-2xl p-6 border-2 border-brand/30 shadow-md mini-card hover:shadow-xl transition-shadow">
+                                    <div class="flex flex-col h-full">
+                                        <div class="flex items-center justify-center mb-4">
+                                            <div class="w-16 h-16 bg-brand/10 rounded-2xl flex items-center justify-center">
+                                                <i class="fas fa-microchip text-brand text-3xl"></i>
+                                            </div>
+                                        </div>
+                                        <h3 class="text-3xl font-bold text-gray-900 text-center mb-2">技术优势</h3>
+                                        <p class="text-sm text-gray-500 text-center mb-4">Technology Excellence</p>
+                                        
+                                        <div class="space-y-3 flex-1">
+                                            <div class="bg-green-50 rounded-lg p-3">
+                                                <p class="text-xs text-gray-600 mb-1">架构更新周期</p>
+                                                <div class="text-2xl font-bold text-brand">2年 → 1年</div>
+                                            </div>
+                                            <div class="bg-green-50 rounded-lg p-3">
+                                                <p class="text-xs text-gray-600 mb-1">Blackwell B200 晶体管</p>
+                                                <div class="text-2xl font-bold text-brand">2080亿</div>
+                                            </div>
+                                            <div class="bg-green-50 rounded-lg p-3">
+                                                <p class="text-xs text-gray-600 mb-1">AI 算力提升</p>
+                                                <div class="text-2xl font-bold text-brand">20 PFLOPS</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <button class="detail-button w-full mt-4" onclick="openModal('modal-tech-detail')">
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span>技术详解</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pillar 2: Ecosystem -->
+                                <div class="bg-white rounded-2xl p-6 border-2 border-brand/30 shadow-md mini-card hover:shadow-xl transition-shadow">
+                                    <div class="flex flex-col h-full">
+                                        <div class="flex items-center justify-center mb-4">
+                                            <div class="w-16 h-16 bg-brand/10 rounded-2xl flex items-center justify-center">
+                                                <i class="fas fa-network-wired text-brand text-3xl"></i>
+                                            </div>
+                                        </div>
+                                        <h3 class="text-3xl font-bold text-gray-900 text-center mb-2">生态系统</h3>
+                                        <p class="text-sm text-gray-500 text-center mb-4">Software Ecosystem</p>
+                                        
+                                        <div class="space-y-3 flex-1">
+                                            <div class="bg-green-50 rounded-lg p-3">
+                                                <p class="text-xs text-gray-600 mb-1">CUDA 开发者</p>
+                                                <div class="text-2xl font-bold text-brand">600万+</div>
+                                            </div>
+                                            <div class="bg-green-50 rounded-lg p-3">
+                                                <p class="text-xs text-gray-600 mb-1">加速库和模型</p>
+                                                <div class="text-2xl font-bold text-brand">900+</div>
+                                            </div>
+                                            <div class="bg-green-50 rounded-lg p-3">
+                                                <p class="text-xs text-gray-600 mb-1">性能提升（Llama 3）</p>
+                                                <div class="text-2xl font-bold text-brand">15倍</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <button class="detail-button w-full mt-4" onclick="openModal('modal-ecosystem-detail')">
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span>生态详解</span>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <!-- Pillar 3: Supply Chain -->
+                                <div class="bg-white rounded-2xl p-6 border-2 border-brand/30 shadow-md mini-card hover:shadow-xl transition-shadow">
+                                    <div class="flex flex-col h-full">
+                                        <div class="flex items-center justify-center mb-4">
+                                            <div class="w-16 h-16 bg-brand/10 rounded-2xl flex items-center justify-center">
+                                                <i class="fas fa-industry text-brand text-3xl"></i>
+                                            </div>
+                                        </div>
+                                        <h3 class="text-3xl font-bold text-gray-900 text-center mb-2">供应链</h3>
+                                        <p class="text-sm text-gray-500 text-center mb-4">Supply Chain Control</p>
+                                        
+                                        <div class="space-y-3 flex-1">
+                                            <div class="bg-green-50 rounded-lg p-3">
+                                                <p class="text-xs text-gray-600 mb-1">台积电先进制程</p>
+                                                <div class="text-2xl font-bold text-brand">4nm / 3nm</div>
+                                            </div>
+                                            <div class="bg-green-50 rounded-lg p-3">
+                                                <p class="text-xs text-gray-600 mb-1">CoWoS 封装独占</p>
+                                                <div class="text-2xl font-bold text-brand">90%</div>
+                                            </div>
+                                            <div class="bg-green-50 rounded-lg p-3">
+                                                <p class="text-xs text-gray-600 mb-1">显存带宽</p>
+                                                <div class="text-2xl font-bold text-brand">3.35TB/s</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <button class="detail-button w-full mt-4" onclick="openModal('modal-supply-detail')">
+                                            <i class="fas fa-arrow-right"></i>
+                                            <span>供应链详解</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 4: Latest Products -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-rocket text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">最新产品技术优势</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Latest Product Technology</p>
+                    </div>
+                    
+                    <div class="flex-1 overflow-y-auto pb-4">
+                        <div class="grid grid-cols-4 gap-4 mb-4">
+                            <!-- H100 -->
+                            <div class="bg-white rounded-xl p-4 border border-gray-200 shadow-sm mini-card">
+                                <div class="text-center mb-3">
+                                    <div class="inline-block bg-brand/10 px-3 py-1 rounded-full mb-2">
+                                        <span class="text-xs font-semibold text-brand">Hopper 架构</span>
+                                    </div>
+                                    <h3 class="text-3xl font-bold text-gray-900">H100</h3>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <span class="text-gray-600">显存</span>
+                                        <span class="font-bold text-brand">80GB HBM3</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <span class="text-gray-600">带宽</span>
+                                        <span class="font-bold text-brand">3.35TB/s</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2">
+                                        <span class="text-gray-600">峰值性能</span>
+                                        <span class="font-bold text-brand">989.5 Tflops</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- H200 -->
+                            <div class="bg-white rounded-xl p-4 border-2 border-brand/30 shadow-sm mini-card">
+                                <div class="text-center mb-3">
+                                    <div class="inline-block bg-brand/10 px-3 py-1 rounded-full mb-2">
+                                        <span class="text-xs font-semibold text-brand">显存增强版</span>
+                                    </div>
+                                    <h3 class="text-3xl font-bold text-gray-900">H200</h3>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <span class="text-gray-600">显存</span>
+                                        <span class="font-bold text-brand">141GB HBM3e</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-gray-100">
+                                        <span class="text-gray-600">带宽</span>
+                                        <span class="font-bold text-brand">4.8TB/s</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2">
+                                        <span class="text-gray-600">吞吐提升</span>
+                                        <span class="font-bold text-brand">15-20%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- B200 -->
+                            <div class="bg-brand/5 rounded-xl p-4 border-2 border-brand shadow-md mini-card">
+                                <div class="text-center mb-3">
+                                    <div class="inline-block bg-brand px-3 py-1 rounded-full mb-2">
+                                        <span class="text-xs font-semibold text-white">Blackwell 架构</span>
+                                    </div>
+                                    <h3 class="text-3xl font-bold text-brand">B200</h3>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between items-center py-2 border-b border-brand/20">
+                                        <span class="text-gray-600">显存</span>
+                                        <span class="font-bold text-brand">192GB HBM3e</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-brand/20">
+                                        <span class="text-gray-600">带宽</span>
+                                        <span class="font-bold text-brand">8TB/s</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2">
+                                        <span class="text-gray-600">AI 算力</span>
+                                        <span class="font-bold text-brand">20 PFLOPS</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- DGX B200 -->
+                            <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border-2 border-brand shadow-md mini-card">
+                                <div class="text-center mb-3">
+                                    <div class="inline-block bg-brand px-3 py-1 rounded-full mb-2">
+                                        <span class="text-xs font-semibold text-white">系统级</span>
+                                    </div>
+                                    <h3 class="text-2xl font-bold text-gray-900">DGX B200</h3>
+                                </div>
+                                <div class="space-y-2 text-sm">
+                                    <div class="flex justify-between items-center py-2 border-b border-brand/20">
+                                        <span class="text-gray-600">GPU 数量</span>
+                                        <span class="font-bold text-brand">8 × B200</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2 border-b border-brand/20">
+                                        <span class="text-gray-600">训练效能</span>
+                                        <span class="font-bold text-brand">3x 提升</span>
+                                    </div>
+                                    <div class="flex justify-between items-center py-2">
+                                        <span class="text-gray-600">推理效能</span>
+                                        <span class="font-bold text-brand">15x 提升</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm fade-in-up">
+                                <div class="flex items-start gap-4">
+                                    <div class="bg-brand/10 rounded-lg p-3">
+                                        <i class="fas fa-layer-group text-brand text-3xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-xl font-bold text-gray-900 mb-2">双芯设计突破</h4>
+                                        <p class="text-sm text-gray-600 leading-relaxed">B200 采用 NV-HBI 高速连接通道，实现 <span class="font-bold text-brand">10TB/s</span> 芯片间带宽，晶体管数量达 <span class="font-bold text-brand">2080 亿</span>，是 H100 的 2.6 倍</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-xl p-5 border border-gray-200 shadow-sm fade-in-up">
+                                <div class="flex items-start gap-4">
+                                    <div class="bg-brand/10 rounded-lg p-3">
+                                        <i class="fas fa-tachometer-alt text-brand text-3xl"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="text-xl font-bold text-gray-900 mb-2">系统级性能飞跃</h4>
+                                        <p class="text-sm text-gray-600 leading-relaxed">DGX B200 提供 <span class="font-bold text-brand">144 petaflops</span> AI 性能、<span class="font-bold text-brand">1.4TB</span> GPU 显存和 <span class="font-bold text-brand">64TB/s</span> 显存带宽</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <button class="detail-button" onclick="openModal('modal-products-detail')">
+                                <i class="fas fa-table"></i>
+                                <span>查看完整产品对比表</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 5: Competition Comparison -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-balance-scale text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">竞争对手技术对比</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Competitive Analysis</p>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="grid grid-cols-2 gap-6 mb-6">
+                            <!-- AMD -->
+                            <div class="bg-white rounded-2xl p-6 border-2 border-red-200 shadow-sm mini-card">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-microchip text-red-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900">AMD</h3>
+                                        <p class="text-sm text-gray-500">Instinct MI325X</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="bg-red-50 rounded-lg p-3">
+                                        <p class="text-xs text-gray-600 mb-1">计算性能 vs H200</p>
+                                        <div class="text-3xl font-bold text-red-600">1.3 倍</div>
+                                    </div>
+                                    <div class="bg-red-50 rounded-lg p-3">
+                                        <p class="text-xs text-gray-600 mb-1">内存容量 vs H200</p>
+                                        <div class="text-3xl font-bold text-red-600">2 倍</div>
+                                    </div>
+                                    <div class="bg-red-50 rounded-lg p-3">
+                                        <p class="text-xs text-gray-600 mb-1">带宽 vs H200</p>
+                                        <div class="text-3xl font-bold text-red-600">1.3 倍</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Intel -->
+                            <div class="bg-white rounded-2xl p-6 border-2 border-blue-200 shadow-sm mini-card">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                        <i class="fas fa-microchip text-blue-600 text-2xl"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-3xl font-bold text-gray-900">Intel</h3>
+                                        <p class="text-sm text-gray-500">Gaudi 3</p>
+                                    </div>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="bg-blue-50 rounded-lg p-3">
+                                        <p class="text-xs text-gray-600 mb-1">训练速度 vs H100</p>
+                                        <div class="text-3xl font-bold text-blue-600">40% 更快</div>
+                                    </div>
+                                    <div class="bg-blue-50 rounded-lg p-3">
+                                        <p class="text-xs text-gray-600 mb-1">推理能效 vs H100</p>
+                                        <div class="text-3xl font-bold text-blue-600">50% 领先</div>
+                                    </div>
+                                    <div class="bg-blue-50 rounded-lg p-3">
+                                        <p class="text-xs text-gray-600 mb-1">FP16/BF16 性能</p>
+                                        <div class="text-3xl font-bold text-blue-600">1.85 倍</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-gradient-to-r from-red-50 via-orange-50 to-yellow-50 rounded-2xl p-6 border-2 border-orange-200 fade-in-up">
+                            <div class="flex items-start gap-4">
+                                <div class="bg-orange-100 rounded-lg p-3">
+                                    <i class="fas fa-exclamation-triangle text-orange-600 text-3xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h4 class="text-2xl font-bold text-gray-900 mb-3">软件生态差距</h4>
+                                    <div class="grid grid-cols-3 gap-4">
+                                        <div class="bg-white rounded-lg p-4 text-center">
+                                            <p class="text-sm text-gray-600 mb-2">AMD SGLang vs CUDA</p>
+                                            <div class="text-4xl font-bold text-orange-600">1/5</div>
+                                            <p class="text-xs text-gray-500 mt-1">生态丰富度</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-4 text-center">
+                                            <p class="text-sm text-gray-600 mb-2">MI300X 性能折扣</p>
+                                            <div class="text-4xl font-bold text-orange-600">30%</div>
+                                            <p class="text-xs text-gray-500 mt-1">需第三方适配</p>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-4 text-center">
+                                            <p class="text-sm text-gray-600 mb-2">平台迁移成本</p>
+                                            <div class="text-4xl font-bold text-orange-600">数月-数年</div>
+                                            <p class="text-xs text-gray-500 mt-1">时间投入</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4 text-center">
+                            <button class="detail-button" onclick="openModal('modal-competition-detail')">
+                                <i class="fas fa-chart-bar"></i>
+                                <span>查看详细竞争分析</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 6: Market Growth Visualization -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-chart-line text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">市值增长轨迹</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Market Value Growth</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center justify-center">
+                        <div class="w-full max-w-4xl">
+                            <div class="chart-container mb-6 fade-in-up" style="max-width: 800px; height: 400px;">
+                                <canvas id="marketValueChart"></canvas>
+                            </div>
+                            
+                            <div class="grid grid-cols-3 gap-4 fade-in-up">
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200 text-center">
+                                    <p class="text-sm text-gray-600 mb-2">增长倍数（1999-2024）</p>
+                                    <div class="text-5xl font-bold text-brand">15,000</div>
+                                    <p class="text-xs text-gray-500 mt-2">倍市值增长</p>
+                                </div>
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200 text-center">
+                                    <p class="text-sm text-gray-600 mb-2">ChatGPT 后增长</p>
+                                    <div class="text-5xl font-bold text-brand">3</div>
+                                    <p class="text-xs text-gray-500 mt-2">倍市值增长</p>
+                                </div>
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-5 border border-green-200 text-center">
+                                    <p class="text-sm text-gray-600 mb-2">全球市值排名</p>
+                                    <div class="text-5xl font-bold text-brand">#2</div>
+                                    <p class="text-xs text-gray-500 mt-2">超越苹果</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Slide 7: Summary -->
+        <section class="slide">
+            <div class="slide-content">
+                <div class="h-full flex flex-col">
+                    <div class="mb-6 fade-in-up">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-flag-checkered text-brand text-4xl"></i>
+                            <h2 class="text-5xl font-bold text-gray-900">核心竞争优势总结</h2>
+                        </div>
+                        <p class="text-xl text-gray-500 ml-16">Key Competitive Advantages</p>
+                    </div>
+                    
+                    <div class="flex-1 flex items-center">
+                        <div class="w-full">
+                            <div class="grid grid-cols-2 gap-6">
+                                <!-- Summary Card 1 -->
+                                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="text-6xl font-bold text-brand">01</div>
+                                        <div class="flex-1">
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-3">技术领先</h3>
+                                            <p class="text-sm text-gray-600 leading-relaxed">持续的架构创新，从 Hopper 到 Blackwell，每代性能提升 50% 以上，晶体管数量和 AI 算力不断突破</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Summary Card 2 -->
+                                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="text-6xl font-bold text-brand">02</div>
+                                        <div class="flex-1">
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-3">生态壁垒</h3>
+                                            <p class="text-sm text-gray-600 leading-relaxed">CUDA 平台构筑的护城河，600 万开发者、900+ 加速库，主流 AI 框架优先支持，形成强大的网络效应</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Summary Card 3 -->
+                                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="text-6xl font-bold text-brand">03</div>
+                                        <div class="flex-1">
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-3">供应掌控</h3>
+                                            <p class="text-sm text-gray-600 leading-relaxed">深度绑定台积电先进制程，独占 90% CoWoS 封装产能，确保技术和产能的双重优势</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Summary Card 4 -->
+                                <div class="bg-white rounded-2xl p-6 border border-gray-200 shadow-sm mini-card">
+                                    <div class="flex items-start gap-4">
+                                        <div class="text-6xl font-bold text-brand">04</div>
+                                        <div class="flex-1">
+                                            <h3 class="text-2xl font-bold text-gray-900 mb-3">市场主导</h3>
+                                            <p class="text-sm text-gray-600 leading-relaxed">在 AI 算力市场占据绝对主导地位，尽管竞争对手在硬件性能上有所突破，但生态差距使其难以撼动英伟达地位</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 bg-brand-gradient rounded-2xl p-6 text-center fade-in-up">
+                                <p class="text-2xl text-white font-bold">英伟达通过技术、生态、供应链的三位一体战略</p>
+                                <p class="text-2xl text-white font-bold mt-2">构筑了难以逾越的竞争壁垒</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+    </div>
+    
+    <!-- Modal: History Detail -->
+    <div id="modal-history-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-history-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">英伟达发展完整时间线</h2>
+            
+            <div class="space-y-4">
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-white rounded-lg p-4 border border-gray-200">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-2xl font-bold text-brand">1993</span>
+                            <span class="text-sm text-gray-500">Company Founded</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">公司创立</h4>
+                        <p class="text-sm text-gray-600">黄仁勋（Jensen Huang）、Chris Malachowsky 和 Curtis Priem 三人共同创立英伟达，初始愿景是将 3D 图形技术带入游戏和多媒体市场</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-white rounded-lg p-4 border border-gray-200">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-2xl font-bold text-brand">1999</span>
+                            <span class="text-sm text-gray-500">GPU Era Begins</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">定义 GPU 概念</h4>
+                        <p class="text-sm text-gray-600">推出划时代的 GeForce 256 显卡，首次定义了 "GPU"（图形处理器）概念，标志着图形处理技术的重大突破。同年公司上市，市值约 2 亿美元</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-white rounded-lg p-4 border border-brand/30 bg-green-50">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-2xl font-bold text-brand">2006</span>
+                            <span class="text-sm text-gray-500">Game Changer</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">CUDA 架构诞生</h4>
+                        <p class="text-sm text-gray-600">推出 CUDA 架构，真正改变了英伟达的命运。这一技术将 GPU 应用拓展至通用计算领域，开启了高性能计算（HPC）的新纪元，为后来的 AI 革命奠定了基础</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-white rounded-lg p-4 border border-gray-200">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-2xl font-bold text-brand">2010</span>
+                            <span class="text-sm text-gray-500">Deep Learning Era</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">深度学习首选硬件</h4>
+                        <p class="text-sm text-gray-600">随着深度学习的兴起，英伟达 GPU 因其强大的并行计算能力成为 AI 训练的首选硬件。特斯拉实验室发现 GTX480 芯片训练神经网络的速度是至强 CPU 的 12 倍</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-white rounded-lg p-4 border border-gray-200">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-2xl font-bold text-brand">2012</span>
+                            <span class="text-sm text-gray-500">AI Breakthrough</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">吴恩达猫脸识别</h4>
+                        <p class="text-sm text-gray-600">吴恩达在著名的猫脸识别实验中大规模采用 GPU 集群，证明了 GPU 在深度学习领域的巨大潜力，推动了 AI 研究的快速发展</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-white rounded-lg p-4 border border-gray-200">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-2xl font-bold text-brand">2022</span>
+                            <span class="text-sm text-gray-500">Generative AI Boom</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">ChatGPT 引爆需求</h4>
+                        <p class="text-sm text-gray-600">ChatGPT 的发布引爆生成式 AI 需求，英伟达市值突破 1 万亿美元，成为 AI 时代最大的赢家之一</p>
+                    </div>
+                </div>
+                
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="bg-brand/5 rounded-lg p-4 border-2 border-brand">
+                        <div class="flex items-center gap-3 mb-2">
+                            <span class="text-2xl font-bold text-brand">2024</span>
+                            <span class="text-sm text-gray-500">New Milestone</span>
+                        </div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-2">超越苹果成为全球第二</h4>
+                        <p class="text-sm text-gray-600">2024 年 6 月，市值突破 3 万亿美元，超越苹果成为全球第二大公司，仅次于微软。发布 Blackwell 架构，进一步巩固技术领先地位</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Technology Detail -->
+    <div id="modal-tech-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-tech-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">技术优势详解</h2>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-rocket text-brand"></i>
+                        架构创新速度
+                    </h3>
+                    <p class="text-gray-600 mb-4">英伟达通过持续的架构创新保持领先地位。公司将 GPU 架构更新周期从两年缩短至一年，保持技术领先优势：</p>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>Hopper 架构（H100/H200）：</strong>80GB-141GB HBM3/HBM3e 显存，3.35-4.8TB/s 带宽</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>Blackwell 架构（B200）：</strong>192GB HBM3e 显存，8TB/s 带宽，性能提升 50% 以上</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span><strong>Rubin 架构（2026）：</strong>将升级至台积电 3nm EUV 工艺</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-microchip text-brand"></i>
+                        Blackwell B200 技术突破
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 mb-2">晶体管数量</p>
+                            <div class="text-3xl font-bold text-brand">2080 亿</div>
+                            <p class="text-xs text-gray-500 mt-1">是 H100 的 2.6 倍</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 mb-2">AI 算力</p>
+                            <div class="text-3xl font-bold text-brand">20 PFLOPS</div>
+                            <p class="text-xs text-gray-500 mt-1">是 H100 的 5 倍</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 mb-2">芯片间带宽</p>
+                            <div class="text-3xl font-bold text-brand">10 TB/s</div>
+                            <p class="text-xs text-gray-500 mt-1">NV-HBI 连接技术</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <p class="text-sm text-gray-600 mb-2">显存带宽</p>
+                            <div class="text-3xl font-bold text-brand">8 TB/s</div>
+                            <p class="text-xs text-gray-500 mt-1">HBM3e 显存技术</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-layer-group text-brand"></i>
+                        双芯设计创新
+                    </h3>
+                    <p class="text-gray-600">B200 采用双芯片设计，通过 NV-HBI（NVIDIA High-Bandwidth Interface）高速连接通道将两个 GPU 芯片无缝集成，实现：</p>
+                    <ul class="mt-4 space-y-2 text-gray-600">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-brand mt-1"></i>
+                            <span>单一统一的 GPU 架构，软件层面无感知</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-brand mt-1"></i>
+                            <span>10TB/s 的芯片间通信带宽，消除传统多芯片瓶颈</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-arrow-right text-brand mt-1"></i>
+                            <span>支持 FP4 精度计算，进一步提升 AI 推理性能</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Ecosystem Detail -->
+    <div id="modal-ecosystem-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-ecosystem-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">CUDA 生态系统详解</h2>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">CUDA 平台：最坚固的壁垒</h3>
+                    <p class="text-gray-600 mb-4">CUDA（Compute Unified Device Architecture）是英伟达最重要的战略资产，构建了难以逾越的生态壁垒：</p>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="bg-white rounded-lg p-4 text-center">
+                            <div class="text-4xl font-bold text-brand mb-2">600万+</div>
+                            <p class="text-sm text-gray-600">全球开发者数量</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 text-center">
+                            <div class="text-4xl font-bold text-brand mb-2">900+</div>
+                            <p class="text-sm text-gray-600">加速库和模型</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4 text-center">
+                            <div class="text-4xl font-bold text-brand mb-2">17年+</div>
+                            <p class="text-sm text-gray-600">生态建设时间</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-tools text-brand"></i>
+                        核心工具链
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 bg-brand/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-brain text-brand"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-1">cuDNN</h4>
+                                <p class="text-sm text-gray-600">深度神经网络库，针对卷积、池化、归一化等操作进行深度优化</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 bg-brand/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-tachometer-alt text-brand"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-1">TensorRT</h4>
+                                <p class="text-sm text-gray-600">高性能深度学习推理优化器和运行时引擎，支持 FP16、INT8 等精度</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 bg-brand/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-network-wired text-brand"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-1">NCCL</h4>
+                                <p class="text-sm text-gray-600">NVIDIA Collective Communications Library，优化多 GPU 通信，支持大规模分布式训练</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 bg-brand/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-code text-brand"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-gray-900 mb-1">CUDA-X 库</h4>
+                                <p class="text-sm text-gray-600">包含数十个专用加速库，覆盖 AI、数据分析、图形渲染等多个领域</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-rocket text-brand"></i>
+                        性能优势实例
+                    </h3>
+                    <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <p class="text-sm text-gray-600 mb-1">Llama 3 70B 训练性能</p>
+                                <div class="text-5xl font-bold text-brand">15 倍</div>
+                            </div>
+                            <i class="fas fa-chart-line text-brand text-5xl opacity-20"></i>
+                        </div>
+                        <p class="text-sm text-gray-600">使用 CUDA-X 库的 H100 性能比原生框架提升 15 倍，展示了软件优化对硬件性能释放的巨大价值</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-layer-group text-brand"></i>
+                        主流 AI 框架支持
+                    </h3>
+                    <p class="text-gray-600 mb-4">所有主流 AI 框架都优先支持 CUDA，确保最佳性能和最新特性：</p>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-gray-50 rounded-lg p-3 text-center">
+                            <i class="fas fa-fire text-orange-600 text-2xl mb-2"></i>
+                            <p class="font-bold text-gray-900">PyTorch</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3 text-center">
+                            <i class="fas fa-brain text-orange-600 text-2xl mb-2"></i>
+                            <p class="font-bold text-gray-900">TensorFlow</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-3 text-center">
+                            <i class="fas fa-code text-blue-600 text-2xl mb-2"></i>
+                            <p class="font-bold text-gray-900">JAX</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Supply Chain Detail -->
+    <div id="modal-supply-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-supply-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">供应链掌控详解</h2>
+            
+            <div class="space-y-6">
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">深度绑定台积电</h3>
+                    <p class="text-gray-600 mb-4">英伟达通过深度绑定台积电先进产能，确保在先进制程和封装技术上的领先优势：</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-white rounded-lg p-4">
+                            <p class="text-sm text-gray-600 mb-2">Blackwell 系列</p>
+                            <div class="text-3xl font-bold text-brand mb-1">4nm</div>
+                            <p class="text-xs text-gray-500">台积电先进制程</p>
+                        </div>
+                        <div class="bg-white rounded-lg p-4">
+                            <p class="text-sm text-gray-600 mb-2">2026 Rubin 架构</p>
+                            <div class="text-3xl font-bold text-brand mb-1">3nm EUV</div>
+                            <p class="text-xs text-gray-500">下一代制程升级</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-layer-group text-brand"></i>
+                        CoWoS 封装技术优势
+                    </h3>
+                    <div class="mb-4">
+                        <div class="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-6 border border-green-200 text-center mb-4">
+                            <p class="text-sm text-gray-600 mb-2">英伟达独占台积电 CoWoS 封装产能</p>
+                            <div class="text-6xl font-bold text-brand mb-2">90%</div>
+                            <p class="text-gray-600">这种封装技术是实现高性能 AI 芯片的关键</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4"><strong>CoWoS（Chip-on-Wafer-on-Substrate）封装技术</strong>的核心优势：</p>
+                    <ul class="space-y-2 text-gray-600">
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span>将 GPU、HBM 内存和其他芯片集成在一个基板上</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span>大幅缩短芯片间通信距离，降低延迟</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span>实现 3.35TB/s 甚至 8TB/s 的超高显存带宽</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fas fa-check-circle text-brand mt-1"></i>
+                            <span>提升整体系统性能和能效比</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-gray-200">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-shield-alt text-brand"></i>
+                        供应链护城河
+                    </h3>
+                    <p class="text-gray-600 mb-4">英伟达的供应链优势形成多重护城河：</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-clock text-brand"></i>
+                                时间优势
+                            </h4>
+                            <p class="text-sm text-gray-600">优先获得台积电最新制程和封装技术，比竞争对手提前 6-12 个月</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-chart-line text-brand"></i>
+                                产能优势
+                            </h4>
+                            <p class="text-sm text-gray-600">独占 90% CoWoS 产能，确保大规模量产能力，竞争对手难以获得足够产能</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-handshake text-brand"></i>
+                                合作深度
+                            </h4>
+                            <p class="text-sm text-gray-600">与台积电联合优化工艺，实现芯片设计与制造的深度协同</p>
+                        </div>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="font-bold text-gray-900 mb-2 flex items-center gap-2">
+                                <i class="fas fa-dollar-sign text-brand"></i>
+                                成本优势
+                            </h4>
+                            <p class="text-sm text-gray-600">大规模订单和长期合作关系带来更优惠的价格和优先级</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Products Comparison Detail -->
+    <div id="modal-products-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-products-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">产品技术规格完整对比</h2>
+            
+            <div class="overflow-x-auto">
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th>产品型号</th>
+                            <th>架构</th>
+                            <th>显存容量</th>
+                            <th>显存带宽</th>
+                            <th>峰值性能</th>
+                            <th>AI 算力</th>
+                            <th>特殊技术</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>H100</strong></td>
+                            <td>Hopper</td>
+                            <td>80GB HBM3</td>
+                            <td>3.35TB/s</td>
+                            <td>989.5 Tflops (FP16)</td>
+                            <td>-</td>
+                            <td>第四代 Tensor Core</td>
+                        </tr>
+                        <tr>
+                            <td><strong>H200</strong></td>
+                            <td>Hopper</td>
+                            <td>141GB HBM3e</td>
+                            <td>4.8TB/s</td>
+                            <td>-</td>
+                            <td>-</td>
+                            <td>显存增强版，1T 参数吞吐提升 15-20%</td>
+                        </tr>
+                        <tr class="bg-green-50">
+                            <td><strong>B200</strong></td>
+                            <td>Blackwell</td>
+                            <td>192GB HBM3e</td>
+                            <td>8TB/s</td>
+                            <td>-</td>
+                            <td>18-20 PFLOPS</td>
+                            <td>双芯设计、FP4 精度、第五代 NVLink、10TB/s 芯片间带宽</td>
+                        </tr>
+                        <tr class="bg-green-50">
+                            <td><strong>DGX B200</strong></td>
+                            <td>Blackwell 系统</td>
+                            <td>1.4TB (8×B200)</td>
+                            <td>64TB/s 总带宽</td>
+                            <td>144 petaflops</td>
+                            <td>-</td>
+                            <td>训练效能 3x、推理效能 15x、第五代 NVLink 互联</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="mt-6 space-y-4">
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-brand"></i>
+                        技术术语解释
+                    </h3>
+                    <ul class="space-y-2 text-sm text-gray-600">
+                        <li><strong>HBM3/HBM3e：</strong>高带宽内存（High Bandwidth Memory）第三代及增强版，提供极高的显存带宽</li>
+                        <li><strong>PFLOPS：</strong>每秒千万亿次浮点运算（Petaflops），衡量 AI 算力的单位</li>
+                        <li><strong>Tflops：</strong>每秒万亿次浮点运算（Teraflops），1 PFLOPS = 1000 Tflops</li>
+                        <li><strong>FP16/FP4：</strong>16位/4位浮点精度，较低精度可提升推理速度和效率</li>
+                        <li><strong>NVLink：</strong>英伟达专有的高速 GPU 互联技术，用于多 GPU 通信</li>
+                        <li><strong>Tensor Core：</strong>专为矩阵运算和 AI 计算优化的处理核心</li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border border-gray-200">
+                    <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <i class="fas fa-chart-line text-brand"></i>
+                        代际性能提升
+                    </h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-2">H100 → H200</p>
+                            <div class="text-3xl font-bold text-brand">43%</div>
+                            <p class="text-xs text-gray-500 mt-1">显存容量提升</p>
+                        </div>
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-2">H200 → B200</p>
+                            <div class="text-3xl font-bold text-brand">67%</div>
+                            <p class="text-xs text-gray-500 mt-1">带宽提升</p>
+                        </div>
+                        <div class="text-center p-4 bg-gray-50 rounded-lg">
+                            <p class="text-sm text-gray-600 mb-2">H100 → B200</p>
+                            <div class="text-3xl font-bold text-brand">5x</div>
+                            <p class="text-xs text-gray-500 mt-1">AI 算力提升</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal: Competition Detail -->
+    <div id="modal-competition-detail" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal('modal-competition-detail')">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 class="text-4xl font-bold text-gray-900 mb-6">竞争对手详细分析</h2>
+            
+            <div class="space-y-6">
+                <div class="bg-white rounded-xl p-6 border-2 border-red-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-14 h-14 bg-red-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-microchip text-red-600 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-3xl font-bold text-gray-900">AMD Instinct MI325X</h3>
+                            <p class="text-sm text-gray-500">预计 2024 年四季度上市</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="bg-red-50 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600 mb-2">计算性能</p>
+                            <div class="text-3xl font-bold text-red-600">1.3x H200</div>
+                        </div>
+                        <div class="bg-red-50 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600 mb-2">内存容量</p>
+                            <div class="text-3xl font-bold text-red-600">2x H200</div>
+                        </div>
+                        <div class="bg-red-50 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600 mb-2">带宽</p>
+                            <div class="text-3xl font-bold text-red-600">1.3x H200</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-red-50 rounded-lg p-4">
+                        <h4 class="font-bold text-gray-900 mb-2">其他产品线：</h4>
+                        <p class="text-sm text-gray-600">锐龙 AI 300 系列处理器（基于 Zen 5 架构），集成 XDNA 2 架构的 NPU 和 RDNA 3.5 架构的 GPU，主要面向终端 AI 应用</p>
+                    </div>
+                </div>
+                
+                <div class="bg-white rounded-xl p-6 border-2 border-blue-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-14 h-14 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-microchip text-blue-600 text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-3xl font-bold text-gray-900">Intel Gaudi 3</h3>
+                            <p class="text-sm text-gray-500">主打训练和推理性能</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 mb-4">
+                        <div class="bg-blue-50 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600 mb-2">训练速度</p>
+                            <div class="text-3xl font-bold text-blue-600">40% 更快</div>
+                            <p class="text-xs text-gray-500 mt-1">vs H100 大语言模型</p>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600 mb-2">推理能效</p>
+                            <div class="text-3xl font-bold text-blue-600">50% 领先</div>
+                            <p class="text-xs text-gray-500 mt-1">vs H100</p>
+                        </div>
+                        <div class="bg-blue-50 rounded-lg p-4 text-center">
+                            <p class="text-sm text-gray-600 mb-2">FP16/BF16</p>
+                            <div class="text-3xl font-bold text-blue-600">1.85x</div>
+                            <p class="text-xs text-gray-500 mt-1">vs H100 半精度性能</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gradient-to-r from-red-50 via-orange-50 to-yellow-50 rounded-xl p-6 border-2 border-orange-300">
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                        <i class="fas fa-exclamation-triangle text-orange-600"></i>
+                        软件生态差距：核心瓶颈
+                    </h3>
+                    
+                    <p class="text-gray-600 mb-4">尽管 AMD 和 Intel 在硬件性能上取得了显著进步，但在软件生态方面与 NVIDIA 仍有巨大差距：</p>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white rounded-lg p-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-code text-red-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900">AMD 生态困境</h4>
+                            </div>
+                            <ul class="space-y-2 text-sm text-gray-600 ml-13">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-minus text-red-600 mt-1"></i>
+                                    <span>SGLang 框架生态丰富度不足 CUDA 的 1/5</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-minus text-red-600 mt-1"></i>
+                                    <span>MI300X 需依赖第三方工具适配，导致实际性能折扣达 30%</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-minus text-red-600 mt-1"></i>
+                                    <span>ROCm 平台成熟度和文档完善度远不及 CUDA</span>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-4">
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+                                    <i class="fas fa-exchange-alt text-orange-600"></i>
+                                </div>
+                                <h4 class="font-bold text-gray-900">平台迁移成本</h4>
+                            </div>
+                            <p class="text-sm text-gray-600 ml-13">企业从英伟达平台迁移的成本极高，涉及：</p>
+                            <ul class="space-y-2 text-sm text-gray-600 ml-13 mt-2">
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-arrow-right text-orange-600 mt-1"></i>
+                                    <span><strong>代码重构：</strong>需要重写大量 CUDA 代码</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-arrow-right text-orange-600 mt-1"></i>
+                                    <span><strong>性能优化：</strong>重新调优模型和推理流程</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-arrow-right text-orange-600 mt-1"></i>
+                                    <span><strong>工具链适配：</strong>替换或适配现有开发工具</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-arrow-right text-orange-600 mt-1"></i>
+                                    <span><strong>人员培训：</strong>团队学习新平台和生态</span>
+                                </li>
+                                <li class="flex items-start gap-2">
+                                    <i class="fas fa-arrow-right text-orange-600 mt-1"></i>
+                                    <span><strong>时间成本：</strong>整体迁移需投入数月甚至数年时间</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 bg-orange-100 rounded-lg p-4 border border-orange-300">
+                        <p class="text-center text-gray-900 font-bold">
+                            <i class="fas fa-lightbulb text-orange-600 mr-2"></i>
+                            结论：软件生态差距是竞争对手难以短期内克服的最大障碍
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Modal Control Functions
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('active');
+                document.body.classList.add('modal-open');
+            }
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('active');
+                document.body.classList.remove('modal-open');
+            }
+        }
+        
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        });
+        
+        // Intersection Observer for Animations
+        const observerOptions = {
+            threshold: 0.2,
+            rootMargin: '0px 0px -100px 0px'
+        };
+        
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, observerOptions);
+        
+        // Observe all animated elements
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.fade-in-up, .mini-card').forEach(el => {
+                observer.observe(el);
+            });
+            
+            // Initialize Chart - Market Value Growth
+            const ctx = document.getElementById('marketValueChart');
+            if (ctx) {
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['1999', '2005', '2010', '2015', '2020', '2022', '2024'],
+                        datasets: [{
+                            label: '市值（万亿美元）',
+                            data: [0.0002, 0.008, 0.015, 0.02, 0.3, 1.0, 3.0],
+                            borderColor: '#76B900',
+                            backgroundColor: 'rgba(118, 185, 0, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 6,
+                            pointBackgroundColor: '#76B900',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointHoverRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            },
+                            tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                padding: 12,
+                                titleFont: {
+                                    size: 14,
+                                    weight: 'bold'
+                                },
+                                bodyFont: {
+                                    size: 13
+                                },
+                                callbacks: {
+                                    label: function(context) {
+                                        let value = context.parsed.y;
+                                        if (value < 0.001) {
+                                            return '市值: ' + (value * 1000000).toFixed(0) + ' 百万美元';
+                                        } else if (value < 1) {
+                                            return '市值: ' + (value * 1000).toFixed(0) + ' 亿美元';
+                                        } else {
+                                            return '市值: ' + value.toFixed(1) + ' 万亿美元';
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                grid: {
+                                    color: 'rgba(0, 0, 0, 0.05)'
+                                },
+                                ticks: {
+                                    callback: function(value) {
+                                        return value.toFixed(1) + ' 万亿';
+                                    },
+                                    font: {
+                                        size: 12
+                                    }
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    font: {
+                                        size: 12,
+                                        weight: 'bold'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        });
+        
+        // Keyboard navigation for slides
+        document.addEventListener('keydown', (e) => {
+            const container = document.querySelector('.slides-container');
+            if (!container) return;
+            
+            const slides = document.querySelectorAll('.slide');
+            const currentScrollTop = container.scrollTop;
+            const viewportHeight = window.innerHeight;
+            
+            if (e.key === 'ArrowDown' || e.key === 'PageDown') {
+                e.preventDefault();
+                container.scrollBy({ top: viewportHeight, behavior: 'smooth' });
+            } else if (e.key === 'ArrowUp' || e.key === 'PageUp') {
+                e.preventDefault();
+                container.scrollBy({ top: -viewportHeight, behavior: 'smooth' });
+            }
+        });
+    </script>
+    
+</body>
+</html>
